@@ -22,6 +22,8 @@ final class UserCreateAction
         // Collect input from the HTTP request
         $data = (array)$request->getParsedBody();
 
+        //dump($data);
+
         // Invoke the Domain with inputs and retain the result
         $userId = $this->userCreator->createUser($data);
 

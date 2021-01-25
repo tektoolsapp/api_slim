@@ -1,0 +1,349 @@
+{% extends 'layout/main.twig' %}
+
+{% block middle_col %}
+    <div>
+        <h1 class="w3-xlarge w3-left"><b>Scheduler</b></h1>
+        <button id="filter-scheduler-criteria" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Filter Employees</button>
+        <button id="filter-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Check Availability</button>
+        <button id="set-scheduler-resources" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">All Employees</button>
+    </div>
+
+    <div style="clear:both;"></div>
+
+    <div style="font-size:10px;" id="scheduler"></div>
+{% endblock %}
+
+{% block javascripts %}
+
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.1118/styles/kendo.common.min.css" />
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.1118/styles/kendo.default.min.css" />
+
+    <link rel="stylesheet" href="{{ base_path() }}/css/scheduler.css">
+
+    <script src="https://kendo.cdn.telerik.com/2020.3.1118/js/jquery.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2020.3.1118/js/kendo.all.min.js"></script>
+    <script src="http://kendo.cdn.telerik.com/2017.1.223/js/cultures/kendo.culture.en-GB.min.js"></script>
+
+    <script>window.jQuery || document.write('<script src="{{ base_path() }}/js/jquery-2.0.0.min.js">\x3C/script>')</script>
+    <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.min.js" integrity="sha256-lnH4vnCtlKU2LmD0ZW1dU7ohTTKrcKP50WA9fa350cE="crossorigin="anonymous"></script>
+
+
+    <script>
+        kendo.culture("en-GB");
+    </script>
+
+    <script id="booking-template" type="text/x-kendo-template">
+
+        <div style="padding:3px;"><img src="assets/sun.png" height="22px"></div>
+        <div style="padding:4px 0px 0px 6px;writing-mode:tb-rl;">#: title #</div>
+
+        # console.log("bla") #
+
+    </script>
+
+    <script id="customEditorTemplate" type="text/x-kendo-template">
+
+        <script>
+            $("\#customers").kendoMultiSelect({
+                dataTextField: "ContactName",
+                dataValueField: "CustomerID",
+                headerTemplate: '<div class="dropdown-header k-widget k-header">' +
+                '<span>Photo</span>' +
+                '<span>Contact info</span>' +
+                '</div>',
+                footerTemplate: 'Total \#: instance.dataSource.total() \# items found',
+                itemTemplate: '<span class="k-state-default" style="background-image: url(\"../content/web/Customers/#:data.CustomerID#.jpg\")"></span>' +
+                '<span class="k-state-default"><h3>\#: data.ContactName \#</h3><p>\#: data.CompanyName \#</p></span>',
+                tagTemplate:  '<span class="selected-value"></span><span>\#:data.ContactName\#</span>',
+                dataSource: {
+                    transport: {
+                        read: {
+                            dataType: "jsonp",
+                            url: "https://demos.telerik.com/kendo-ui/service/Customers",
+                        }
+                    }
+                },
+                height: 400
+            });
+        <\/script>
+
+        <div class="k-edit-label"><label for="requestDesc">Request</label></div>
+        <div data-container-for="requestDesc" class="k-edit-field" style="width:400px;padding-bottom:0px;">
+            <input
+                id="get_request"
+                class="k-textbox"
+                name="requestDesc"
+                data-bind="value:requestDesc"
+                style="width:400px;"
+            >
+
+        <script>
+
+            $("\#get_request").click(function () {
+                $(this).select();
+            });
+
+            $("\#get_request").kendoAutoComplete({
+
+                minLength: 3,
+                dataSource: new kendo.data.DataSource({
+                    transport: {
+                        read: "/requests/scheduler",
+                        parameterMap: function(options, operation) {
+                            if(options.filter.filters[0]) {
+                                return {
+                                    Contains: options.filter.filters[0].value
+                                }
+                            }
+                        }
+                    },
+                    schema: {
+                        data: "data"
+                    },
+                    serverFiltering: true
+                }),
+                placeholder: "Enter some Request details...",
+                change: function(){
+
+                    var requestRaw = this.value();
+                    var request = requestRaw.substring(1);
+                    var url = "request/scheduler/" + request;
+                    console.log("URL: " + url);
+
+                    $.ajax({
+                        type: "GET",
+                        async: false,
+                        url: url,
+                        success: function(response) {
+                            //console.log("RESP: ", response);
+                            var reqId = response.ws_id;
+                            console.log("REQ: ", reqId);
+                            $("\#requestId").val(reqId);
+                            //SET THE SCHEDULER VALUE
+                            var scheduler = $("\#scheduler").data("kendoScheduler");
+                            var editedEventUID = $(".k-scheduler-edit-form").data("uid");
+                            var event = scheduler.occurrenceByUid(editedEventUID);
+                            event.set("requestId", reqId);
+                            $("\#req_desc_errors").css({"display" : "none"});
+                        }
+                    });
+
+                },
+                height: 200,
+                minLength: 3,
+                separator: "",
+                valuePrimitive: true,
+                dataTextField: "name"
+            });
+
+        <\/script>
+
+        </div>
+
+        <div style="clear:both;"></div>
+        <div id="req_desc_errors" style="margin:-5px 0 5px 110px;display:none;"></div>
+
+        <div class="k-edit-label"><label for="title">Title</label></div>
+
+        <div data-container-for="title" class="k-edit-field">
+        <input type="text" class="k-textbox" name="title" required="required" data-bind="value:title">
+        </div>
+
+        <div class="k-edit-label">
+        <label for="start">Start</label>
+        </div>
+        <div data-container-for="start" class="k-edit-field">
+        <input
+            id="dateTimePickerStart"
+            type="text"
+            data-role="datetimepicker"
+            data-interval="5"
+            data-type="date"
+            data-bind="value:start"
+            name="start"
+            style="width:270px"
+        />
+        <span data-bind="text: startTimezone"></span>
+        <span data-for="start" class="k-invalid-msg" style="display: none;"></span>
+        </div>
+
+        <\/script>
+
+        <div class="k-edit-label"><label for="end">End</label></div>
+        <div data-container-for="end" class="k-edit-field">
+        <input
+            id="dateTimePickerEnd"
+            type="text"
+             data-role="datetimepicker"
+             data-interval="5"
+             data-type="date"
+             data-bind="value:end"
+             name="end"
+             data-datecompare-msg="End date should be greater than or equal to the start date"
+             style="width:270px"
+        />
+        <span data-bind="text: endTimezone"></span>
+        <span data-bind="text: startTimezone, invisible: endTimezone"></span>
+        <span data-for="end" class="k-invalid-msg" style="display: none;"></span>
+        </div>
+
+        <div style="clear:both;"></div>
+
+        <div id="recurrence_panel" style="display:none">
+
+        <div class="k-edit-label"><label for="recurrenceRule">Repeat</label></div>
+        <div data-container-for="recurrenceRule" class="k-edit-field">
+        <div data-bind="value:recurrenceRule" name="recurrenceRule" data-role="recurrenceeditor"></div>
+        </div>
+
+        </div>
+
+        <div class="k-edit-label"><label for="description">Description</label></div>
+        <div data-container-for="description" class="k-edit-field">
+        <textarea name="description" class="k-textbox" style="width:400px;padding:8px;" data-bind="value:description"></textarea>
+        </div>
+
+        <div style="clear:both;"></div>
+
+        <div>
+        <div class="k-edit-label"><label for="UserId">Employee(s)</label></div>
+        <div id="resourcesContainer" data-container-for="description" class="k-edit-field">
+
+        <script>
+            jQuery(function() {
+                var container = jQuery("\#resourcesContainer");
+                var resources = jQuery("\#scheduler").data("kendoScheduler").resources;
+
+                //console.log("RES: ", JSON.stringify(resources));
+                //console.log("RESLEN: ", resources.length);
+
+                for( resource = 0; resource<resources.length; resource++)
+                {
+
+                    //console.log("MULT ", resources[resource].multiple);
+
+                    if(resources[resource].multiple)
+                    {
+                        //console.log("HERE1");
+
+                        jQuery(kendo.format('<select data-bind="value: {0}" name="{0}" data-placeholder="Select employees...">', resources[resource].field))
+                                .appendTo(container)
+                                .kendoMultiSelect({
+                                    dataTextField: resources[resource].dataTextField,
+                                    dataValueField: resources[resource].dataValueField,
+                                    dataSource: resources[resource].dataSource,
+                                    valuePrimitive: resources[resource].valuePrimitive,
+                                    itemTemplate: kendo.format('<span class="k-scheduler-mark" style="background-color:\#= data.{0}?{0}:"none" \#"></span>\#={1}\#', resources[resource].dataColorField, resources[resource].dataTextField),
+                                    tagTemplate: kendo.format('<span class="k-scheduler-mark" style="background-color:\#= data.{0}?{0}:"none" \#"></span>\#={1}\#', resources[resource].dataColorField, resources[resource].dataTextField)
+                                });
+
+                    } else {
+
+                        jQuery(kendo.format('<select data-bind="value: {0}" name="{0}">', resources[resource].field))
+                                .appendTo(container)
+                                .kendoDropDownList({
+                                    dataTextField: resources[resource].dataTextField,
+                                    dataValueField: resources[resource].dataValueField,
+                                    dataSource: resources[resource].dataSource,
+                                    valuePrimitive: resources[resource].valuePrimitive,
+                                    optionLabel: "None",
+                                    template: kendo.format('<span class="k-scheduler-mark" style="background-color:\#= data.{0}?{0}:"none" \#"></span>\#={1}\#', resources[resource].dataColorField, resources[resource].dataTextField)
+                                });
+                    }
+                }
+            })
+        <\/script>
+
+        </div>
+
+        <div style="clear:both;"></div>
+
+    </script>
+
+    <style scoped>
+
+        .dropdown-header {
+            border-width: 0 0 1px 0;
+            border-width: 0 0 1px 0;
+            text-transform: uppercase;
+        }
+        .dropdown-header > span {
+            display: inline-block;
+            padding: 10px;
+        }
+
+        .dropdown-header > span:first-child {
+            width: 50px;
+        }
+
+        .k-list-container > .k-footer {
+            padding: 10px;
+        }
+
+        .selected-value {
+            display: inline-block;
+            vertical-align: middle;
+            width: 18px;
+            height: 18px;
+            background-size: 100%;
+            margin-right: 5px;
+            border-radius: 50%;
+        }
+
+        #customers-list .k-item {
+            line-height: 1em;
+            min-width: 300px;
+        }
+
+        /* Material Theme padding adjustment*/
+
+        .k-material #customers-list .k-item,
+        .k-material #customers-list .k-item.k-state-hover,
+        .k-materialblack #customers-list .k-item,
+        .k-materialblack #customers-list .k-item.k-state-hover {
+            padding-left: 5px;
+            border-left: 0;
+        }
+
+        #customers-list .k-item > span {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            display: inline-block;
+            vertical-align: top;
+            margin: 20px 10px 10px 5px;
+        }
+
+        #customers-list .k-item > span:first-child {
+            -moz-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            -webkit-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            margin: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: 100%;
+            background-repeat: no-repeat;
+        }
+
+        #customers-list h3 {
+            font-size: 1.2em;
+            font-weight: normal;
+            margin: 0 0 1px 0;
+            padding: 0;
+        }
+
+        #customers-list p {
+            margin: 0;
+            padding: 0;
+            font-size: .8em;
+        }
+
+    </style>
+
+    <script src="{{ base_path() }}/js/scheduler.js"></script>
+    <script src="{{ base_path() }}/js/common.js"></script>
+    <script src="{{ base_path() }}/js/jquery.ui.timepicker.js"></script>
+    <link rel="stylesheet" href="{{ base_path() }}/js/jquery.ui.timepicker.css">
+
+{% endblock %}

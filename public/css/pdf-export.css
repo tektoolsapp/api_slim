@@ -1,0 +1,101 @@
+.pdf-page {
+    position: relative;
+    margin: 0 auto;
+    padding: .4in .3in;
+    color: #333;
+    background-color: #fff;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,.3);
+    box-sizing: border-box;
+}
+
+.pdf-header {
+    padding-bottom: .2in;
+    margin-bottom: .3in;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.pdf-footer {
+    position: absolute;
+    bottom: .25in;
+    left: .3in;
+    right: .3in;
+    padding-top: 0.05in;
+    border-top: 1px solid #e5e5e5;
+    font-size: 0.9em;
+    text-align: left;
+    color: #787878;
+}
+
+.addresses {
+    font-size: 12px;
+}
+
+.addresses:after {
+    display: block;
+    content: "";
+    clear: both;
+}
+
+.for {
+    float: left;
+}
+
+.from {
+    float: right;
+}
+
+.addresses p {
+    color: #787878;
+    padding: .05in 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+.addresses p:first-of-type {
+    border-top: 0;
+}
+
+.pdf-body {
+    margin-top: .3in;
+}
+
+.signature {
+    padding-top: .3in;
+}
+
+/* Dimensions other than px and em should be divided by 1.33 for the proper PDF output */
+.size-a4 {
+    width: 7.6in;
+    /*height: 8.7in;*/
+}
+
+.size-letter {
+    width: 6.3in;
+    height: 9.2in;
+}
+
+.size-executive {
+    width: 5.4in;
+    height: 7.8in;
+    font-size: 12px;
+}
+
+.size-executive .pdf-header {
+    margin-bottom: .1in;
+}
+
+.page-template > * {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    font-size: 90%;
+}
+.page-template .header {
+    top: 20px;
+    /*border-bottom: 1px solid #000;*/
+}
+.page-template .footer {
+    width:7.2in;
+    text-align:right;
+    bottom: 0px;
+    /*border-top: 3px solid red;*/
+}

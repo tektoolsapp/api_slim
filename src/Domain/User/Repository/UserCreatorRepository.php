@@ -33,6 +33,8 @@ class UserCreatorRepository
      */
     public function insertUser(array $user): int
     {
+        //dump($user);
+
         $row = [
             'username' => $user['username'],
             'first_name' => $user['first_name'],

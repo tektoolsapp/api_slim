@@ -1,60 +1,28 @@
 <?php
 
-namespace App\Domain\User\Service;
+namespace App\Domain\Employees\Service;
 
-use App\Domain\User\Repository\UserCreatorRepository;
+use App\Domain\Employees\Repository\EmployeeAddRepository;
 use App\Exception\ValidationException;
 
-/**
- * Service.
- */
-final class UserCreator
+final class EmployeeAdd
 {
-    /**
-     * @var UserCreatorRepository
-     */
     private $repository;
-
-    /**
-     * The constructor.
-     *
-     * @param UserCreatorRepository $repository The repository
-     */
-    public function __construct(UserCreatorRepository $repository)
+    public function __construct(EmployeeAddRepository $repository)
     {
         $this->repository = $repository;
     }
 
-    /**
-     * Create a new user.
-     *
-     * @param array $data The form data
-     *
-     * @return int The new user ID
-     */
-    public function createUser(array $data): int
+    public function createEmployee(array $data)
     {
-        // Input validation
-        $this->validateNewUser($data);
-
-        // Insert user
-        $userId = $this->repository->insertUser($data);
+        $employeeId = $this->repository->insertEmployee($data);
 
         // Logging here: User created successfully
         //$this->logger->info(sprintf('User created successfully: %s', $userId));
 
-        return $userId;
+        return $employeeId;
     }
 
-    /**
-     * Input validation.
-     *
-     * @param array $data The form data
-     *
-     * @throws ValidationException
-     *
-     * @return void
-     */
     private function validateNewUser(array $data): void
     {
         $errors = [];

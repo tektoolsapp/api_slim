@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <base href="{{ base_path() }}/"/>
+    <link rel="shortcut icon" href="icons/favicon.ico">
+    <title>{{ title|default('SLIM 4 APP') }}</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.2.0/css/all.min.css" integrity="sha512-6c4nX2tn5KbzeBJo9Ywpa0Gkt+mzCzJBrE1RB6fmpcsoN+b/w/euwIMuQKNyUoU/nToKN3a8SgNOtPrbW12fug==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v379">
+    <link rel="stylesheet" href="{{ base_path() }}/css/pdf-export.css?v3">
+</head>
+
+<body>
+
+<div id="order-update-success" class="w3-modal">
+    <div class="w3-modal-content" style="width:500px;">
+        <div class="w3-container">
+            <div class="w3-center" style="margin:25px 0 25px 0;">
+                <div id="progressBar"></div>
+            </div>
+                <!--<span onclick="document.getElementById('order-update-success').style.display='none'"
+                      class="w3-button w3-display-topright w3-xlarge">&times;</span>-->
+        </div>
+    </div>
+</div>
+
+{% include 'layout/partials/navigation.twig' %}
+
+<div class="my-container">
+
+    <div id="my-left-column">
+        <h4>W3 60</h4>
+    </div>
+
+    <div id="my-middle-column">
+        {% block middle_col %}{% endblock %}
+    </div>
+
+    <div id="my-right-column">
+        <h4>W3 20</h4>
+    </div>
+
+</div>
+
+{% include 'layout/partials/footer.twig' %}
+
+{% block javascripts %}{% endblock %}
+
+</body>
+
+</html>

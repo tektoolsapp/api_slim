@@ -1,0 +1,99 @@
+{% extends 'layout/main.twig' %}
+
+{% block middle_col %}
+
+    <div id="work-space-header">
+        <h1 class="w3-xlarge w3-left"><b>Requests</b></h1>
+        <button id="workspace-action-add" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-bottom:10px;">Add Request</button>
+    </div>
+
+    <div id="workspace"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.1118/styles/kendo.common.min.css" />
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.1118/styles/kendo.default.min.css" />
+
+    <script src="https://kendo.cdn.telerik.com/2020.3.1118/js/jquery.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2019.2.514/js/jszip.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2020.3.1118/js/kendo.all.min.js"></script>
+
+    <script>
+
+    </script>
+
+
+    <script>window.jQuery || document.write('<script src="{{ base_path() }}/js/jquery-2.0.0.min.js">\x3C/script>')</script>
+    <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.min.js" integrity="sha256-lnH4vnCtlKU2LmD0ZW1dU7ohTTKrcKP50WA9fa350cE="crossorigin="anonymous"></script>
+
+    <!--
+    <script src="https://code.jquery.com/jquery-2.0.0.min.js" integrity="sha256-1IKHGl6UjLSIT6CXLqmKgavKBXtr0/jJlaGMEkh+dhw="crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.min.js" integrity="sha256-lnH4vnCtlKU2LmD0ZW1dU7ohTTKrcKP50WA9fa350cE="crossorigin="anonymous"></script>
+    -->
+
+    <script src="{{ base_path() }}/js/common.js"></script>
+
+    <script src="{{ base_path() }}/js/jquery.ui.timepicker.js"></script>
+    <link rel="stylesheet" href="{{ base_path() }}/js/jquery.ui.timepicker.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/filepond/4.25.1/filepond.min.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+    <script src="https://unpkg.com/jquery-filepond/filepond.jquery.js"></script>
+
+    <script src="{{ base_path() }}/js/minipdf.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.3/pako.min.js" integrity="sha256-X7u/eQo6oIgWqc5jOmTjQn3loM8Lse0ock76Gkkn/Ro=" crossorigin="anonymous"></script>
+    <script src="{{ base_path() }}/js/pdfform.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.0.0/FileSaver.min.js"></script>
+
+    <script src="{{ base_path() }}/js/workspace.js"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/filepond/4.25.1/filepond.css" rel="stylesheet">
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.0.272/jspdf.debug.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.3/pako.min.js" integrity="sha256-X7u/eQo6oIgWqc5jOmTjQn3loM8Lse0ock76Gkkn/Ro=" crossorigin="anonymous"></script>
+
+    <script src="{{ base_path() }}/js/pdf-export.js"></script>
+
+
+
+    <style>
+        #progressBar {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <script type="x/kendo-template" id="page-template">
+        <div class="page-template">
+
+            <div class="header">
+
+                #
+                if(pageNum === 2){
+                    #
+
+                    <div style="border:1px solid;">Header: Page #:pageNum# of #:totalPages#</div>
+
+                    #
+                }
+                #
+
+            </div>
+
+            <div class="footer">
+                Page #:pageNum# of #:totalPages#
+            </div>
+        </div>
+
+
+    </script>
+
+
+{% endblock %}

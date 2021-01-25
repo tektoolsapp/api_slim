@@ -21,8 +21,8 @@ $settings['db'] = [
     'driver' => 'mysql',
     'host' => 'localhost',
     'username' => 'root',
-    'database' => 'test',
-    'password' => '',
+    'database' => 'ready',
+    'password' => 'tIAQKuzkAX4wsg0j',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
     'flags' => [
@@ -36,6 +36,20 @@ $settings['db'] = [
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         // Set character set
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci'
+    ],
+];
+
+// Twig settings
+$settings['twig'] = [
+    // Template paths
+    'paths' => [
+        __DIR__ . '/../templates',
+    ],
+    // Twig environment options
+    'options' => [
+        // Should be set to true in production
+        'cache_enabled' => false,
+        'cache_path' => __DIR__ . '/../tmp/twig',
     ],
 ];
 

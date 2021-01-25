@@ -1,0 +1,266 @@
+
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    max-width: 100%;
+    padding-top: 4.5rem;
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+    /*padding-bottom: 60px;*/
+    margin-bottom: 60px;
+}
+
+p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.7em;
+    color: #999;
+}
+
+a,
+a:hover,
+a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.navbar {
+    padding: 15px 10px;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 40px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-btn {
+    box-shadow: none;
+    outline: none !important;
+    border: none;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed #ddd;
+    margin: 40px 0;
+}
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+
+.wrapper {
+    display: flex;
+    width:100%;
+    border:1px solid red;
+}
+
+#sidebar {
+    width: 250px;
+    position: fixed;
+    top:0;
+    left: 0;
+    height: 100vh;
+    z-index: 999;
+    background: #7386D5;
+    color: #fff;
+    transition: all 0.2s;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #6d7fcc;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+}
+
+#sidebar ul li a:hover {
+    color: #7386D5;
+    background: #fff;
+}
+
+#sidebar ul li.active>a,
+a[aria-expanded="true"] {
+    color: #fff;
+    background: #6d7fcc;
+}
+
+
+#header-nav ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#header-nav ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#header-nav ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+}
+
+#header-nav ul li a:hover {
+    color: #7386D5;
+    background: green;
+}
+
+#header-nav ul li.active>a,
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px; /* Set the fixed height of the footer here */
+    /*line-height: 60px;*/ /* Vertically center the text there */
+    background-color: #f5f5f5;
+}
+
+a[aria-expanded="true"] {
+    color: #fff;
+    background: blue;
+}
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+ul ul a {
+    font-size: 0.9em !important;
+    padding-left: 30px !important;
+    background: #6d7fcc;
+}
+
+ul.CTAs {
+    padding: 20px;
+}
+
+ul.CTAs a {
+    text-align: center;
+    font-size: 0.9em !important;
+    display: block;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+a.download {
+    background: #fff;
+    color: #7386D5;
+}
+
+a.article,
+a.article:hover {
+    background: #6d7fcc !important;
+    color: #fff !important;
+}
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+
+#content {
+    width: 100%;
+    padding: 0px;
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#content.active {
+    width: calc(100%);
+}
+
+
+#content-container.content-container {
+    /*background-color:red;*/
+    margin-left:250px;
+    transition: all 0.5s;
+}
+
+#left-column {
+    /*height: 100vh;*/
+    border-top:1px solid #CFD4DA!important;
+    border-right:1px solid #CFD4DA;
+    border-bottom:1px solid #CFD4DA;
+    border-left:1px solid #CFD4DA;
+    padding:0px!important;
+}
+
+#middle-column {
+    background-color: lightgrey!important;
+    padding:0px!important;
+}
+
+
+#right-column {
+    height: 100vh;
+    border-top:1px solid #CFD4DA!important;
+    border-right:1px solid #CFD4DA;
+    border-bottom:1px solid #CFD4DA;
+    border-left:1px solid #CFD4DA;
+    padding:0px!important;
+}
+
+/* ---------------------------------------------------
+    MEDIAQUERIES
+----------------------------------------------------- */
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: 0px;
+    }
+    #sidebar.active {
+        margin-left: -250px;
+    }
+    #content {
+        width: 100%;
+    }
+    #content.active {
+        width: calc(100% - 250px);
+        width: 0px;
+    }
+    #sidebarCollapse span {
+        display: none;
+    }
+    #content-container.content-container {
+        margin-left:0px;
+    }
+}

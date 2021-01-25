@@ -1,0 +1,38 @@
+<!-- main nav -->
+<div id="nav-logo" style="position:fixed;top:0;left:0;width:80px;padding:16px 10px 16px 10px;">
+    <img src="assets/ready_resources_logo_74.png" width="60">
+</div>
+
+<div class="w3-bar navbar-1">
+    <a href="{{ url_for('home')}}" class="w3-bar-item w3-button fa fa-home w3-xlarge"></a>
+    <a id="calendar" href="{{ url_for('scheduler')}}" class="w3-bar-item w3-button fas fa-calendar-alt w3-xlarge"></a>
+    <a id="requests" href="{{ url_for('workspace')}}" class="w3-bar-item w3-button fas fa-layer-group w3-xlarge"></a>
+    <a href="{{ url_for('user-post')}}" class="w3-bar-item w3-button">Post User</a>
+    <a href="{{ url_for('pdf-test')}}" class="w3-bar-item w3-button">PDF</a>
+</div>
+
+<div class="w3-bar w3-light-grey w3-border navbar-2">
+    <a href="#" class="w3-bar-item w3-button w3-mobile">Home</a>
+    <a href="#" class="w3-bar-item w3-button w3-mobile">Link 1</a>
+    <a href="#" class="w3-bar-item w3-button w3-mobile">Link 2</a>
+    <input type="text" class="w3-bar-item w3-input w3-white w3-mobile" placeholder="Search..">
+    <button id="nav-2-button" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium">Right Panel</button>
+</div>
+
+<!-- Sidebar Left -->
+<div id="sidebar-left" class="w3-sidebar w3-bar-block sidebar-left"></div>
+
+<!-- Sidebar Right -->
+<div id="sidebar-right" class="w3-sidebar w3-bar-block sidebar-right"></div>
+
+<!-- Sidebar Fixed Left -->
+<div id="fixed-sidebar-left" class="w3-sidebar w3-bar-block fixed-sidebar-left">
+    <div id="toggle-sidebar-left-2" class="tooltip my-link">
+        <i class="fas fa-user-friends w3-xlarge"></i>
+        <span class="tooltiptext">Employees</span>
+    </div>
+    <div id="toggle-sidebar-left-3" class="tooltip my-link">
+        <i class="fas fa-dollar-sign w3-xlarge"></i>
+        <span class="tooltiptext">Sales</span>
+    </div>
+</div>
