@@ -1,0 +1,66 @@
+{% extends 'layout/main.twig' %}
+
+{% block middle_col %}
+
+    <div>
+        <h1 class="w3-xlarge w3-left"><b>Sign In</b></h1>
+    </div>
+
+    <div style="display: block;
+         margin-left: auto;
+         margin-right: auto;
+         width: 30%;">
+
+        <div class="w3-container" style="width:400px;">
+
+            {% include 'layout/partials/status.twig' %}
+
+            <form action="{{ url_for('user-signin')}}" method="post">
+
+                <div class="w3-row">
+                    <div style="padding:10px 10px 10px 0;">
+                        <label style="font-weight:bold;">Email<span class="required-label"<span>*</span></label>
+                        <input name="email" id="email" class="w3-input w3-border input-display{{ errors.email ? ' required' : ''}}" type="text">
+                            {% if errors.email %}
+                                <div class="error">{{ errors.email | first }}</div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="w3-row">
+                    <div style="padding:10px 10px 10px 0;">
+                        <label style="font-weight:bold;">Password</label><span class="required-label"<span>*</span></label>
+                        <input name="password" id="password" class="w3-input w3-border input-display {{ errors.password ? ' required' : ''}}" type="password">
+                        {% if errors.password %}
+                            <div class="error">{{ errors.password | first }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="w3-section">
+
+                    <button class="w3-button w3-darkblue" style="margin-right:15px;">Login</button>
+
+                    <input id="persist" name="persist" class="w3-check" type="checkbox" checked="checked"> Remember me
+
+                </div>
+
+                <input type="hidden" name="redirect" value="{{ redirect }}">
+
+            </form>
+
+            <div class="w3-light-grey">
+                <span class="w3-right w3-padding w3-hide-small">Forgot <a href="tryit.asp-filename=tryw3css_examples_modal_login.html#">password?</a></span>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+
+
+
+{% endblock %}
