@@ -2,33 +2,35 @@
 
 namespace App\Domain\Requests\Repository;
 
-use DomainException;
 use PDO;
 use MongoDB\Client as Mongo;
+use App\Domain\Customers\Repository\CustomerSiteFetchRepository;
 
 class RequestSchedulerRawRepository
 {
     private $connection;
     private $mongo;
+    private $site;
 
-    public function __construct(PDO $connection, Mongo $mongo)
+    public function __construct(PDO $connection, Mongo $mongo, CustomerSiteFetchRepository $site)
     {
         $this->connection = $connection;
         $this->mongo = $mongo;
+        $this->site = $site;
     }
 
     public function getRequest($request)
     {
-
-        $sql = "SELECT ws_id FROM workspaces WHERE ws_id = :ws_id;";
+        $sql = "SELECT ws_id, ws_ref, ws_site_dept FROM workspaces WHERE ws_id = :ws_id;";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['ws_id' => $request]);
 
         $request = $statement->fetch();
 
-        if (!$request) {
-            throw new DomainException(sprintf('Customer not found: %s', $customerId));
-        }
+        //REPLACE SITE CODE WITH DESC
+        $siteCode = $request['ws_site_dept'];
+        $siteDesc = $this->site->getCustomerSite($siteCode);
+        $request['ws_site_dept'] = $siteDesc['site_short_desc'];
 
         return $request;
     }

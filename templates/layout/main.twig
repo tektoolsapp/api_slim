@@ -10,9 +10,9 @@
     <link rel="shortcut icon" href="icons/favicon.ico">
     <title>{{ title|default('SLIM 4 APP') }}</title>
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.2.0/css/all.min.css" integrity="sha512-6c4nX2tn5KbzeBJo9Ywpa0Gkt+mzCzJBrE1RB6fmpcsoN+b/w/euwIMuQKNyUoU/nToKN3a8SgNOtPrbW12fug==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.0/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v379">
+    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v388">
     <link rel="stylesheet" href="{{ base_path() }}/css/pdf-export.css?v3">
 </head>
 
@@ -24,8 +24,19 @@
             <div class="w3-center" style="margin:25px 0 25px 0;">
                 <div id="progressBar"></div>
             </div>
-                <!--<span onclick="document.getElementById('order-update-success').style.display='none'"
-                      class="w3-button w3-display-topright w3-xlarge">&times;</span>-->
+        </div>
+    </div>
+</div>
+
+<div id="scheduler-error" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Booking Conflicts</div>
+            <span onclick="document.getElementById('scheduler-error').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div class="w3-container">
+            DISPLAY CONFLICTS HERE
         </div>
     </div>
 </div>

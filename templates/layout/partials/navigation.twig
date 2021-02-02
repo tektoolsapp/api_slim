@@ -9,6 +9,28 @@
     <a id="requests" href="{{ url_for('workspace')}}" class="w3-bar-item w3-button fas fa-layer-group w3-xlarge"></a>
     <a href="{{ url_for('user-post')}}" class="w3-bar-item w3-button">Post User</a>
     <a href="{{ url_for('pdf-test')}}" class="w3-bar-item w3-button">PDF</a>
+
+
+    {%  if user %}
+
+
+    <div class="w3-dropdown-hover w3-right" style="position:fixed;top:0;right:10px;">
+        <!--<button class="w3-button">Account</button>-->
+        <div data-initials="AH"></div>
+        <div class="w3-dropdown-content w3-bar-block w3-card-4" style="right:0">
+            <a href="{{ url_for('user-signout')}}" class="w3-bar-item w3-button">Log Out</a>
+            <a href="#" class="w3-bar-item w3-button">Link 2</a>
+            <a href="#" class="w3-bar-item w3-button">Link 3</a>
+        </div>
+    </div>
+
+    {%  else %}
+
+    <a href="{{ url_for('user-register')}}" class="w3-bar-item w3-button w3-right">Register</a>
+    <a href="{{ url_for('user-signin')}}" class="w3-bar-item w3-button w3-right">Login</a>
+
+    {%  endif %}
+
 </div>
 
 <div class="w3-bar w3-light-grey w3-border navbar-2">
@@ -18,6 +40,7 @@
     <input type="text" class="w3-bar-item w3-input w3-white w3-mobile" placeholder="Search..">
     <button id="nav-2-button" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium">Right Panel</button>
 </div>
+
 
 <!-- Sidebar Left -->
 <div id="sidebar-left" class="w3-sidebar w3-bar-block sidebar-left"></div>
@@ -32,7 +55,7 @@
         <span class="tooltiptext">Employees</span>
     </div>
     <div id="toggle-sidebar-left-3" class="tooltip my-link">
-        <i class="fas fa-dollar-sign w3-xlarge"></i>
+        <i class="fas fa-funnel-dollar w3-xlarge"></i>
         <span class="tooltiptext">Sales</span>
     </div>
 </div>

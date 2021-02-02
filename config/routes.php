@@ -1,10 +1,35 @@
 <?php
 
 use Slim\App;
+use App\Middleware\RedirectIfAuthenticated;
+use App\Middleware\RedirectIfGuest;
 
 return function (App $app) {
+
+    //AUTH
+    
+    $app->group('/auth', function($route) {
+
+        $route->group('', function($route){
+            $route->get('/signin', \App\Action\UserSigninIndexAction::class)
+                ->setName('user-signin-index');
+            $route->post('/signin', \App\Action\UserSigninAction::class)
+                ->setName('user-signin');
+        })
+           ->add(RedirectIfAuthenticated::class);
+
+        $route->get('/signout', \App\Action\UserSignoutAction::class)
+            ->setName('user-signout');
+
+    });
+
+    $app->get('/auth/register', \App\Action\UserRegisterAction::class)
+        ->setName('user-register');
+
     //HOME
-    $app->get('/', \App\Action\HomeAction::class)->setName('home');
+    $app->get('/', \App\Action\HomeAction::class)
+        ->setName('home')
+        ->add(RedirectIfGuest::class);
 
     $app->get('/users', \App\Action\UserListAction::class)->setName('user-list');
     $app->get('/users/{id}', \App\Action\UserReadAction::class)->setName('users-get');
@@ -12,7 +37,8 @@ return function (App $app) {
     $app->get('/hello', \App\Action\HelloAction::class);
 
     //SCHEDULER
-    $app->get('/scheduler', \App\Action\SchedulerAction::class)->setName('scheduler');
+    $app->get('/scheduler', \App\Action\SchedulerAction::class)->setName('scheduler')
+        ->add(RedirectIfGuest::class);
     $app->get('/scheduler/filter', \App\Action\SchedulerFilterAction::class)->setName('scheduler-filter');
 
     //EMPLOYEES
@@ -34,10 +60,14 @@ return function (App $app) {
     $app->get('/bookings', \App\Action\BookingsAction::class)->setName('bookings');
     $app->get('/bookings/availability', \App\Action\BookingsAvailabilityAction::class)->setName('bookings-availability');
     $app->get('/bookings/request/{req_id}', \App\Action\BookingsRequestFetchAction::class)->setName('bookings-request-fetch');
+    $app->get('/booking/{booking_id}', \App\Action\BookingFetchAction::class)->setName('booking-fetch');
+
     $app->get('/bookings/quote/{req_id}', \App\Action\BookingsQuoteFetchAction::class)->setName('bookings-quote-fetch');
     $app->post('/booking/add', \App\Action\BookingAddAction::class)->setName('booking-add');
     $app->post('/booking/update', \App\Action\BookingUpdateAction::class)->setName('booking-update');
     $app->post('/booking/delete', \App\Action\BookingDeleteAction::class)->setName('booking-delete');
+
+    $app->get('/bookings/conflict', \App\Action\BookingsConflictAction::class)->setName('bookings-conflict');
 
     //CUSTOMERS
     $app->get('/customers', \App\Action\CustomersAction::class)->setName('customers');
@@ -46,6 +76,11 @@ return function (App $app) {
     $app->post('/customer', \App\Action\CustomerAddAction::class)->setName('customer-add');
     $app->get('/customer/{cust_id}', \App\Action\CustomerFetchAction::class)->setName('customer-fetch');
     $app->post('/customer/{cust_id}', \App\Action\CustomerUpdateAction::class)->setName('customer-update');
+
+    $app->get('/customer/sites/{cust_id}', \App\Action\CustomerSitesFetchAction::class)->setName('customer-sites-fetch');
+    $app->post('/customer/site/add', \App\Action\CustomerSiteAddAction::class)->setName('customer-site-add');
+    $app->get('/customer/site/edit/{site_id}', \App\Action\CustomerSiteFetchAction::class)->setName('customer-site-fetch');
+    $app->post('/customer/site/{cust_id}', \App\Action\CustomerSiteUpdateAction::class)->setName('customer-site-update');
 
     //WORKSPACE
     $app->get('/workspace', \App\Action\WorkspaceAction::class)->setName('workspace');

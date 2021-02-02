@@ -20,6 +20,7 @@ class SchedulerFilterRepository
 
     public function getResources($filter)
     {
+
         if($filter == 'all') {
 
             $sql = "SELECT * FROM employees";
@@ -30,39 +31,79 @@ class SchedulerFilterRepository
 
         } else {
 
-            //MOVE TO CLASS
+            //SEPARATE FILTER ARRAY INTO FILTER TYPE ARRAYS
 
-            //dump("filter");
+            $tradeFilterArray = array();
+            $skillFilterArray = array();
+            
+            foreach ($filter as $value){
 
-            //dump($filter);
+                if (substr($value, 0, 4) == 'trad') {
+
+                    $tradeItemArray = explode("_", $value);
+                    $tradeItem = $tradeItemArray[1];
+
+                    $tradeItemLookupArray = array(
+                        "trade_type" => $tradeItem
+                    );
+
+                    array_push($tradeFilterArray, $tradeItemLookupArray);
+                    
+                } elseif(substr($value, 0, 4) == 'skil'){
+
+                    $skillItemArray = explode("_", $value);
+                    $skillItem = $skillItemArray[1];
+                    $skillFilterArray[] = $skillItem;
+                    
+                }
+            }
 
             if(!empty($filter)){
 
-                $sql = "SELECT * FROM employees";
-                $statement = $this->connection->prepare($sql);
-                $statement->execute();
-                $employees = $statement->fetchAll(PDO::FETCH_ASSOC);
+                if(empty($tradeFilterArray)) {
+
+                    $sql = "SELECT * FROM employees";
+                    $statement = $this->connection->prepare($sql);
+                    $statement->execute();
+                    $employees = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+                } else {
+
+                    $employees = array();
+
+                    $sql = "SELECT * FROM employees WHERE trade_type = ?";
+                    $statement = $this->connection->prepare($sql);
+                    foreach($tradeFilterArray as $result) {
+                        $statement->execute(array($result['trade_type']));
+                        $row = $statement->fetchAll(PDO::FETCH_ASSOC);
+                        foreach($row as $empsWithTrade){
+                            $employees[] = $empsWithTrade;
+                        }
+                    }
+                }
 
                 $resources = array();
 
                 for ($e = 0; $e < sizeof($employees); $e++) {
 
-                    $empSkillsArray = json_decode($employees[$e]['emp_skills'], true);
+                    if(!empty($skillFilterArray)) {
 
-                    //dump($empSkillsArray);
+                        $empSkillsArray = json_decode($employees[$e]['emp_skills'], true);
 
-                    $skillCount = 0;
+                        $skillCount = 0;
 
-                    for ($s = 0; $s < sizeof($empSkillsArray); $s++) {
-                        $thisSkill = $empSkillsArray[$s];
-                        if (in_array($thisSkill, $filter)) {
-                            $skillCount++;
+                        for ($s = 0; $s < sizeof($empSkillsArray); $s++) {
+                            $thisSkill = $empSkillsArray[$s];
+                            if (in_array($thisSkill, $skillFilterArray)) {
+                                $skillCount++;
+                            }
                         }
-                    }
 
-                    //dump($skillCount);
+                        if ($skillCount == sizeof($skillFilterArray)) {
+                            array_push($resources, $employees[$e]);
+                        }
 
-                    if ($skillCount == sizeof($filter)) {
+                    } else {
                         array_push($resources, $employees[$e]);
                     }
 

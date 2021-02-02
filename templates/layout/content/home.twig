@@ -1,6 +1,9 @@
 {% extends 'layout/main.twig' %}
 
 {% block middle_col %}
+
+    {{ user|json_encode }}
+
     <div style="font-size:12px;">
         <div>
             <h1 class="w3-xlarge w3-left"><b>Home</b></h1>

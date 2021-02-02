@@ -22,11 +22,19 @@ final class BookingUpdateAction
         $data = $request->getParsedBody();
         $postData = $data['models'][0];
 
-        $this->bookingUpdate->updateBooking($postData);
+        //dump($postData);
 
-        $returndata = $data['models'];
+        $updateResult = $this->bookingUpdate->updateBooking($postData);
 
-        $response->getBody()->write((string)json_encode($returndata));
+        //dump($updateResult);
+
+        //if($updateResult == 'OK') {
+            $returndata = $data['models'];
+        //} else {
+          //  $returndata = $updateResult;
+        //}
+
+        $response->getBody()->write((string)json_encode($updateResult));
 
         return $response
             ->withHeader('Content-Type', 'application/json')

@@ -21,7 +21,5 @@ return function (App $app) {
     // Catch exceptions and errors
     $app->add(ErrorMiddleware::class);
 
-    //$app->add(RespectValidationMiddleware::class);
-
     $app->add(ValidationExceptionMiddleware::class);
 };

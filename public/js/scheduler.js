@@ -89,7 +89,7 @@ $("#sidebar-right").on('click', '#cancel-check-availability', function (e) {
     localStorage.removeItem('right-sidebar-content');
 });
 
-$("#sidebar-right").on('click', '#check-availability', function (e) {
+$("#sidebar-right").on('click', '#check-availability-old', function (e) {
 
     e.preventDefault();
 
@@ -183,7 +183,124 @@ function setSidebarRightContent(currentRightSidebar){
 
 }
 
-$("body").on('click','[id^=filter-scheduler]', function (e) {
+//AVAILABILITY
+
+function inArray(needle, haystack) {
+    var length = haystack.length;
+    for(var i = 0; i < length; i++) {
+        if(haystack[i] == needle) return true;
+    }
+    return false;
+}
+
+function displaySchedulerAvailability(){
+
+    //SET LOCAL
+    localStorage.setItem('display-scheduler-availability', 'Y');
+    var availDisplay = localStorage.getItem('display-scheduler-availability');
+
+    console.log("AVAIL DISPLAY: ", availDisplay);
+
+    var scheduler = $("#scheduler").data("kendoScheduler");
+    var view = scheduler.view();
+    var elements = view.content.find("td");
+
+    for (var i = 0; i < elements.length; i++) {
+        var slot = scheduler.slotByElement($(elements[i]));
+
+        //console.log("SLOT", slot);
+
+        var ocurrences = scheduler.occurrencesInRange(slot.startDate, slot.endDate);
+
+        //console.log("OCC: ", i);
+        //console.log("OCC: ", ocurrences);
+
+        var resources = scheduler.resourcesBySlot(slot);
+
+        //console.log("RES: ", resources);
+
+        //var myUser = 2;
+
+        var myUsers = [1,2,4];
+
+        var thisUser = resources.userId[0];
+
+        //if(inArray(thisUser, myUsers)){
+
+            if (ocurrences.length < 1) {
+
+                //$(slot.element).css({background: "red"});
+                $(slot.element).addClass("available");
+
+            } else {
+
+                //console.log("OBJECT: ", ocurrences[0].userId[0]);
+                //console.log("RES USER: ", resources.userId[0]);
+
+                var filtered = ocurrences.filter(function(elem){
+                    return (elem.userId[0] == thisUser)
+                });
+
+                console.log(filtered);
+
+                if(filtered[0]) {
+                    var checkUser = filtered[0].userId[0];
+                } else {
+                    var checkUser = ocurrences[0].userId[0];
+                }
+                var resUser = resources.userId[0];
+
+                if (checkUser != resUser) {
+
+                    //$(slot.element).css({background: "red"}); //apply CSS styles
+                    $(slot.element).addClass("available");
+
+                }
+            }
+
+        //}
+    }
+
+}
+
+function removeSchedulerAvailability(){
+
+    //SET LOCAL
+    localStorage.setItem('display-scheduler-availability', 'N');
+    var availDisplay = localStorage.getItem('display-scheduler-availability');
+
+    console.log("AVAIL DISPLAY: ", availDisplay);
+
+    var scheduler = $("#scheduler").data("kendoScheduler");
+    var view = scheduler.view();
+    var elements = view.content.find("td");
+
+    for (var i = 0; i < elements.length; i++) {
+        var slot = scheduler.slotByElement($(elements[i]));
+        //$(slot.element).css({background: "#FFFFFF"}); //apply CSS styles
+        $(slot.element).removeClass("available");
+    }
+
+}
+
+$("body").on('click','#remove-scheduler-availability', function (e) {
+
+    e.preventDefault();
+
+    removeSchedulerAvailability();
+
+});
+
+
+$("body").on('click','#filter-scheduler-availability', function (e) {
+
+    e.preventDefault();
+
+    displaySchedulerAvailability();
+
+});
+
+$("body").on('click','#filter-scheduler-criteria', function (e) {
 
     e.preventDefault();
 
@@ -255,10 +372,70 @@ $("#sidebar-right").on('click', '#update-scheduler-filter', function (e) {
 
 function viewCriteria() {
 
-    var criteriaSelection = '<form id="scheduler-filter-form">';
+    var criteriaSelection = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    criteriaSelection += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Filter Scheduler</div>';
+    criteriaSelection += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    criteriaSelection += '</div>';
+
+    criteriaSelection += '<form id="scheduler-filter-form">';
+
+    criteriaSelection += '<div style="margin:0 15px 0 15px;border:0px solid red;">';
+
+    $("#sidebar-right").html("");
+
+    var spinHtml = '<div class="busy-indicator">';
+    spinHtml += '<div>';
+    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
+    spinHtml += '</div>';
+    spinHtml += '</div>';
+
+    $("#sidebar-right").append(spinHtml);
+
+    $.ajax({
+        url: '/trades',
+        async: false,
+        type: "GET",
+        success: function (response) {
+
+            console.log("RESP: ", response);
+
+            var trades = response;
+
+            criteriaSelection += '<h4 style="margin:10px 0 5px 0;">By Trades:</h4>';
+
+            var count = 1;
+
+            for (var s = 0; s < trades.length; s++) {
+
+                var tradeDesc = trades[s]['trade_desc'];
+                var tradeCode = trades[s]['trade_code'];
+
+                if(count == 1 ){
+                    criteriaSelection += '<div class="w3-row filter-row">';
+                }
+
+                criteriaSelection += '<div class="w3-third" style="padding:0 10px 10px 0;">';
+                criteriaSelection += '<input id="trade_' + tradeCode + '" name="trade_' + tradeCode + '" class="w3-check" type="checkbox" value="trade_' + tradeCode + '">';
+                criteriaSelection += '<label style="margin-left:5px;font-weight:normal;">' + tradeDesc + '</label>';
+                criteriaSelection += '</div>';
+
+                if(count % 3 === 0){
+                    criteriaSelection += '</div>';
+                    criteriaSelection += '<div class="w3-row filter-row">';
+                }
+
+                count++;
+            }
+
+            criteriaSelection += '</div>';
+
+        }
+
+    });
 
     $.ajax({
         url: '/skills',
+        async: false,
         type: "GET",
         success: function (response) {
 
@@ -266,14 +443,7 @@ function viewCriteria() {
 
             var skills = response;
 
-            $("#sidebar-right").html("");
-
-            criteriaSelection += '<div class="w3-bar w3-darkblue" style="width:100%;">';
-            criteriaSelection += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Filter Scheduler</div>';
-            criteriaSelection += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
-            criteriaSelection += '</div>';
-
-            criteriaSelection += '<div style="margin:35px 15px 15px 15px;">';
+            criteriaSelection += '<h4 style="margin:10px 0 5px 0;">By Qualifications:</h4>';
 
             var count = 1;
 
@@ -287,7 +457,7 @@ function viewCriteria() {
                 }
 
                 criteriaSelection += '<div class="w3-third" style="padding:0 10px 10px 0;">';
-                criteriaSelection += '<input id="skill_' + skillCode + '" name="skill_' + skillCode + '" class="w3-check" type="checkbox" value="' + skillCode + '">';
+                criteriaSelection += '<input id="skill_' + skillCode + '" name="skill_' + skillCode + '" class="w3-check" type="checkbox" value="skill_' + skillCode + '">';
                 criteriaSelection += '<label style="margin-left:5px;font-weight:normal;">' + skillDesc + '</label>';
                 criteriaSelection += '</div>';
 
@@ -300,18 +470,20 @@ function viewCriteria() {
             }
 
             criteriaSelection += '</div>';
-
-            criteriaSelection += '<div class="w3-center" style="margin-top:15px;">';
-            criteriaSelection += '<button id="update-scheduler-filter" class="w3-button w3-padding-large w3-darkblue w3-margin-bottom" style="margin-top:15px;">Filter</button>';
-            criteriaSelection += '</div>';
-
-            criteriaSelection += '</form>';
-
-            $("#sidebar-right").append(criteriaSelection);
-
+            
         }
 
     });
+
+    criteriaSelection += '<div class="w3-center" style="margin-top:15px;">';
+    criteriaSelection += '<button id="update-scheduler-filter" class="w3-button w3-padding-large w3-darkblue w3-margin-bottom" style="margin-top:15px;">Filter</button>';
+    criteriaSelection += '</div>';
+
+    criteriaSelection += '</form>';
+
+    $("#sidebar-right").html("");
+
+    $("#sidebar-right").append(criteriaSelection);
 
 }
 
@@ -456,7 +628,7 @@ function setResources(resources){
 
     console.log("MYARR: ", resourcesArray);
 
-    localStorage.setItem('scheduler_resources', JSON.stringify(resourcesArray[0]));
+    localStorage.setItem('scheduler-resources', JSON.stringify(resourcesArray[0]));
 
     window.location.assign('/scheduler');
 
@@ -482,20 +654,102 @@ $("body").on('click','#set-scheduler-resources', function (e) {
         }
     });
 
-    var schedulerResources = JSON.parse(localStorage.getItem('scheduler_resources'));
+    var schedulerResources = JSON.parse(localStorage.getItem('scheduler-resources'));
 
     console.log("SREC: ", schedulerResources);
 
 });
 
-var schedulerResources = JSON.parse(localStorage.getItem('scheduler_resources'));
+function checkforConflict(bookingId, userId, start, end){
+
+    var conflicts;
+
+    $.ajax({
+        url: '/bookings/conflict',
+        async: false,
+        type: "GET",
+        data: {
+            "booking_id": bookingId,
+            "user_id": userId,
+            "start": start,
+            "end": end
+        },
+        success: function (response) {
+
+            conflicts = response;
+
+            //if(response.ws_quote_pdfs.length > 0) {
+            //rioPdfs = JSON.parse(rioPdfs);
+            //}
+
+            //console.log(conflicts);
+        }
+    });
+
+    return conflicts;
+
+}
+
+function firstOfNextMonth(startDate) {
+    var d = startDate;
+    d.setMonth(d.getMonth()+1, 1);
+    return d;
+}
+
+function firstOfPrevMonth(startDate) {
+    var d = startDate;
+    d.setMonth(d.getMonth()-1, 1);
+    return d;
+}
+
+function schedulerNavigate(e){
+
+    //console.log(e.action);
+
+    var action = e.action;
+    var view = e.sender.view();
+
+    if(action == 'next') {
+        var nextDate = firstOfNextMonth(view.startDate());
+        //console.log("NEXT DATE: ", nextDate);
+        localStorage.setItem('scheduler-date', nextDate);
+    } else if(action == 'previous') {
+        var prevDate = firstOfPrevMonth(view.startDate());
+        //console.log("PREV DATE: ", prevDate);
+        localStorage.setItem('scheduler-date', prevDate);
+    }
+
+    //var scheduler = $("#scheduler").data("kendoScheduler");
+    //scheduler.refresh();
+
+    var availDisplay = localStorage.getItem('display-scheduler-availability');
+
+    if(availDisplay == 'Y') {
+        setTimeout(function () {
+            displaySchedulerAvailability();
+        }, 1);
+    }
+}
+
+var schedulerResources = JSON.parse(localStorage.getItem('scheduler-resources'));
 
 //var schedulerResources = {};
 
 console.log("SCRES: ", schedulerResources);
+console.log("LSDATE: ", localStorage.getItem('scheduler-date'));
 
-var today = new Date();
-var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+var schedulerDate = localStorage.getItem('scheduler-date');
+
+if(schedulerDate){
+    console.log("DATE SET");
+    //var today = localStorage.getItem('scheduler-date');
+    var today = new Date(localStorage.getItem('scheduler-date'));
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+} else {
+    console.log("DATE NOT SET");
+    var today = new Date();
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+}
 
 console.log("DATE: ", date);
 
@@ -532,6 +786,32 @@ $("#scheduler").kendoScheduler({
     save: function(e) {
 
         var error_count = 0;
+
+        //console.log(e.event);
+
+        var bookingId = e.event.bookingId;
+        var userId = e.event.userId[0];
+        var start  = kendo.toString(e.event.start, "yyyyMMddTHHmmssZ");
+        var end  = kendo.toString(e.event.end, "yyyyMMddTHHmmssZ");
+
+        console.log("BKG: ", bookingId);
+        console.log("USER: ", userId);
+        console.log("START: ", start);
+        console.log("END: ", end);
+
+        var conflicts = checkforConflict(
+            bookingId,
+            userId,
+            start,
+            end
+        );
+
+        console.log("CONFLICTS: ",conflicts);
+
+        if(conflicts.length > 0){
+            error_count++;
+            document.getElementById("scheduler-error").style.display = "block";
+        }
 
         console.log("EVENT: ",e.event.tranId);
 
@@ -573,6 +853,10 @@ $("#scheduler").kendoScheduler({
             e.preventDefault();
         }
 
+    },
+    navigate: function(e) {
+       // $(".console").append("<p><strong>Navigated from:</strong></p>");
+        schedulerNavigate(e);
     },
     edit: function(e) {
 
@@ -620,6 +904,9 @@ $("#scheduler").kendoScheduler({
             var startdate = e.event.start;
             console.log("START: ", startdate);
             startdate.setHours(6);
+
+            console.log("SET START DATE: ",startdate);
+
             e.event.set("start", startdate);
 
             var startDay = startdate.getDate();
@@ -644,6 +931,10 @@ $("#scheduler").kendoScheduler({
              var enddate = e.event.end;
              enddate.setHours(18);
              enddate.setDate(startDay);
+
+            console.log("SET END DATE: ",enddate);
+
+
              e.event.set("end", enddate);
         }
 
@@ -663,7 +954,15 @@ $("#scheduler").kendoScheduler({
     dataSource: {
         batch: true,
         sync: function () {
-            this.read();
+          this.read();
+            if(availDisplay == 'Y') {
+                removeSchedulerAvailability();
+                setTimeout(function () {
+                    displaySchedulerAvailability();
+                }, 100);
+            } else {
+                removeSchedulerAvailability();
+            }
         },
         transport: {
             read: {
@@ -732,3 +1031,14 @@ $("#scheduler").kendoScheduler({
     ]
 });
 
+
+var availDisplay = localStorage.getItem('display-scheduler-availability');
+
+if(availDisplay == 'Y') {
+    removeSchedulerAvailability();
+    setTimeout(function () {
+        displaySchedulerAvailability();
+    }, 100);
+} else {
+    removeSchedulerAvailability();
+}

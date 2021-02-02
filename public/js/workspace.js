@@ -293,25 +293,50 @@ $("#sidebar-right").on('click','#save-request-update', function (e) {
 
     e.preventDefault();
 
-    $("#request_update_form").find("div.error").removeClass('error').addClass("noerror");
-    $("#request_update_form").find("input.required").removeClass('required');
+    $("#update-request-form").find("div.error").removeClass('error').addClass("noerror");
+    $("#update-request-form").find("input.required").removeClass('required');
+    $("#update-request-form").find("select.required").removeClass('required');
 
     var errCount = 0;
     var errMsgArray = [];
-
-    if($("#ws_ref").val().length < 1) {
-        errCount++;
-        errMsgArray.push({
-            "id": 'ws_ref',
-            "msg": 'A Request Customer Reference must be provided'
-        });
-    }
-
+    
     if($("#ws_date").val().length < 1) {
         errCount++;
         errMsgArray.push({
             "id": 'ws_date',
             "msg": 'A Request Date must be provided'
+        });
+    }
+
+    if($("#ws_start_date").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_start_date',
+            "msg": 'A Request Start Date must be provided'
+        });
+    }
+
+    if($("#ws_end_date").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_end_date',
+            "msg": 'A Request End Date must be provided'
+        });
+    }
+
+    if($("#ws_cust_contact").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_cust_contact',
+            "msg": 'A Rio Requester Name must be provided'
+        });
+    }
+
+    if($("#ws_cust_contact_email").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_cust_contact_email',
+            "msg": 'A Rio Requester Email must be provided'
         });
     }
 
@@ -323,11 +348,27 @@ $("#sidebar-right").on('click','#save-request-update', function (e) {
         });
     }
 
-    if($("#ws_site_dept").val().length < 1) {
+    if($("#ws_site_dept").val() == 'N') {
         errCount++;
         errMsgArray.push({
             "id": 'ws_site_dept',
-            "msg": 'A Site/Dept must be provided'
+            "msg": 'A Site/Dept must be selected'
+        });
+    }
+
+    if($("#ws_trade_type_1").val() == 'N') {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_trade_type_1',
+            "msg": 'At least one Trade Type must be selected'
+        });
+    }
+
+    if($("#ws_trade_rate_1").val() == 'N' && $("#ws_trade_type_1").val() != 'N') {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_trade_rate_1',
+            "msg": 'At Trade Rate must be selected for Trade Type 1'
         });
     }
 
@@ -434,6 +475,34 @@ $(document).on('focus',".datepicker", function(){
     });
 });
 
+$(document).on('focus',"#ws_start_date", function() {
+
+    $(this).datepicker({
+        dateFormat: 'dd-mm-yy',
+        closeText: "X",
+        showButtonPanel: true,
+        beforeShowDay: function (date) {
+            return [(date <= ($("#ws_end_date").datepicker("getDate")
+            || new Date()))];
+        }
+    });
+
+});
+
+$(document).on('focus',"#ws_end_date", function() {
+
+    $(this).datepicker({
+
+        dateFormat: 'dd-mm-yy',
+        closeText: "X",
+        showButtonPanel: true,
+        beforeShowDay: function(date) {
+            return [(date >= ($("#ws_start_date").datepicker("getDate")
+            || new Date()))];
+        }
+    });
+});
+
 function getCustomerByName(cust){
 
     $.ajax({
@@ -445,11 +514,42 @@ function getCustomerByName(cust){
         },
         success: function (response) {
             console.log("RESP: ", response.cust_id);
-            var cust_id = response.cust_id;
-            $("#ws_customer").val(cust_id);
+            var custId = response.cust_id;
+            $("#ws_customer").val(custId);
+
+            $.ajax({
+                url: '/customer/sites/' + custId,
+                type: "GET",
+                success: function (response) {
+                    var sites = response;
+                    console.log("SITES: ", sites);
+
+                    $("#ws_site_dept").html("");
+
+                    var siteOptions = '<option value="N">Select a Site</option>';
+
+                    for (var s = 0; s < sites.length; s++) {
+
+                        var siteDesc = sites[s]['site_desc'];
+                        var siteCode = sites[s]['site_code'];
+
+                        siteOptions += '<option value="' + siteCode + '">' + siteDesc + '</option>';
+                    }
+
+                    $("#ws_site_dept_display").css({"display" : "block"});
+
+                    $("#ws_site_dept").append(siteOptions);
+
+                    $("#ws_site_dept").val("N");
+                }
+            });
         }
     });
+
+    //ADDED TODAY
 }
+
+$('#ws_customer_name').attr('autocomplete','on');
 
 $('body').on('click', '#ws_customer_name', function() {
 
@@ -473,13 +573,10 @@ $('body').on('click', '#ws_customer_name', function() {
         },
         open: function(){$(this).removeClass('ui-autocomplete-loading');},
         select: function(event, ui) {
-
             console.log("UI: ", ui.item.value);
-
             getCustomerByName(ui.item.value)
         }
     });
-
 });
 
 function on_error(e) {
@@ -859,9 +956,49 @@ $("#sidebar-right").on('click','[id^=view-rio-pdf]', function (e) {
 
     console.log("PDF TO VIEW: ", param);
 
-    var pdfToView = "pdfs/completed/" + param;
+    var pdfToView = "pdfs/completed/" + param + "#toolbar=0&navpanes=0&scrollbar=0";
 
-    window.open(pdfToView, "PopupWindow", "width=900,height=750,scrollbars=yes,resizable=yes");
+    //window.open(pdfToView, "PopupWindow", "width=900,height=750,scrollbars=yes,resizable=yes");
+
+    ///////
+
+    //var rdm = Math.floor((Math.random() * 1000000) + 1);
+    //var pdfToView = "pdfs/quotes/quote_" + param + ".pdf?" + rdm + "#toolbar=0&navpanes=0&scrollbar=0";
+
+    //window.open(pdfToView, "PopupWindow", "width=900,height=750,scrollbars=yes,resizable=yes");
+
+    //$("#sidebar-right").css({"width": "0px"});
+
+    $("#workspace").html("");
+
+    var viewQuote = '<div style="clear:both;"></div>';
+    //QUOTE CONTAINER
+    viewQuote += '<div style="margin-bottom:35px;border:0px solid green;">';
+    viewQuote += '<div style="width:980px;margin: 0 0 0 180px;border:0px solid blue;">';
+
+    viewQuote += '<embed id="pdf-quote-view"';
+    viewQuote += ' src=""';
+    viewQuote += ' type="application/pdf"';
+    viewQuote += ' frameBorder="1"';
+    viewQuote += ' scrolling="auto"';
+    viewQuote += ' height="980px"';
+    viewQuote += ' width="980px;"';
+    viewQuote += '></embed>';
+
+    viewQuote += '</div>';
+
+    $("#workspace").append(viewQuote);
+
+    $("#pdf-quote-view").prop("src",pdfToView)
+    ;
+
+    $("#work-space-header").html("");
+
+    var workSpaceQuotePreviewHeader = '<h1 class="w3-xlarge w3-left"><b>Request Rio PDF</b></h1>';
+    workSpaceQuotePreviewHeader += '<button id="workspace-view-requests" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 0 10px 10px;">View Requests</button>';
+    //workSpaceQuotePreviewHeader += '<button id="quote-generate-pdf-' + param + '" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-bottom:10px;">Generate Quote PDF</button>';
+
+    $("#work-space-header").append(workSpaceQuotePreviewHeader);
 
 });
 
@@ -981,13 +1118,118 @@ $("#sidebar-right").on('click','[id^=send-email]', function (e) {
 
 });
 
-//TRAVEL
+//EDIT BOOKINGS
 
-//numItems = 6;
+$("#sidebar-right").on('click','[id^=cancel-edit-booking]', function (e) {
 
+    e.preventDefault();
 
+    var paramDets = $(this).attr('id');
+    var paramsArr = paramDets.split("-");
+    var param = paramsArr[3];
 
+    actionView(param);
 
+});
+
+function editBooking(request, bookingId){
+
+    $("#sidebar-right").html("");
+
+    var editBookingForm = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    editBookingForm += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Edit Booking</div>';
+    editBookingForm += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    editBookingForm += '</div>';
+    editBookingForm += '<div class="w3-center" style="margin-top:10px;">';
+    editBookingForm += '<button id="cancel-edit-booking-' + request + '" class="w3-button w3-darkblue w3-mobile w3-medium w3-right" style="margin-right:10px;">Cancel</button>';
+    //editBookingForm += '<button id="view-request-' + param + '" class="w3-button w3-darkblue w3-mobile w3-medium">View</button>';
+    editBookingForm += '</div>';
+    editBookingForm += '</div>';
+    //editBookingForm += '<div style="margin-top:60px;" id="bookings-display">' + booking + '</div>';
+
+    editBookingForm += '<div class="w3-container" style="margin-top:0px;">';
+    editBookingForm += '<div style="margin-top:5px;margin-bottom:15px;font-size:12px;">Required Field<span class="required-label">*</span></div>';
+    editBookingForm += '<form id="update-request-form">';
+
+    //editBookingForm += '<input type="hidden" id="ws_id" name="ws_id" value="">';
+    //editBookingForm += '<input type="hidden" id="ws_type" name="ws_type" value="request">';
+    //editBookingForm += '<input type="hidden" id="ws_customer" name="ws_customer" value="">';
+
+    editBookingForm += '<div class="w3-row">';
+
+    editBookingForm += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
+    editBookingForm += '<label style="font-weight:bold;">Booking ID#</label>';
+    editBookingForm += '<input name="BookingId" id="BookingId" class="w3-input w3-border input-display" type="text" disabled="disabled" style="background-color:lightgrey">';
+    editBookingForm += '</div>';
+
+    editBookingForm += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    editBookingForm += '<label>Shift ID#<span class="required-label">*</span></label>';
+    editBookingForm += '<input name="ShiftId" id="ShiftId" class="w3-input w3-border input-display" type="text" readonly="readonly">';
+    editBookingForm += '<div id="ShiftId_error" class="noerror" ></div>';
+    editBookingForm += '</div>';
+
+    editBookingForm += '</div>';
+
+    editBookingForm += '</div>';//close container
+
+    $("#sidebar-right").append(editBookingForm);
+
+    //GET THE BOOKING DETAILS
+
+    $.ajax({
+        url: '/booking/' + bookingId,
+        type: "GET",
+        success: function (response) {
+
+            var booking = response;
+
+            console.log("BOOKING: ", booking);
+
+            for (var key in booking) {
+
+                if (key == 'ws_customer') {
+
+                    //console.log("get cust name");
+                    //var custId = request['ws_customer'];
+
+                } else {
+
+                    //var check = key + " - " + request[key];
+
+                    //console.log("KEY: ", check);
+
+                    $("#" + key).val(booking[key]);
+                }
+            }
+
+        }
+
+    });
+
+}
+
+$("#sidebar-right").on('click','[id^=edit-booking]', function (e) {
+
+    var paramDets = $(this).attr('id');
+    var paramsArr = paramDets.split("-");
+    var request = paramsArr[2];
+    var booking = paramsArr[3];
+
+    //alert("EDIT BKG: " + param);
+
+    /*
+    $.ajax({
+        url: '/email/send',
+        type: "POST",
+        success: function (response) {
+            console.log(response);
+        }
+    });
+    */
+
+    editBooking(request, booking);
+
+});
 
 function progress(pb, itemCount) {
 
@@ -1022,6 +1264,23 @@ $("body").on('click','#startProgress', function (e) {
 
 $("body").on('click','[id^=workspace-view-requests]', function (e) {
 
+    /*
+    $("#work-space-header").html("");
+
+    var workSpaceHeader = '<h1 class="w3-xlarge w3-left"><b>Requests</b></h1>';
+    workSpaceHeader += '<button id="workspace-action-add" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-bottom:10px;">Add Request</button>';
+
+    $("#work-space-header").append(workSpaceHeader);
+
+    getWorkspace('requests',1);
+    */
+
+    viewRequests();
+
+});
+
+function viewRequests(){
+
     $("#work-space-header").html("");
 
     var workSpaceHeader = '<h1 class="w3-xlarge w3-left"><b>Requests</b></h1>';
@@ -1031,8 +1290,7 @@ $("body").on('click','[id^=workspace-view-requests]', function (e) {
 
     getWorkspace('requests',1);
 
-});
-
+}
 
 function prepareQuote(param){
 
@@ -1096,9 +1354,42 @@ function viewQuotePdf(param){
     console.log("VIEW: ", param);
 
     var rdm = Math.floor((Math.random() * 1000000) + 1);
-    var pdfToView = "pdfs/quotes/quote_" + param + ".pdf?" + rdm;
+    var pdfToView = "pdfs/quotes/quote_" + param + ".pdf?" + rdm + "#toolbar=0&navpanes=0&scrollbar=0";
 
-    window.open(pdfToView, "PopupWindow", "width=900,height=750,scrollbars=yes,resizable=yes");
+    //window.open(pdfToView, "PopupWindow", "width=900,height=750,scrollbars=yes,resizable=yes");
+
+    $("#sidebar-right").css({"width": "0px"});
+
+    $("#workspace").html("");
+
+    var viewQuote = '<div style="clear:both;"></div>';
+    //QUOTE CONTAINER
+    viewQuote += '<div style="margin-bottom:35px;border:0px solid green;">';
+    viewQuote += '<div style="width:980px;margin: 0 auto;border:0px solid blue;">';
+
+    viewQuote += '<embed id="pdf-quote-view"';
+    viewQuote += ' src=""';
+    viewQuote += ' type="application/pdf"';
+    viewQuote += ' frameBorder="1"';
+    viewQuote += ' scrolling="auto"';
+    viewQuote += ' height="980px"';
+    viewQuote += ' width="980px;"';
+    viewQuote += '></embed>';
+
+    viewQuote += '</div>';
+
+    $("#workspace").append(viewQuote);
+
+    $("#pdf-quote-view").prop("src",pdfToView);
+
+    $("#work-space-header").html("");
+
+    var workSpaceQuotePreviewHeader = '<h1 class="w3-xlarge w3-left"><b>Request Quote</b></h1>';
+    workSpaceQuotePreviewHeader += '<button id="workspace-view-requests" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 0 10px 10px;">View Requests</button>';
+    //workSpaceQuotePreviewHeader += '<button id="quote-generate-pdf-' + param + '" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-bottom:10px;">Generate Quote PDF</button>';
+
+    $("#work-space-header").append(workSpaceQuotePreviewHeader);
+
 }
 
 $("body").on('click','[id^=quote-view-pdf]', function (e) {
@@ -1486,12 +1777,13 @@ function actionView(param) {
 
                 bookingsDisplay += '<li class="w3-bar">';
                 bookingsDisplay += '<div class="travel w3-button w3-medium w3-darkblue w3-right">Travel</div>';
-                bookingsDisplay += '<div id="edit_booking_' + bookingId + '" class="w3-button w3-medium w3-darkblue w3-right" style="margin-right:10px;">Edit</div>';
+                bookingsDisplay += '<div id="edit-booking-' + param + '-' + bookingId + '" class="w3-button w3-medium w3-darkblue w3-right" style="margin-right:10px;">Edit</div>';
 
                 bookingsDisplay += '<div class="w3-left"><input type="checkbox" class="w3-check"></div>';
                 bookingsDisplay += '<div class="w3-left">';
                 bookingsDisplay += '<span class="w3-large" style="padding-left:10px;">' + empName + '<br>';
                 bookingsDisplay += '&nbsp;&nbsp;(' + startDate +  ' - ' + endDate + ')<br>';
+                bookingsDisplay += '<span style="padding-left:10px;">Booking ID:' + bookingId + '</span><br>';
                 bookingsDisplay += '<span style="padding-left:10px;">Batch ID:' + batchId + '</span><br>';
                 bookingsDisplay += '<span style="padding-left:10px;">Shift ID:' + shiftId + '</span>';
                 bookingsDisplay += '</div>';
@@ -1565,12 +1857,16 @@ function actionEmail(param) {
 
 function updateRequest(mode, param){
 
+    console.log("MODE: ", mode);
+
     console.log("PARAM2: ", param);
 
     if(mode == 'add'){
         var headerTxt = 'Add';
+        var siteDeptDisplay = 'none';
     } else {
         var headerTxt = 'Edit';
+        var siteDeptDisplay = 'block';
     }
 
     $("#sidebar-right").html("");
@@ -1590,10 +1886,9 @@ function updateRequest(mode, param){
 
     updateRequest += '<div class="w3-row">';
 
-    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
-    updateRequest += '<label style="font-weight:bold;">Customer Ref #<span class="required-label"<span>*</span></label>';
-    updateRequest += '<input name="ws_ref" id="ws_ref" class="w3-input w3-border input-display" type="text">';
-    updateRequest += '<div id="ws_ref_error" class="noerror" ></div>';
+    updateRequest += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Customer Ref #</label>';
+    updateRequest += '<input name="ws_ref" id="ws_ref" class="w3-input w3-border input-display" type="text" disabled="disabled" style="background-color:lightgrey">';
     updateRequest += '</div>';
 
     updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
@@ -1607,15 +1902,113 @@ function updateRequest(mode, param){
     updateRequest += '<div class="w3-row">';
 
     updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Start Date<span class="required-label"<span>*</span></label>';
+    updateRequest += '<input name="ws_start_date" id="ws_start_date" class="w3-input w3-border input-display" type="text">';
+    updateRequest += '<div id="ws_start_date_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">End Date<span class="required-label"<span>*</span></label>';
+    updateRequest += '<input name="ws_end_date" id="ws_end_date" class="w3-input w3-border input-display" type="text">';
+    updateRequest += '<div id="ws_end_date_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+    
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Rio Requester Name<span class="required-label"<span>*</span></label>';
+    updateRequest += '<input name="ws_cust_contact" id="ws_cust_contact" class="w3-input w3-border input-display" type="text">';
+    updateRequest += '<div id="ws_cust_contact_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Rio Requester Email<span class="required-label"<span>*</span></label>';
+    updateRequest += '<input name="ws_cust_contact_email" id="ws_cust_contact_email" class="w3-input w3-border input-display" type="text">';
+    updateRequest += '<div id="ws_cust_contact_email_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
     updateRequest += '<label style="font-weight:bold;">Customer<span class="required-label"<span>*</span></label>';
     updateRequest += '<input name="ws_customer_name" id="ws_customer_name" class="w3-input w3-border input-display" type="text">';
     updateRequest += '<div id="ws_customer_name_error" class="noerror" ></div>';
     updateRequest += '</div>';
 
-    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<div id="ws_site_dept_display" class="w3-half" style="padding:0 10px 10px 0;display:' + siteDeptDisplay + ';">';
     updateRequest += '<label style="font-weight:bold;">Site/Department<span class="required-label"<span>*</span></label>';
-    updateRequest += '<input name="ws_site_dept" id="ws_site_dept" class="w3-input w3-border input-display" type="text">';
+    updateRequest += '<select name="ws_site_dept" id="ws_site_dept" class="w3-select w3-border input-display"></select>';
     updateRequest += '<div id="ws_site_dept_error" class="noerror" ></div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Trade Type 1<span class="required-label"<span>*</span></label>';
+    updateRequest += '<select name="ws_trade_type_1" id="ws_trade_type_1" class="trade_type w3-select w3-border input-display"></select>';
+    updateRequest += '<div id="ws_trade_type_1_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-third" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Trade Rate 1<span class="required-label"<span>*</span></label>';
+    updateRequest += '<select name="ws_trade_rate_1" id="ws_trade_rate_1" class="w3-select w3-border input-display">';
+    updateRequest += '<option value="N">Select a Rate</option>';
+    updateRequest += '<option value="ST">Short Term</option>';
+    updateRequest += '<option value="FS">Field Service</option>';
+    updateRequest += '<option value="LT">Long Term</option>';
+    updateRequest += '</select>';
+    updateRequest += '<div id="ws_trade_rate_1_error" class="noerror" ></div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Trade Type 2</label>';
+    updateRequest += '<select name="ws_trade_type_2" id="ws_trade_type_2" class="trade_type w3-select w3-border input-display"></select>';
+    updateRequest += '<div id="ws_trade_type_2_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-third" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Trade Rate 2</label>';
+    updateRequest += '<select name="ws_trade_rate_2" id="ws_trade_rate_2" class="w3-select w3-border input-display">';
+    updateRequest += '<option value="N">Select a Rate</option>';
+    updateRequest += '<option value="ST">Short Term</option>';
+    updateRequest += '<option value="FS">Field Service</option>';
+    updateRequest += '<option value="LT">Long Term</option>';
+    updateRequest += '</select>';
+    updateRequest += '<div id="ws_trade_rate_2_error" class="noerror" ></div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Trade Type 3</label>';
+    updateRequest += '<select name="ws_trade_type_3" id="ws_trade_type_3" class="trade_type w3-select w3-border input-display"></select>';
+    updateRequest += '<div id="ws_trade_type_3_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-third" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Trade Rate 3</label>';
+    updateRequest += '<select name="ws_trade_rate_3" id="ws_trade_rate_3" class="w3-select w3-border input-display">';
+    updateRequest += '<option value="N">Select a Rate</option>';
+    updateRequest += '<option value="ST">Short Term</option>';
+    updateRequest += '<option value="FS">Field Service</option>';
+    updateRequest += '<option value="LT">Long Term</option>';
+    updateRequest += '</select>';
+    updateRequest += '<div id="ws_trade_rate_3_error" class="noerror" ></div>';
+
     updateRequest += '</div>';
 
     updateRequest += '</div>';
@@ -1631,7 +2024,7 @@ function updateRequest(mode, param){
     updateRequest += '<div class="w3-row">';
 
     updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
-    updateRequest += '<label style="font-weight:bold;">Mobiliser Name<span class="required-label"<span>*</span></label>';
+    updateRequest += '<label style="font-weight:bold;">Mobiliser Assigned<span class="required-label"<span>*</span></label>';
     updateRequest += '<input name="ws_mobiliser" id="ws_mobiliser" class="w3-input w3-border input-display" type="text">';
     updateRequest += '<div id="ws_mobiliser_error" class="noerror" ></div>';
     updateRequest += '</div>';
@@ -1646,11 +2039,13 @@ function updateRequest(mode, param){
     updateRequest += '<select name="ws_status" id="ws_status" class="w3-select w3-border input-display">';
     updateRequest += '<option value="N" selected>Select Request Status</option>';
     updateRequest += '<option value="E">New</option>';
-    updateRequest += '<option value="M">Scheduled</option>';
-    updateRequest += '<option value="M">Commenced</option>';
-    updateRequest += '<option value="N">Paused</option>';
-    updateRequest += '<option value="I">Invoiced</option>';
-    updateRequest += '<option value="X">Cancelled</option>';
+    updateRequest += '<option value="Q">Quoted</option>';
+    //updateRequest += '<option value="M">Scheduled</option>';
+    //updateRequest += '<option value="M">Commenced</option>';
+    //updateRequest += '<option value="N">Paused</option>';
+    //updateRequest += '<option value="I">Invoiced</option>';
+    updateRequest += '<option value="M">Missed Engagement</option>';
+    //updateRequest += '<option value="X">Cancelled</option>';
     updateRequest += '</select>';
     updateRequest += '</div>';
     updateRequest += '</div>';
@@ -1671,6 +2066,34 @@ function updateRequest(mode, param){
 
     $("#sidebar-right").append(updateRequest);
 
+    //ADD TRADE TYPES
+
+    $.ajax({
+        url: '/employee/000001',
+        type: "GET",
+        success: function (response) {
+
+            var employee = response.employee;
+            console.log("EMP TRADES: ", employee);
+
+            var trades = response.trades;
+
+            $(".trade_type").html("");
+
+            var tradeTypeOptions = '<option value="N">Select a Trade</option>';
+
+            for (var t = 0; t < trades.length; t++) {
+
+                var tradeDesc = trades[t]['trade_desc'];
+                var tradeCode = trades[t]['trade_code'];
+
+                tradeTypeOptions += '<option value="' + tradeCode + '">' + tradeDesc + '</option>';
+            }
+
+            $(".trade_type").append(tradeTypeOptions);
+        }
+    });
+
     if(mode == 'add'){
         $("#ws_status").val('E');
     } else {
@@ -1686,6 +2109,8 @@ function updateRequest(mode, param){
 
                 var request = response;
 
+                console.log("REQ: ", request);
+
                 for (var key in request) {
 
                     if(key == 'ws_customer'){
@@ -1700,25 +2125,56 @@ function updateRequest(mode, param){
                                 //console.log(response);
                                 var custName = response.cust_name;
 
-                                $("#ws_customer_name").val(custName)
+                                $("#ws_customer_name").val(custName);
+
+                                $.ajax({
+                                    url: '/customer/sites/' + custId,
+                                    type: "GET",
+                                    success: function (response) {
+                                        var sites = response;
+                                        console.log("SITES: ", sites);
+
+                                        $("#ws_site_dept").html("");
+
+                                        var siteOptions = '<option value="N">Select a Site</option>';
+
+                                        for (var s = 0; s < sites.length; s++) {
+
+                                            var siteDesc = sites[s]['site_desc'];
+                                            var siteCode = sites[s]['site_code'];
+
+                                            siteOptions += '<option value="' + siteCode + '">' + siteDesc + '</option>';
+                                        }
+
+                                        $("#ws_site_dept").append(siteOptions);
+                                        $("#ws_site_dept").val(request['ws_site_dept']);
+                                    }
+                                });
+
                             }
                         });
 
                         $("#" + key).val(request[key]);
 
                     } else {
+
+                       var check = key + " - " + request[key];
+
+                        //console.log("KEY: ", check);
+
                         $("#" + key).val(request[key]);
                     }
                 }
             }
         });
+
     }
 }
 
 function viewWorkspace(wsRequests, totalRecords, page){
 
     var wsTable = '<div id="work-order-table-container" style="margin:0 0 20px 0;">';
-    wsTable += '<table id="work-orders-table" class="w3-striped" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+    wsTable += '<table id="work-orders-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
     wsTable += '<thead>';
     wsTable += '<tr class="w3-darkblue">';
     wsTable += '<th>Id#</th>';
@@ -1744,10 +2200,14 @@ function viewWorkspace(wsRequests, totalRecords, page){
         var wsComments = wsRequests[w]['ws_comments'];
         var wsStatus = wsRequests[w]['ws_status'];
 
-        if (w == 5) {
-            wsTable += '<tr class="table-row w3-red">';
+        if(wsStatus == 'E') {
+            var wsBgCol = 'w3-orange';
+        } else if(wsStatus == 'Q'){
+            var wsBgCol = 'w3-green';
+        } else if(wsStatus == 'M'){
+            var wsBgCol = 'w3-red';
         } else {
-            wsTable += '<tr class="table-row">';
+            var wsBgCol = '';
         }
 
         wsTable += '<td>' + wsId + '</td>';
@@ -1756,7 +2216,7 @@ function viewWorkspace(wsRequests, totalRecords, page){
         wsTable += '<td>' + wsCustomer + '</td>';
         wsTable += '<td>' + wsSiteDept + '</td>';
         wsTable += '<td>' + wsComments + '</td>';
-        wsTable += '<td>' + wsStatus + '</td>';
+        wsTable += '<td class="' + wsBgCol +'">' + wsStatus + '</td>';
         wsTable += '<td id="row_'+ wsId + '"><button class="w3-button w3-small w3-transparent w3-padding-small menu-button"><i class="fas fa-ellipsis-h"></i></button></td>';
         wsTable += '</tr>';
 

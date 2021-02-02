@@ -5,6 +5,9 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Middleware\ErrorMiddleware;
+
+use Slim\Interfaces\RouteParserInterface;
+
 use Selective\BasePath\BasePathMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
@@ -19,10 +22,29 @@ use Selective\Validation\Encoder\JsonEncoder;
 use Selective\Validation\Middleware\ValidationExceptionMiddleware;
 use Selective\Validation\Transformer\ErrorDetailsResultTransformer;
 
+use Cartalyst\Sentinel\Native\Facades\Sentinel;
+use Slim\Flash\Messages as Flash;
+
+use App\Middleware\RedirectIfAuthenticated;
+use Psr\Http\Server\RequestHandlerInterface;
+//use Psr\Http\Message\RequestInterface;
+
 return [
 
     'settings' => function () {
         return require __DIR__ . '/settings.php';
+    },
+
+    Flash::class => function (ContainerInterface $container) {
+        return new Slim\Flash\Messages;
+    },
+
+    /*'flash' => function (ContainerInterface $container) {
+        return new Slim\Flash\Messages;
+    },*/
+
+    RouteParserInterface::class => function (ContainerInterface $container) {
+        return $container->get(App::class)->getRouteCollector()->getRouteParser();
     },
 
     ValidationExceptionMiddleware::class => function (ContainerInterface $container) {
@@ -103,7 +125,11 @@ return [
         $twig->addExtension(new TranslationExtension($translator));
 
         $twig->getEnvironment()->addGlobal('testvar', 'bla');
+        $twig->getEnvironment()->addGlobal('user', Sentinel::check());
+        $twig->getEnvironment()->addGlobal('flash', $container->get(Flash::class));
 
+        $twig->getEnvironment()->addGlobal('status', $container->get(Flash::class)->getFirstMessage('status'));
+        $twig->getEnvironment()->addGlobal('errors', $container->get(Flash::class)->getFirstMessage('errors'));
 
         // Add extension here
         // ...

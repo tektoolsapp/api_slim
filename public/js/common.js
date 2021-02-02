@@ -253,7 +253,7 @@ function updateSkill(skillId) {
 
     $("#sidebar-left").html("");
 
-    var skillForm = '<div style="width:100%;padding:10px;border:1px solid blue;">';
+    var skillForm = '<div style="width:100%;padding:10px;border:0px solid blue;">';
 
     skillForm += '<button id="sidebar-left-view-employees" class="w3-button w3-darkblue w3-mobile w3-right w3-medium">Employees</button>';
     skillForm += '<button id="sidebar-left-view-skills" class="w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-right:10px;">Skills</button>';
@@ -403,8 +403,7 @@ function updateEmployee(empId) {
 
     employeeForm += '<div id="emp_title_display" class="w3-half" style="padding:15px 10px 10px 10px;">';
     employeeForm += '<label style="font-weight:bold;">Title</label>';
-    //employeeForm += '<input name="emp_title" id="emp_title" class="w3-input w3-border input-display" type="text">';
-    employeeForm += '<select name="emp_title" id="emp_title" class="w3-select w3-border">';
+    employeeForm += '<select name="emp_title" id="emp_title" class="w3-select w3-border input-display">';
     employeeForm += '<option value="NA">Select a Title</option>';
     employeeForm += '<option value="Mr">Mr</option>';
     employeeForm += '<option value="Mrs">Mrs</option>';
@@ -438,7 +437,7 @@ function updateEmployee(empId) {
     //employeeForm += '<div class="w3-row" style="margin:10px 0 0 0;">';
     employeeForm += '<div class="w3-half" style="padding:10px 10px 10px 10px;">';
     employeeForm += '<label>Trade Type<span class="required-label"<span>*</span></label>';
-    employeeForm += '<select name="trade_type" id="trade_type" class="w3-select w3-border"></select>';
+    employeeForm += '<select name="trade_type" id="trade_type" class="w3-select w3-border input-display"></select>';
 
     employeeForm += '<div id="trade_type_error" class="noerror" ></div>';
     employeeForm += '</div>';
@@ -509,121 +508,103 @@ function updateEmployee(empId) {
     $("#emp_rehire_no").prop("checked", true);
 
 
-    /*
-    var tradeTypeOptions = "";
-    tradeTypeOptions += '<option value="">Select a Trade</option>';
-    tradeTypeOptions += '<option value="4560984">HD Diesel Fitter</option>';
-    tradeTypeOptions += '<option value="3378990">HV Electrician</option>';
-    tradeTypeOptions += '<option value="7875555">Trade Assistant</option>';
-
-    $("#trade_type").append(tradeTypeOptions);
-    */
-
-    //$("#trade_type").val("N");
-
-    //if (empId.length > 0) {
-
-    if (empId.length < 1) {
-
+    if(empId.length < 1) {
         empId = 'all';
     }
+    $.ajax({
+        url: '/employee/' + empId,
+        type: "GET",
+        success: function (response) {
 
-        $.ajax({
-            url: '/employee/' + empId,
-            type: "GET",
-            success: function (response) {
+            var employee = response.employee;
+            console.log("EMP: ", employee);
 
-                var employee = response.employee;
-                console.log("EMP: ", employee);
+            var trades = response.trades;
 
-                var trades = response.trades;
+            $("#trade_type").html("");
 
-                $("#trade_type").html("");
+            var tradeTypeOptions = '<option value="">Select a Trade</option>';
 
-                var tradeTypeOptions = '<option value="">Select a Trade</option>';
+            for (var t = 0; t < trades.length; t++) {
 
-                for (var t = 0; t < trades.length; t++) {
+                var tradeDesc = trades[t]['trade_desc'];
+                var tradeCode = trades[t]['trade_code'];
 
-                    var tradeDesc = trades[t]['trade_desc'];
-                    var tradeCode = trades[t]['trade_code'];
+                tradeTypeOptions += '<option value="' + tradeCode + '">' + tradeDesc + '</option>';
+            }
 
-                    tradeTypeOptions += '<option value="' + tradeCode + '">' + tradeDesc + '</option>';
+            $("#trade_type").append(tradeTypeOptions);
+
+            /////
+
+            var skills = response.skills;
+            //console.log("SKILLS: ", skills);
+
+            //SKILLS
+
+            var skillCount = 1;
+
+            for (var s = 0; s < skills.length; s++) {
+
+                //console.log("LOOP: " + s);
+
+                var skillDesc = skills[s]['skill_desc'];
+                var skillCode = skills[s]['skill_code'];
+
+                if(skillCount == 1 ){
+                    var employeeSkillsSelection = '<div class="w3-row filter-row">';
                 }
 
-                $("#trade_type").append(tradeTypeOptions);
+                employeeSkillsSelection += '<div class="w3-half" style="padding:0 10px 10px 0px;">';
+                employeeSkillsSelection += '<input id="skill_' + skillCode + '" name="skill_' + skillCode + '" class="w3-check skill" type="checkbox" value="' + skillCode + '">';
+                employeeSkillsSelection += '<label style="margin-left:5px;font-weight:normal;">' + skillDesc + '</label>';
+                employeeSkillsSelection += '</div>';
 
-                /////
-                
-                var skills = response.skills;
-                //console.log("SKILLS: ", skills);
-
-                //SKILLS
-
-                var skillCount = 1;
-
-                for (var s = 0; s < skills.length; s++) {
-
-                    //console.log("LOOP: " + s);
-
-                    var skillDesc = skills[s]['skill_desc'];
-                    var skillCode = skills[s]['skill_code'];
-
-                    if(skillCount == 1 ){
-                        var employeeSkillsSelection = '<div class="w3-row filter-row">';
-                    }
-
-                    employeeSkillsSelection += '<div class="w3-half" style="padding:0 10px 10px 0px;">';
-                    employeeSkillsSelection += '<input id="skill_' + skillCode + '" name="skill_' + skillCode + '" class="w3-check skill" type="checkbox" value="' + skillCode + '">';
-                    employeeSkillsSelection += '<label style="margin-left:5px;font-weight:normal;">' + skillDesc + '</label>';
+                if(skillCount % 2 === 0){
                     employeeSkillsSelection += '</div>';
-
-                    if(skillCount % 2 === 0){
-                        employeeSkillsSelection += '</div>';
-                        employeeSkillsSelection += '<div class="w3-row filter-row">';
-                    }
-
-                    skillCount++;
-
+                    employeeSkillsSelection += '<div class="w3-row filter-row">';
                 }
 
-                //console.log("ES: ", employeeSkillsSelection);
+                skillCount++;
 
-                $("#skills-selection").html("");
-                $("#skills-selection").append(employeeSkillsSelection);
+            }
 
-                for (var key in employee) {
+            //console.log("ES: ", employeeSkillsSelection);
 
-                    if (key == 'emp_skills' && employee[key].length > 0) {
+            $("#skills-selection").html("");
+            $("#skills-selection").append(employeeSkillsSelection);
 
-                        var empSkillsArray = JSON.parse(employee[key]);
+            for (var key in employee) {
 
-                        for (var s = 0; s < empSkillsArray.length; s++) {
+                if (key == 'emp_skills' && employee[key].length > 0) {
 
-                            var skillCode = empSkillsArray[s];
-                            var skillId = 'skill_' + skillCode;
+                    var empSkillsArray = JSON.parse(employee[key]);
 
-                            $("#" + skillId).prop("checked", true);
-                        }
+                    for (var s = 0; s < empSkillsArray.length; s++) {
 
-                        $("#" + key).val(employee[key]);
-                    } else if (key == 'emp_gender') {
-                        var thisGender = employee[key];
-                        if(thisGender == 'M'){
-                            $("#emp_gender_male").prop("checked", true);
-                            $("#emp_gender_female").prop("checked", false);
-                        } else {
-                            $("#emp_gender_male").prop("checked", false);
-                            $("#emp_gender_female").prop("checked", true);
-                        }
+                        var skillCode = empSkillsArray[s];
+                        var skillId = 'skill_' + skillCode;
 
-                    } else {
-                        $("#" + key).val(employee[key]);
+                        $("#" + skillId).prop("checked", true);
                     }
+
+                    $("#" + key).val(employee[key]);
+                } else if (key == 'emp_gender') {
+                    var thisGender = employee[key];
+                    if(thisGender == 'M'){
+                        $("#emp_gender_male").prop("checked", true);
+                        $("#emp_gender_female").prop("checked", false);
+                    } else {
+                        $("#emp_gender_male").prop("checked", false);
+                        $("#emp_gender_female").prop("checked", true);
+                    }
+
+                } else {
+                    $("#" + key).val(employee[key]);
                 }
             }
-        });
-
-    //}
+        }
+    });
 
 }
 
@@ -803,7 +784,313 @@ function viewSkills() {
 $("#sidebar-left").on('click', '#sidebar-left-view-customers', function (e) {
 
     e.preventDefault();
+
     viewCustomers();
+});
+
+$("#sidebar-left").on('click', '[id^=save-customer-site-update]', function (e) {
+
+    e.preventDefault();
+
+    var splitId = $(this).prop("id");
+
+    console.log("SITE SPLIT: ",splitId);
+
+    var splitArray = splitId.split("-");
+    var custId = splitArray[5];
+
+    console.log("CUST SITE: ", custId);
+
+    e.preventDefault();
+
+    $("#customer_site_update_form").find("div.error").removeClass('error').addClass("noerror");
+    $("#customer_site_update_form").find("input.required").removeClass('required');
+
+    var errCount = 0;
+    var errMsgArray = [];
+
+    if ($("#site_desc").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'site_desc',
+            "msg": 'Site Description can\'t be empty'
+        });
+    }
+
+    if ($("#site_short_desc").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'site_short_desc',
+            "msg": 'Short Description can\'t be empty'
+        });
+    }
+
+    if (errCount > 0) {
+
+        console.log("SITE ERRORS: ", errMsgArray);
+
+        for (var e = 0; e < errMsgArray.length; e++) {
+
+            var errorId = errMsgArray[e]['id'];
+            var errorMsg = errMsgArray[e]['msg'];
+
+            $("#" + errorId).addClass('required');
+            $("#" + errorId + "_error").removeClass('noerror');
+            $("#" + errorId + "_error").addClass('error');
+            $("#" + errorId + "_error").html(errorMsg);
+
+        }
+
+    } else {
+
+        //console.log("EMP FORM: ", employeeForm);
+
+        var siteId = $("#site_id").val();
+
+        if (siteId.length > 0) {
+            var updateUrl = '/customer/site/' + custId;
+            var successMsg = "Customer Site was successfully updated";
+            //var custId = $("#cust_id").val();
+        } else {
+            var updateUrl = '/customer/site/add';
+            var successMsg = "Customer Site was successfully added";
+            var rdm = Math.floor((Math.random() * 1000000) + 1);
+            $("#site_code").val(rdm);
+        }
+
+        var customerSiteForm = $("#customer_site_update_form").serialize();
+
+        $.ajax({
+            url: updateUrl,
+            type: "POST",
+            data: {
+                "form": customerSiteForm
+            },
+            success: function (response) {
+                console.log(response);
+
+                alert(successMsg);
+                viewCustomerSites(custId);
+            }
+        });
+    }
+
+});
+
+function updateCustomerSite(siteId, custId) {
+
+    $("#sidebar-left").html("");
+
+    var customerSiteForm = '<div style="width:100%;padding:10px;border:0px solid blue;">';
+
+    customerSiteForm += '<button id="sidebar-left-view-customer-' + custId + '" class="w3-button w3-darkblue w3-mobile w3-right w3-medium">Customer</button>';
+    
+    customerSiteForm += '<div style="margin-top:60px;">';
+
+    if(siteId.length > 0){
+        customerSiteForm += '<h4 style="margin:0 0 0 10px;">Edit Customer Site</h4>';
+    } else {
+        customerSiteForm += '<h4 style="margin:0 0 0 10px;">Add Customer Site</h4>';
+    }
+
+    customerSiteForm += '<form id="customer_site_update_form">';
+
+    customerSiteForm += '<input type="hidden" id="site_id" name="site_id" value="">';
+    customerSiteForm += '<input type="hidden" id="site_code" name="site_code" value="">';
+    customerSiteForm += '<input type="hidden" id="site_customer" name="site_customer" value="' + custId + '">';
+
+    customerSiteForm += '<div class="w3-row">'
+
+    customerSiteForm += '<div id="site_desc_display" class="w3-half" style="padding:10px 10px 10px 10px;">';
+    customerSiteForm += '<label style="font-weight:bold;">Site Description<span class="required-label"<span>*</span></label>';
+    customerSiteForm += '<input name="site_desc" id="site_desc" class="w3-input w3-border input-display" type="text">';
+    customerSiteForm += '<div id="site_desc_error" class="noerror" ></div>';
+    customerSiteForm += '</div>';
+
+    customerSiteForm += '<div id="site_short_desc_display" class="w3-third" style="padding:10px 10px 10px 10px;">';
+    customerSiteForm += '<label style="font-weight:bold;">Short Description<span class="required-label"<span>*</span></label>';
+    customerSiteForm += '<input name="site_short_desc" id="site_short_desc" class="w3-input w3-border input-display" type="text">';
+    customerSiteForm += '<div id="site_short_desc_error" class="noerror" ></div>';
+    customerSiteForm += '</div>';
+
+    customerSiteForm += '</div>';
+
+    customerSiteForm += '</form>';
+
+    customerSiteForm += '</div>';
+
+    customerSiteForm += '<div class="w3-center" style="margin-top:10px;">';
+    customerSiteForm += '<button id="cancel-customer-site-update-' + custId + '" class="w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Cancel</button>';
+    customerSiteForm += '<button id="save-customer-site-update-' + siteId + '-' + custId + '" class="w3-button w3-darkblue w3-mobile w3-medium">Save</button>';
+
+    customerSiteForm += '</div>';
+
+    customerSiteForm += '</div>';
+
+    $("#sidebar-left").append(customerSiteForm);
+
+
+    if (siteId.length > 0) {
+
+        $.ajax({
+            url: '/customer/site/edit/' + siteId,
+            type: "GET",
+            success: function (response) {
+
+                console.log("FETCH SITE: ", response);
+
+                var site = response;
+
+                for (var key in site) {
+
+                    $("#" + key).val(site[key]);
+
+                }
+            }
+        });
+    }
+
+}
+
+$("#sidebar-left").on('click', '[id^=cancel-customer-site-update]', function (e) {
+
+    e.preventDefault();
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("-");
+    var custId = splitArray[4];
+
+    viewCustomerSites(custId);
+});
+
+$("#sidebar-left").on('click', '[id^=sidebar-left-add-site]', function (e) {
+
+    e.preventDefault();
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("-");
+    var custId = splitArray[4];
+    var siteId = '';
+
+    updateCustomerSite(siteId, custId);
+
+});
+
+$("#sidebar-left").on('click', '[id^=customer-site-edit]', function (e) {
+
+    e.preventDefault();
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("-");
+    var siteId = splitArray[3];
+    var custId = splitArray[4];
+
+    updateCustomerSite(siteId, custId);
+
+});
+
+$("#sidebar-left").on('click', '[id^=sidebar-left-view-customer]', function (e) {
+
+    e.preventDefault();
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("-");
+    var custId = splitArray[4]
+
+    updateCustomer(custId);
+
+});
+
+function viewCustomerSites(custId) {
+
+    console.log("SITES HERE");
+
+    var sbContUrl = "/customer/sites/" + custId;
+
+    console.log("URL:", sbContUrl);
+
+    $("#sidebar-left").html("");
+
+    var spinHtml = '<div class="busy-indicator">';
+    spinHtml += '<div>';
+    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
+    spinHtml += '</div>';
+    spinHtml += '</div>';
+
+    $("#sidebar-left").append(spinHtml);
+
+     $.ajax({
+         url: sbContUrl,
+         type: "get"
+     }).done(function (response) {
+
+         console.log("SITES: ", response);
+
+         var sites = response;
+
+         var customerSitesDisplay = '<div style="width:100%;padding:10px;border:0px solid blue;">';
+
+         customerSitesDisplay += '<div class="w3-bar" style="margin-bottom:10px;">';
+
+         customerSitesDisplay += '<div class="w3-right">';
+         customerSitesDisplay += '<button id="sidebar-left-add-site-' + custId + '" class="w3-button w3-darkblue w3-medium" style="margin-right:0px;">+</button>';
+         customerSitesDisplay += '</div>';
+
+         customerSitesDisplay += '<div class="w3-right">';
+         customerSitesDisplay += '<button id="sidebar-left-view-customer-' + custId + '" class="w3-button w3-darkblue w3-medium" style="margin-right:10px;">Customer</button>';
+         customerSitesDisplay += '</div>';
+
+         customerSitesDisplay += '</div>';
+
+         customerSitesDisplay += '<h4 style="margin:0 0 15px 0;">Customer Sites</h4>';
+
+         if(sites.length > 0) {
+
+             customerSitesDisplay += '<ul class="w3-ul w3-card-4 w3-hoverable">';
+
+             for (var s = 0; s < sites.length; s++) {
+
+                 var siteDesc = sites[s]['site_desc'];
+                 var siteShortDesc = sites[s]['site_short_desc'];
+                 var siteCode = sites[s]['site_code'];
+
+                 customerSitesDisplay += '<li class="w3-bar">';
+                 customerSitesDisplay += '<div id="customer-site-edit-' + siteCode + '-' + custId + '" class="w3-button w3-medium w3-darkblue w3-right">Edit</div>';
+                 customerSitesDisplay += '<div class="w3-left">';
+                 customerSitesDisplay += '<span class="w3-large">' + siteDesc + '</span><br>';
+                 customerSitesDisplay += '<span>' + siteShortDesc + '</span>';
+                 customerSitesDisplay += '</div>';
+                 customerSitesDisplay += '</li>'
+             }
+
+             customerSitesDisplay += '</ul>';
+             customerSitesDisplay += '</div>';
+
+         } else {
+            customerSitesDisplay += '<div style="margin:15px 0 0 15px;font-weight:bold;color:red;">No Customer Sites Found</div>';
+         }
+
+         $("#sidebar-left").html("");
+         $("#sidebar-left").append(customerSitesDisplay);
+
+     }).fail(function (jqXHR, textStatus) {
+        console.log("ERR: ", jqXHR);
+     });
+
+}
+
+$("#sidebar-left").on('click', '[id^=customer_sites]', function (e) {
+
+    e.preventDefault();
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("_");
+    var custId = splitArray[2]
+
+    console.log("CUSTIDXX:", custId);
+
+    viewCustomerSites(custId);
+
 });
 
 $("#sidebar-left").on('click', '#sidebar-left-add-customer', function (e) {
@@ -917,19 +1204,26 @@ function updateCustomer(custId) {
 
     $("#sidebar-left").html("");
 
-    var customerForm = '<div style="width:100%;padding:10px;border:1px solid blue;">';
+    var customerForm = '<div style="width:100%;padding:10px;border:0px solid blue;">';
 
-    //customerForm += '<button id="sidebar-left-view-employees" class="w3-button w3-darkblue w3-mobile w3-right w3-medium">Employees</button>';
-    customerForm += '<button id="sidebar-left-view-customers" class="w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-right:10px;">Customers</button>';
+    customerForm += '<button id="sidebar-left-view-customers" class="w3-button w3-darkblue w3-mobile w3-right w3-medium">Customers</button>';
+
+    if(custId.length > 0){
+        customerForm += '<div id="customer_sites_' + custId + '" class="w3-button w3-medium w3-darkblue w3-right" style="margin-right:10px;">Sites</div>';
+
+    }
 
     customerForm += '<div style="margin-top:60px;">';
 
-    customerForm += '<h4 style="margin:0 0 0 10px;">Edit Customer</h4>';
+    if(custId.length > 0) {
+        customerForm += '<h4 style="margin:0 0 0 10px;">Edit Customer</h4>';
+    } else{
+        customerForm += '<h4 style="margin:0 0 0 10px;">Add Customer</h4>';
+    }
 
     customerForm += '<form id="customer_update_form">';
 
     customerForm += '<input type="hidden" id="cust_id" name="cust_id" value="">';
-    //customerForm += '<input type="hidden" id="customer_code" name="customer_code" value="">';
 
     customerForm += '<div class="w3-row">'
 
@@ -1034,11 +1328,7 @@ function viewCustomers() {
         customerDisplay += '<div class="w3-bar" style="margin-bottom:10px;">';
 
         customerDisplay += '<div class="w3-right">';
-        customerDisplay += '<button id="sidebar-left-add-customer" class="w3-button w3-darkblue w3-medium" style="margin-right:0px;">+</button>';
-        customerDisplay += '</div>';
-
-        customerDisplay += '<div class="w3-right">';
-        customerDisplay += '<button id="sidebar-left-view-skills" class="w3-button w3-darkblue w3-medium" style="margin-right:10px;">?????</button>';
+        customerDisplay += '<button id="sidebar-left-add-customer" class="w3-button w3-darkblue w3-medium">+</button>';
         customerDisplay += '</div>';
 
         customerDisplay += '</div>';
@@ -1056,7 +1346,9 @@ function viewCustomers() {
                 var custType = customers[c]['cust_type'];
 
                 customerDisplay += '<li class="w3-bar">';
-                customerDisplay += '<div id="edit_customer_' + custId + '" class="w3-button w3-medium w3-darkblue w3-right">Edit</div>';
+                //customerDisplay += '<div id="customer_sites_' + custId + '" class="w3-button w3-medium w3-darkblue w3-right">Sites</div>';
+
+                customerDisplay += '<div id="edit_customer_' + custId + '" class="w3-button w3-medium w3-darkblue w3-right" style="margin-right:10px;">Edit</div>';
                 //customerDisplay += '<img src="assets/img_avatar2.png" class="w3-circle w3-hide-small w3-left" style="width:85px;padding:0px;">';
                 customerDisplay += '<div class="w3-left">';
                 customerDisplay += '<span class="w3-large" style="padding-left:10px;">' + custName + '</span><br>';
@@ -1079,7 +1371,6 @@ function viewCustomers() {
     }).fail(function (jqXHR, textStatus) {
         console.log("ERR: ", jqXHR);
     });
-
 }
 
 function setSidebarContent(currentSidebar) {
@@ -1101,7 +1392,6 @@ function setSidebarContent(currentSidebar) {
         viewCustomers();
 
     }
-
 }
 
 $("[id^=toggle-sidebar]").click(function (e) {

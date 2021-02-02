@@ -381,7 +381,7 @@ div.total-box-generate {
 }
 
 .w3-pink {
-    background-color:#FF7C73!important;
+    background-color:#D26322!important;
 }
 
 .w3-darkblue {
@@ -397,12 +397,50 @@ div.total-box-generate {
     background-color:#67AE59!important;
 }
 
-.navbar-1 {
+/*
+.fixed {
     height:40px;
     position:fixed;
     margin-left:80px;
     width:calc(100% - 80px);
+    z-index:999;
+}
+
+*/
+
+.w3-button:hover {
+    color: #000 !important;
+    background-color: darkgrey !important;
+}
+
+[data-initials]:before {
+    background: green;
+    color: white;
+    opacity: 1;
+    content: attr(data-initials);
+    display: inline-block;
+    font-size:12px;
+    font-weight: normal;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-top: 0.3em;
+    margin-right: 0.5em;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+}
+
+.navbar-1 {
+
+    height:40px;
+    position:fixed;
+    margin-left:80px;
+    width:calc(100% - 80px);
+    /*overflow:visible;*/
+    z-index:999;
     border-left: 1px solid #CCCCCC;
+    /*overflow:visible;*/
 }
 
 .navbar-2 {
@@ -412,6 +450,7 @@ div.total-box-generate {
     margin-left:80px;
     padding:5px 15px 0 0;
     width:calc(100% - 80px);
+    /*overflow:visible;*/
 }
 
 .my-link {
@@ -470,7 +509,7 @@ div.total-box-generate {
     color:#000000;
     overflow-y: scroll;
     height:calc(100% - 152px);
-    z-index: 900
+    /*z-index: 900*/
 }
 
 #my-left-column {

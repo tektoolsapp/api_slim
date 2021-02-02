@@ -3,8 +3,9 @@
 {% block middle_col %}
     <div>
         <h1 class="w3-xlarge w3-left"><b>Scheduler</b></h1>
-        <button id="filter-scheduler-criteria" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Filter Employees</button>
+        <button id="filter-scheduler-criteria" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 0 10px 0;">Filter Employees</button>
         <button id="filter-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Check Availability</button>
+        <button id="remove-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Clear Availability</button>
         <button id="set-scheduler-resources" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">All Employees</button>
     </div>
 
@@ -115,8 +116,10 @@
                         async: false,
                         url: url,
                         success: function(response) {
-                            //console.log("RESP: ", response);
+                            console.log("BKG RESP: ", response);
                             var reqId = response.ws_id;
+                            var reqRef = response.ws_ref;
+                            var reqSite = response.ws_site_dept;
                             console.log("REQ: ", reqId);
                             $("\#requestId").val(reqId);
                             //SET THE SCHEDULER VALUE
@@ -124,6 +127,8 @@
                             var editedEventUID = $(".k-scheduler-edit-form").data("uid");
                             var event = scheduler.occurrenceByUid(editedEventUID);
                             event.set("requestId", reqId);
+                            var titleTxt = "RR" + reqRef + "-" + reqSite;
+                            event.set("title", titleTxt);
                             $("\#req_desc_errors").css({"display" : "none"});
                         }
                     });
@@ -143,10 +148,10 @@
         <div style="clear:both;"></div>
         <div id="req_desc_errors" style="margin:-5px 0 5px 110px;display:none;"></div>
 
-        <div class="k-edit-label"><label for="title">Title</label></div>
+        <div class="k-edit-label"><label for="title">Reference</label></div>
 
         <div data-container-for="title" class="k-edit-field">
-        <input type="text" class="k-textbox" name="title" required="required" data-bind="value:title">
+        <input type="text" class="k-textbox" name="title" required="required" disabled="disabled" data-bind="value:title">
         </div>
 
         <div class="k-edit-label">
@@ -337,6 +342,10 @@
             margin: 0;
             padding: 0;
             font-size: .8em;
+        }
+
+        .available {
+            background-color:mediumseagreen;
         }
 
     </style>
