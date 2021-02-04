@@ -32,16 +32,26 @@ final class UserSignInAction extends Util
     ): ResponseInterface {
 
         $data = $this->validate($request, [
-           'email' => ['email', 'required'],
+           'username' => ['required'],
            'password' => ['required']
-
         ]);
+
+        //dump($data);
+
+        /*
+        $credentials = [
+            'username' => $data['username'],
+            'password' => $data['password'],
+        ];
+        */
+
+        //dump($credentials);
 
         try {
 
             if(!$user = Sentinel::authenticate($data, isset($data['persist']))){
                 //die("Incorrect Credentials");
-                throw new \Exception('Incorrect Email of Password');
+                throw new \Exception('Incorrect Username or Password');
             }
 
         } catch(\Throwable $exception){
@@ -59,7 +69,7 @@ final class UserSignInAction extends Util
         }*/
 
         return $response
-            ->withHeader('Location', $data['redirect'] ? $data['redirect'] : $this->routeParser->urlFor('home'));
+            ->withHeader('Location', $data['redirect'] ? $data['redirect'] : $this->routeParser->urlFor('dashboard'));
 
     }
 }

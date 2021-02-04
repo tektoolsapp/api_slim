@@ -3,11 +3,11 @@
 use Slim\App;
 use App\Middleware\RedirectIfAuthenticated;
 use App\Middleware\RedirectIfGuest;
+use Slim\Csrf\Guard;
 
 return function (App $app) {
 
     //AUTH
-    
     $app->group('/auth', function($route) {
 
         $route->group('', function($route){
@@ -15,21 +15,34 @@ return function (App $app) {
                 ->setName('user-signin-index');
             $route->post('/signin', \App\Action\UserSigninAction::class)
                 ->setName('user-signin');
-        })
-           ->add(RedirectIfAuthenticated::class);
 
-        $route->get('/signout', \App\Action\UserSignoutAction::class)
+        })
+            //->add(Guard::class)
+            ->add(RedirectIfAuthenticated::class);
+
+        $route->post('/signout', \App\Action\UserSignoutAction::class)
             ->setName('user-signout');
 
-    });
+    })->add(Guard::class);
 
     $app->get('/auth/register', \App\Action\UserRegisterAction::class)
         ->setName('user-register');
 
     //HOME
-    $app->get('/', \App\Action\HomeAction::class)
+
+    $app->get('/', \App\Action\UserSigninIndexAction::class)
+        ->setName('login')
+        ->add(RedirectIfGuest::class)
+        ->add(Guard::class);
+
+    $app->get('/dashboard', \App\Action\DashboardAction::class)
+        ->setName('dashboard')
+        ->add(RedirectIfGuest::class)
+        ->add(Guard::class);
+
+    /*$app->get('/', \App\Action\HomeAction::class)
         ->setName('home')
-        ->add(RedirectIfGuest::class);
+        ->add(RedirectIfGuest::class);*/
 
     $app->get('/users', \App\Action\UserListAction::class)->setName('user-list');
     $app->get('/users/{id}', \App\Action\UserReadAction::class)->setName('users-get');
@@ -38,7 +51,8 @@ return function (App $app) {
 
     //SCHEDULER
     $app->get('/scheduler', \App\Action\SchedulerAction::class)->setName('scheduler')
-        ->add(RedirectIfGuest::class);
+        ->add(RedirectIfGuest::class)
+        ->add(Guard::class);
     $app->get('/scheduler/filter', \App\Action\SchedulerFilterAction::class)->setName('scheduler-filter');
 
     //EMPLOYEES
@@ -83,7 +97,8 @@ return function (App $app) {
     $app->post('/customer/site/{cust_id}', \App\Action\CustomerSiteUpdateAction::class)->setName('customer-site-update');
 
     //WORKSPACE
-    $app->get('/workspace', \App\Action\WorkspaceAction::class)->setName('workspace');
+    $app->get('/workspace', \App\Action\WorkspaceAction::class)->setName('workspace')
+        ->add(Guard::class);
 
     //REQUESTS
     $app->get('/requests', \App\Action\RequestsAction::class)->setName('requests');
@@ -106,7 +121,5 @@ return function (App $app) {
     //FILE UPLOAD
     $app->post('/filepond/process', \App\Action\FilePondProcessAction::class);
     $app->delete('/filepond/revert', \App\Action\FilePondRevertAction::class);
-
-
 
 };

@@ -9,6 +9,7 @@
         "respect/validation": "^2.1",
         "rlanvin/php-rrule": "^2.2",
         "selective/basepath": "^1.0",
+        "selective/samesite-cookie": "^0.2.2",
         "selective/validation": "^0.12.0",
         "slim/csrf": "^1.2",
         "slim/flash": "^0.4.0",

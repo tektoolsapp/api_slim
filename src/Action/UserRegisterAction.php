@@ -37,8 +37,12 @@ final class UserRegisterAction
         */
 
         Sentinel::register([
+            'username' => 'allanhyde',
             'email' => 'allan.hyde@livepages.com.au',
-            'password' => 'password'
+            'password' => 'password',
+            'first_name' => 'Allan',
+            'last_name' => 'Hyde',
+            'initials' => 'AH'
         ], true);
 
         return $response

@@ -4,21 +4,21 @@
 </div>
 
 <div class="w3-bar navbar-1">
-    <a href="{{ url_for('home')}}" class="w3-bar-item w3-button fa fa-home w3-xlarge"></a>
+    <a href="{{ url_for('dashboard')}}" class="w3-bar-item w3-button fa fa-home w3-xlarge"></a>
     <a id="calendar" href="{{ url_for('scheduler')}}" class="w3-bar-item w3-button fas fa-calendar-alt w3-xlarge"></a>
     <a id="requests" href="{{ url_for('workspace')}}" class="w3-bar-item w3-button fas fa-layer-group w3-xlarge"></a>
-    <a href="{{ url_for('user-post')}}" class="w3-bar-item w3-button">Post User</a>
-    <a href="{{ url_for('pdf-test')}}" class="w3-bar-item w3-button">PDF</a>
+    <!--<a href="{{ url_for('user-post')}}" class="w3-bar-item w3-button">Post User</a>
+    <a href="{{ url_for('pdf-test')}}" class="w3-bar-item w3-button">PDF</a>-->
 
+    <a href="{{ url_for('user-register')}}" class="w3-bar-item w3-button">Register User</a>
 
     {%  if user %}
 
-
     <div class="w3-dropdown-hover w3-right" style="position:fixed;top:0;right:10px;">
         <!--<button class="w3-button">Account</button>-->
-        <div data-initials="AH"></div>
+        <div data-initials="{{ user.initials }}"></div>
         <div class="w3-dropdown-content w3-bar-block w3-card-4" style="right:0">
-            <a href="{{ url_for('user-signout')}}" class="w3-bar-item w3-button">Log Out</a>
+            <a href="" class="w3-bar-item w3-button" onclick="document.getElementById('signout').submit(); return false;">Log Out</a>
             <a href="#" class="w3-bar-item w3-button">Link 2</a>
             <a href="#" class="w3-bar-item w3-button">Link 3</a>
         </div>
@@ -33,14 +33,16 @@
 
 </div>
 
+<form action="{{ url_for('user-signout') }}" method="post" id="signout">
+    {{ csrf() | raw }}
+</form>
+
 <div class="w3-bar w3-light-grey w3-border navbar-2">
-    <a href="#" class="w3-bar-item w3-button w3-mobile">Home</a>
     <a href="#" class="w3-bar-item w3-button w3-mobile">Link 1</a>
     <a href="#" class="w3-bar-item w3-button w3-mobile">Link 2</a>
     <input type="text" class="w3-bar-item w3-input w3-white w3-mobile" placeholder="Search..">
     <button id="nav-2-button" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium">Right Panel</button>
 </div>
-
 
 <!-- Sidebar Left -->
 <div id="sidebar-left" class="w3-sidebar w3-bar-block sidebar-left"></div>

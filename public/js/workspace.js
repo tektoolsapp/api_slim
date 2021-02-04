@@ -328,7 +328,7 @@ $("#sidebar-right").on('click','#save-request-update', function (e) {
         errCount++;
         errMsgArray.push({
             "id": 'ws_cust_contact',
-            "msg": 'A Rio Requester Name must be provided'
+            "msg": 'A Requester Name must be provided'
         });
     }
 
@@ -336,7 +336,15 @@ $("#sidebar-right").on('click','#save-request-update', function (e) {
         errCount++;
         errMsgArray.push({
             "id": 'ws_cust_contact_email',
-            "msg": 'A Rio Requester Email must be provided'
+            "msg": 'A Requester Email must be provided'
+        });
+    }
+
+    if($("#ws_cust_contact_phone").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_cust_contact_phone',
+            "msg": 'A Requester Phone Num must be provided'
         });
     }
 
@@ -356,6 +364,10 @@ $("#sidebar-right").on('click','#save-request-update', function (e) {
         });
     }
 
+    var tradeType1 = parseInt($('#ws_trade_type_1').find(":selected").val());
+    var tradeType2 = parseInt($('#ws_trade_type_2').find(":selected").val());
+    var tradeType3 = parseInt($('#ws_trade_type_3').find(":selected").val());
+
     if($("#ws_trade_type_1").val() == 'N') {
         errCount++;
         errMsgArray.push({
@@ -364,11 +376,86 @@ $("#sidebar-right").on('click','#save-request-update', function (e) {
         });
     }
 
+    if($("#ws_trade_type_1").val() != 'N') {
+
+        console.log("ERR 1");
+
+        var tradeType1Sel = parseInt($("#ws_trade_type_1").val());
+
+        if (tradeType1Sel == tradeType2 || tradeType1Sel == tradeType3) {
+
+            console.log("COUNT ERROR 1");
+
+            errCount++;
+            errMsgArray.push({
+                "id": 'ws_trade_type_1',
+                "msg": 'Trade Type has already been selected'
+            });
+        }
+
+    }
+
     if($("#ws_trade_rate_1").val() == 'N' && $("#ws_trade_type_1").val() != 'N') {
         errCount++;
         errMsgArray.push({
             "id": 'ws_trade_rate_1',
             "msg": 'At Trade Rate must be selected for Trade Type 1'
+        });
+    }
+
+    //console.log("TRADE TYPE 1: ", tradeType1);
+    //console.log("TRADE TYPE 2: ", parseInt($("#ws_trade_type_2").val()));
+
+    if($("#ws_trade_type_2").val() != 'N') {
+
+        console.log("ERR 2");
+
+        var tradeType2Sel = parseInt($("#ws_trade_type_2").val());
+
+        if (tradeType2Sel == tradeType1 || tradeType2Sel == tradeType3) {
+
+            console.log("COUNT ERROR 2");
+
+            errCount++;
+            errMsgArray.push({
+                "id": 'ws_trade_type_2',
+                "msg": 'Trade Type has already been selected'
+            });
+        }
+    }
+
+    if($("#ws_trade_rate_2").val() == 'N' && $("#ws_trade_type_2").val() != 'N') {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_trade_rate_2',
+            "msg": 'At Trade Rate must be selected for Trade Type 2'
+        });
+    }
+
+    if($("#ws_trade_type_3").val() != 'N') {
+
+        console.log("ERR 3");
+
+        var tradeType3Sel = parseInt($("#ws_trade_type_3").val());
+
+        if (tradeType3Sel == tradeType1 || tradeType3Sel == tradeType2) {
+
+            console.log("COUNT ERROR 3");
+
+            errCount++;
+            errMsgArray.push({
+                "id": 'ws_trade_type_3',
+                "msg": 'Trade Type has already been selected'
+            });
+        }
+
+    }
+
+    if($("#ws_trade_rate_3").val() == 'N' && $("#ws_trade_type_3").val() != 'N') {
+        errCount++;
+        errMsgArray.push({
+            "id": 'ws_trade_rate_3',
+            "msg": 'At Trade Rate must be selected for Trade Type 3'
         });
     }
 
@@ -1917,19 +2004,28 @@ function updateRequest(mode, param){
 
     updateRequest += '<div class="w3-row">';
 
-
     updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
-    updateRequest += '<label style="font-weight:bold;">Rio Requester Name<span class="required-label"<span>*</span></label>';
+    updateRequest += '<label style="font-weight:bold;">Requester Name<span class="required-label"<span>*</span></label>';
     updateRequest += '<input name="ws_cust_contact" id="ws_cust_contact" class="w3-input w3-border input-display" type="text">';
     updateRequest += '<div id="ws_cust_contact_error" class="noerror" ></div>';
     updateRequest += '</div>';
 
     updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
-    updateRequest += '<label style="font-weight:bold;">Rio Requester Email<span class="required-label"<span>*</span></label>';
+    updateRequest += '<label style="font-weight:bold;">Requester Email<span class="required-label"<span>*</span></label>';
     updateRequest += '<input name="ws_cust_contact_email" id="ws_cust_contact_email" class="w3-input w3-border input-display" type="text">';
     updateRequest += '<div id="ws_cust_contact_email_error" class="noerror" ></div>';
     updateRequest += '</div>';
 
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label style="font-weight:bold;">Requester Phone<span class="required-label"<span>*</span></label>';
+    updateRequest += '<input name="ws_cust_contact_phone" id="ws_cust_contact_phone" class="w3-input w3-border input-display" type="text">';
+    updateRequest += '<div id="ws_cust_contact_phone_error" class="noerror" ></div>';
+    updateRequest += '</div>';
+    
     updateRequest += '</div>';
 
     updateRequest += '<div class="w3-row">';
@@ -2174,18 +2270,24 @@ function updateRequest(mode, param){
 function viewWorkspace(wsRequests, totalRecords, page){
 
     var wsTable = '<div id="work-order-table-container" style="margin:0 0 20px 0;">';
-    wsTable += '<table id="work-orders-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+    wsTable += '<table id="workspace-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
     wsTable += '<thead>';
     wsTable += '<tr class="w3-darkblue">';
-    wsTable += '<th>Id#</th>';
-    wsTable += '<th>Request #</th>';
-    wsTable += '<th>Date</th>';
-    wsTable += '<th>Customer</th>';
-    wsTable += '<th>Site/Department</th>';
+    wsTable += '<th>Id #</th>';
+    wsTable += '<th>Req #</th>';
+    wsTable += '<th>Req. Date</th>';
+    wsTable += '<th>Requester</th>';
+    wsTable += '<th>Phone</th>';
+    wsTable += '<th>Site</th>';
+    wsTable += '<th>Mobiliser</th>';
+    wsTable += '<th>Email Resp.</th>';
+    wsTable += '<th>Emp. Notified</th>';
+    wsTable += '<th>Start Date</th>';
+    wsTable += '<th>End Date</th>';
+    wsTable += '<th>Scheduled</th>';
     wsTable += '<th>Comments</th>';
     wsTable += '<th>Status</th>';
     wsTable += '<th>Action</th>';
-
     wsTable += '</tr>';
     wsTable += '</thead>';
     wsTable += '<tbody>';
@@ -2195,8 +2297,15 @@ function viewWorkspace(wsRequests, totalRecords, page){
         var wsId = wsRequests[w]['ws_id'];
         var wsRef = wsRequests[w]['ws_ref'];
         var wsDate = wsRequests[w]['ws_date'];
-        var wsCustomer = wsRequests[w]['ws_customer'];
+        var wsRequester = wsRequests[w]['ws_cust_contact'];
+        var wsRequesterPhone = wsRequests[w]['ws_cust_contact_phone'];
         var wsSiteDept = wsRequests[w]['ws_site_dept'];
+        var wsMobiliser = wsRequests[w]['ws_mobiliser'];
+        var wsEmailResponse = wsRequests[w]['ws_email_response'];
+        var wsEmployeeNotified = wsRequests[w]['ws_employee_notified'];
+        var wsStartDate = wsRequests[w]['ws_start_date'];
+        var wsEndDate = wsRequests[w]['ws_end_date'];
+        var wsScheduled = wsRequests[w]['ws_scheduled'];
         var wsComments = wsRequests[w]['ws_comments'];
         var wsStatus = wsRequests[w]['ws_status'];
 
@@ -2211,15 +2320,21 @@ function viewWorkspace(wsRequests, totalRecords, page){
         }
 
         wsTable += '<td>' + wsId + '</td>';
-        wsTable += '<td>' + wsRef + '</td>';
+        wsTable += '<td>RR' + wsRef + '</td>';
         wsTable += '<td>' + wsDate + '</td>';
-        wsTable += '<td>' + wsCustomer + '</td>';
+        wsTable += '<td>' + wsRequester + '</td>';
+        wsTable += '<td>' + wsRequesterPhone + '</td>';
         wsTable += '<td>' + wsSiteDept + '</td>';
+        wsTable += '<td>' + wsMobiliser + '</td>';
+        wsTable += '<td><input id="" name="" class="w3-check" type="checkbox" value="" disabled style="top:3px;"></td>';
+        wsTable += '<td><input id="" name="" class="w3-check" type="checkbox" value="" disabled style="top:3px;"></td>';
+        wsTable += '<td>' + wsStartDate + '</td>';
+        wsTable += '<td>' + wsEndDate + '</td>';
+        wsTable += '<td><input id="" name="" class="w3-check" type="checkbox" value="" disabled style="top:3px;"></td>';
         wsTable += '<td>' + wsComments + '</td>';
         wsTable += '<td class="' + wsBgCol +'">' + wsStatus + '</td>';
         wsTable += '<td id="row_'+ wsId + '"><button class="w3-button w3-small w3-transparent w3-padding-small menu-button"><i class="fas fa-ellipsis-h"></i></button></td>';
         wsTable += '</tr>';
-
     }
 
     wsTable += '</tbody>';

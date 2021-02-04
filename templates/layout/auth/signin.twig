@@ -1,35 +1,38 @@
-{% extends 'layout/main.twig' %}
+{% extends 'layout/content//main-signin.twig' %}
 
-{% block middle_col %}
-
-    <div>
-        <h1 class="w3-xlarge w3-left"><b>Sign In</b></h1>
-    </div>
+{% block login %}
 
     <div style="display: block;
-         margin-left: auto;
-         margin-right: auto;
+         margin:50px auto;
          width: 30%;">
 
         <div class="w3-container" style="width:400px;">
+
+            <div class="w3-center">
+                <img src="assets/ready_resources_logo_74.png" width="74">
+            </div>
+
+            <div class="w3-center"><h4>Ready Resources Mobilisation App <br>Login</h4></div>
 
             {% include 'layout/partials/status.twig' %}
 
             <form action="{{ url_for('user-signin')}}" method="post">
 
+                {{ csrf() | raw }}
+
                 <div class="w3-row">
                     <div style="padding:10px 10px 10px 0;">
-                        <label style="font-weight:bold;">Email<span class="required-label"<span>*</span></label>
-                        <input name="email" id="email" class="w3-input w3-border input-display{{ errors.email ? ' required' : ''}}" type="text">
-                            {% if errors.email %}
-                                <div class="error">{{ errors.email | first }}</div>
+                        <label style="font-weight:bold;">Username<span class="required-label">*</span></label>
+                        <input name="username" id="username" class="w3-input w3-border input-display{{ errors.username ? ' required' : ''}}" type="text">
+                            {% if errors.username %}
+                                <div class="error">{{ errors.username | first }}</div>
                             {% endif %}
                     </div>
                 </div>
 
                 <div class="w3-row">
                     <div style="padding:10px 10px 10px 0;">
-                        <label style="font-weight:bold;">Password</label><span class="required-label"<span>*</span></label>
+                        <label style="font-weight:bold;">Password</label><span class="required-label">*</span></label>
                         <input name="password" id="password" class="w3-input w3-border input-display {{ errors.password ? ' required' : ''}}" type="password">
                         {% if errors.password %}
                             <div class="error">{{ errors.password | first }}</div>

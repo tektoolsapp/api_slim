@@ -5,9 +5,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Middleware\ErrorMiddleware;
-
 use Slim\Interfaces\RouteParserInterface;
-
 use Selective\BasePath\BasePathMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
@@ -25,9 +23,8 @@ use Selective\Validation\Transformer\ErrorDetailsResultTransformer;
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
 use Slim\Flash\Messages as Flash;
 
-use App\Middleware\RedirectIfAuthenticated;
-use Psr\Http\Server\RequestHandlerInterface;
-//use Psr\Http\Message\RequestInterface;
+use App\Views\CsrfExtension;
+use Slim\Csrf\Guard;
 
 return [
 
@@ -38,10 +35,6 @@ return [
     Flash::class => function (ContainerInterface $container) {
         return new Slim\Flash\Messages;
     },
-
-    /*'flash' => function (ContainerInterface $container) {
-        return new Slim\Flash\Messages;
-    },*/
 
     RouteParserInterface::class => function (ContainerInterface $container) {
         return $container->get(App::class)->getRouteCollector()->getRouteParser();
@@ -124,7 +117,10 @@ return [
         $translator = $container->get(Translator::class);
         $twig->addExtension(new TranslationExtension($translator));
 
-        $twig->getEnvironment()->addGlobal('testvar', 'bla');
+        //$_SESSION['my_var'] = 'bla bla bla';
+        //$myVar = $_SESSION['my_var'];
+        //$twig->getEnvironment()->addGlobal('test_var', $myVar);
+
         $twig->getEnvironment()->addGlobal('user', Sentinel::check());
         $twig->getEnvironment()->addGlobal('flash', $container->get(Flash::class));
 
@@ -134,7 +130,20 @@ return [
         // Add extension here
         // ...
 
+        $twig->addExtension($container->get(CsrfExtension::class));
+
         return $twig;
+    },
+
+    Guard::class => function (ContainerInterface $container){
+
+        $factory = $container->get(ResponseFactoryInterface::class);
+
+        return new \Slim\Csrf\Guard($factory);
+    },
+
+    CsrfExtension::class => function (ContainerInterface $container){
+        return new CsrfExtension($container->get(Guard::class));
     },
 
     TwigMiddleware::class => function (ContainerInterface $container) {

@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 use DI\ContainerBuilder;
 use Dotenv\Dotenv;
@@ -7,7 +8,6 @@ use Cartalyst\Sentinel\Native\Facades\Sentinel;
 use Cartalyst\Sentinel\Native\SentinelBootstrapper;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-
 
 Sentinel::instance(
     new SentinelBootstrapper(
