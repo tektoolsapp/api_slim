@@ -3,7 +3,7 @@
 namespace App\Domain\Bookings\Repository;
 
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 use App\Domain\Employees\Repository\EmployeesRepository;
 //use App\Domain\Employees\Repository\TradesRepository;
 use App\Domain\Utility\Service\CommonFunctions;
@@ -11,21 +11,21 @@ use App\Domain\Utility\Service\CommonFunctions;
 class BookingsConflictRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
     private $employees;
     //private $trades;
     private $common;
 
     public function __construct(
         PDO $connection,
-        Mongo $mongo,
+        //Mongo $mongo,
         EmployeesRepository $employees,
         //TradesRepository $trades,
         CommonFunctions $common
     )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
         $this->employees = $employees;
         //$this->trades = $trades;
         $this->common = $common;

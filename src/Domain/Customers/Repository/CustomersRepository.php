@@ -5,7 +5,7 @@ namespace App\Domain\Customers\Repository;
 use App\Domain\Utility\Service\ConvertValues;
 use DomainException;
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 
 class CustomersRepository
 {
@@ -13,10 +13,14 @@ class CustomersRepository
     private $mongo;
     private $convert;
 
-    public function __construct(PDO $connection, Mongo $mongo, ConvertValues $convert)
+    public function __construct(
+            PDO $connection, 
+            //Mongo $mongo, 
+            ConvertValues $convert
+        )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
         $this->convert = $convert;
 
     }

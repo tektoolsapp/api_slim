@@ -4,17 +4,20 @@ namespace App\Domain\Customers\Repository;
 
 use DomainException;
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 
 class CustomerFetchRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
 
-    public function __construct(PDO $connection, Mongo $mongo)
+    public function __construct(
+            PDO $connection 
+            //Mongo $mongo
+        )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
 
     }
 

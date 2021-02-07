@@ -9,7 +9,7 @@ use Slim\Interfaces\RouteParserInterface;
 use Selective\BasePath\BasePathMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
@@ -54,6 +54,7 @@ return [
         return $container->get(App::class)->getResponseFactory();
     },
 
+    /*
     Mongo::class => function (ContainerInterface $container) {
 
         //$user = "test_user";
@@ -66,6 +67,7 @@ return [
 
         return $mongo;
     },
+    */
 
     PDO::class => function (ContainerInterface $container) {
    	 $settings = $container->get('settings')['db'];

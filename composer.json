@@ -4,7 +4,6 @@
         "illuminate/database": "^8.25",
         "illuminate/events": "^8.25",
         "mikehaertl/php-pdftk": "^0.9.2",
-        "mongodb/mongodb": "^1.8",
         "php-di/php-di": "^6.0",
         "respect/validation": "^2.1",
         "rlanvin/php-rrule": "^2.2",

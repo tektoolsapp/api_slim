@@ -599,6 +599,16 @@ function updateEmployee(empId) {
                         $("#emp_gender_female").prop("checked", true);
                     }
 
+                } else if (key == 'emp_rehire') {
+                    var thisGender = employee[key];
+                    if(thisGender == 'Y'){
+                        $("#emp_rehire_yes").prop("checked", true);
+                        $("#emp_rehire_no").prop("checked", false);
+                    } else {
+                        $("#emp_rehire_yes").prop("checked", false);
+                        $("#emp_rehire_no").prop("checked", true);
+                    }
+
                 } else {
                     $("#" + key).val(employee[key]);
                 }

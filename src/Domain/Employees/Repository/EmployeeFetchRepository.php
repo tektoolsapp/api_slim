@@ -3,26 +3,26 @@
 namespace App\Domain\Employees\Repository;
 
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 use App\Domain\Employees\Repository\SkillsRepository;
 use App\Domain\Employees\Repository\TradesRepository;
 
 class EmployeeFetchRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
     private $skills;
     private $trades;
 
     public function __construct(
         PDO $connection,
-        Mongo $mongo,
+       // Mongo $mongo,
         SkillsRepository $skills,
         TradesRepository $trades
     )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
         $this->skills = $skills;
         $this->trades = $trades;
     }

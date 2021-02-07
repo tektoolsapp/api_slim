@@ -5,25 +5,25 @@ namespace App\Domain\Requests\Repository;
 use App\Domain\Customers\Repository\CustomerSitesAllFetchRepository;
 use App\Domain\Utility\Service\CommonFunctions;
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 
 
 class RequestsRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
     private $allSites;
     private $common;
 
     public function __construct(
             PDO $connection,
-            Mongo $mongo,
+            //Mongo $mongo,
             CustomerSitesAllFetchRepository $allSites,
             CommonFunctions $common
         )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
         $this->allSites = $allSites;
         $this->common = $common;
     }

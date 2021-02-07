@@ -5,15 +5,19 @@ namespace App\Domain\Bookings\Repository;
 use App\Domain\Utility\Service\ConvertValues;
 use DomainException;
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 
 class BookingsRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
     private $convert;
 
-    public function __construct(PDO $connection, Mongo $mongo, ConvertValues $convert)
+    public function __construct(
+            PDO $connection, 
+            //Mongo $mongo, 
+            ConvertValues $convert
+        )
     {
         $this->connection = $connection;
         $this->mongo = $mongo;

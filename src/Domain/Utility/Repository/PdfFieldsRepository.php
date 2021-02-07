@@ -3,19 +3,23 @@
 namespace App\Domain\Utility\Repository;
 
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 use App\Domain\Requests\Repository\RequestFetchRepository;
 
 class PdfFieldsRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
     private $reqDets;
 
-    public function __construct(PDO $connection, Mongo $mongo, RequestFetchRepository $reqDets)
+    public function __construct(
+            PDO $connection, 
+            //Mongo $mongo, 
+            RequestFetchRepository $reqDets
+        )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
         $this->reqDets = $reqDets;
     }
 

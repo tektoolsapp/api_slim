@@ -3,7 +3,7 @@
 namespace App\Domain\Bookings\Repository;
 
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 use App\Domain\Employees\Repository\EmployeesRepository;
 use App\Domain\Employees\Repository\TradesRepository;
 use App\Domain\Requests\Repository\RequestFetchRepository;
@@ -13,7 +13,7 @@ use App\Domain\Utility\Service\CommonFunctions;
 class BookingsQuoteFetchRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
     private $employees;
     private $trades;
     private $reqDets;
@@ -23,7 +23,7 @@ class BookingsQuoteFetchRepository
 
     public function __construct(
         PDO $connection,
-        Mongo $mongo,
+        //Mongo $mongo,
         EmployeesRepository $employees,
         TradesRepository $trades,
         RequestFetchRepository $reqDets,
@@ -32,7 +32,7 @@ class BookingsQuoteFetchRepository
     )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
         $this->employees = $employees;
         $this->trades = $trades;
         $this->reqDets = $reqDets;

@@ -9,7 +9,7 @@ $capsule->AddConnection([
     'host' => 'localhost',
     'username' => 'root',
     'database' => 'ready',
-    'password' => 'tIAQKuzkAX4wsg0j',
+    'password' => 'TekTools!001',
     'charset' => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci'
 ]);

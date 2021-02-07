@@ -17,7 +17,6 @@ return function (App $app) {
                 ->setName('user-signin');
 
         })
-            //->add(Guard::class)
             ->add(RedirectIfAuthenticated::class);
 
         $route->post('/signout', \App\Action\UserSignoutAction::class)
@@ -39,10 +38,6 @@ return function (App $app) {
         ->setName('dashboard')
         ->add(RedirectIfGuest::class)
         ->add(Guard::class);
-
-    /*$app->get('/', \App\Action\HomeAction::class)
-        ->setName('home')
-        ->add(RedirectIfGuest::class);*/
 
     $app->get('/users', \App\Action\UserListAction::class)->setName('user-list');
     $app->get('/users/{id}', \App\Action\UserReadAction::class)->setName('users-get');
@@ -98,6 +93,7 @@ return function (App $app) {
 
     //WORKSPACE
     $app->get('/workspace', \App\Action\WorkspaceAction::class)->setName('workspace')
+        ->add(RedirectIfGuest::class)    
         ->add(Guard::class);
 
     //REQUESTS

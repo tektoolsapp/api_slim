@@ -6,7 +6,6 @@ use PDO;
 use App\Domain\Utility\Service\SchedulerRecurrence;
 use App\Domain\Utility\Repository\BookingShiftMaxRepository;
 
-
 class BookingAddRepository
 {
     private $connection;

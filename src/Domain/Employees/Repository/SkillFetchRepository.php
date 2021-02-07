@@ -2,19 +2,22 @@
 
 namespace App\Domain\Employees\Repository;
 
-use DomainException;
+//use DomainException;
 use PDO;
-use MongoDB\Client as Mongo;
+//use MongoDB\Client as Mongo;
 
 class SkillFetchRepository
 {
     private $connection;
-    private $mongo;
+    //private $mongo;
 
-    public function __construct(PDO $connection, Mongo $mongo)
+    public function __construct(
+            PDO $connection 
+            //Mongo $mongo
+        )
     {
         $this->connection = $connection;
-        $this->mongo = $mongo;
+        //$this->mongo = $mongo;
 
     }
 
@@ -26,9 +29,11 @@ class SkillFetchRepository
 
         $skill = $statement->fetch();
 
+        /*
         if (!$skill) {
             throw new DomainException(sprintf('Skill not found: %s', $skillId));
         }
+        */
 
         return $skill;
     }
