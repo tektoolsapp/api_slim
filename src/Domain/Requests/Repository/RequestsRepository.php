@@ -5,25 +5,20 @@ namespace App\Domain\Requests\Repository;
 use App\Domain\Customers\Repository\CustomerSitesAllFetchRepository;
 use App\Domain\Utility\Service\CommonFunctions;
 use PDO;
-//use MongoDB\Client as Mongo;
-
 
 class RequestsRepository
 {
     private $connection;
-    //private $mongo;
     private $allSites;
     private $common;
 
     public function __construct(
             PDO $connection,
-            //Mongo $mongo,
             CustomerSitesAllFetchRepository $allSites,
             CommonFunctions $common
         )
     {
         $this->connection = $connection;
-        //$this->mongo = $mongo;
         $this->allSites = $allSites;
         $this->common = $common;
     }
@@ -56,6 +51,8 @@ class RequestsRepository
             $siteDetails = $this->common->searchArray($sitesLookup, 'site_code', $thisSiteCode);
             $siteDesc = $siteDetails[0]['site_desc'];
             $requests[$r]['ws_site_dept'] = $siteDesc;
+            $siteShortDesc = $siteDetails[0]['site_short_desc'];
+            $requests[$r]['ws_site_dept_short'] = $siteShortDesc;
         }
 
         return $requests;

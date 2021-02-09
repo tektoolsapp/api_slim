@@ -24,7 +24,6 @@ $("#sidebar-right").on('onchange', 'input[name=filepond]', function (e) {
 });
 */
 
-
 $("#sidebar-right").on('click', '.fp2', function (e) {
 
     //e.preventDefault();

@@ -50,6 +50,8 @@ return function (App $app) {
         ->add(Guard::class);
     $app->get('/scheduler/filter', \App\Action\SchedulerFilterAction::class)->setName('scheduler-filter');
 
+    $app->post('/scheduler/template', \App\Action\SchedulerTemplateAction::class)->setName('scheduler-template');
+
     //EMPLOYEES
     $app->get('/employees', \App\Action\EmployeesAction::class)->setName('employees');
     $app->get('/employee/{emp_id}', \App\Action\EmployeeFetchAction::class)->setName('employee-fetch');

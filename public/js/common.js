@@ -331,14 +331,14 @@ $("#sidebar-left").on('click', '[id^=edit_skill_]', function (e) {
 
 });
 
-$(document).on('focus',".datepicker", function(){
+$(document).on('focus',".datepicker-year", function(){
     $(this).datepicker({
+        changeYear: true,
+        yearRange: "1950:2021",
         dateFormat: 'dd-mm-yy',
         autoclose: true,
         showButtonPanel: true,
         closeText: "x",
-        changeYear: true,
-        yearRange: "1950:2021",
         onSelect: function(dateText, inst) {
             var this_id = $(this).prop("id");
             $(this).prop("readonly", false);
@@ -428,7 +428,7 @@ function updateEmployee(empId) {
 
     employeeForm += '<div id="birth_date_display" class="w3-half" style="padding:10px 10px 10px 10px;">';
     employeeForm += '<label style="font-weight:bold;">Birth date<span class="required-label"<span>*</span></label>';
-    employeeForm += '<input name="birth_date" id="birth_date" class="w3-input w3-border datepicker input-display" type="text" style="padding:10px 0 10px 10px;">';
+    employeeForm += '<input name="birth_date" id="birth_date" class="w3-input w3-border datepicker-year input-display" type="text" style="padding:10px 0 10px 10px;">';
     employeeForm += '<div id="birth_date_error" class="noerror" ></div>';
     employeeForm += '</div>';
 

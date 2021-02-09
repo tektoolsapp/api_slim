@@ -173,7 +173,10 @@ function setSidebarRightContent(currentRightSidebar){
     } else if (action == 'criteria') {
 
         viewCriteria()
-        //doFilter();
+    
+    } else if (action == 'templates') {
+
+        viewTemplates()
 
     } else {
 
@@ -182,6 +185,301 @@ function setSidebarRightContent(currentRightSidebar){
     }
 
 }
+
+$("#sidebar-right").on('click', '#save-swing-template', function (e) {
+
+    e.preventDefault();
+
+    $("#scheduler-template-form").find("div.error").removeClass('error').addClass("noerror");
+    $("#scheduler-template-form").find("input.required").removeClass('required');
+    $("#scheduler-template-form").find("select.required").removeClass('required');
+
+    var errCount = 0;
+    var errMsgArray = [];
+
+    var numTemps = 2
+
+    for (var t = 1; t < numTemps; t++) {
+        
+        //console.log("LOOP ERR: " + t);
+        
+        if($("#swing_request-" + t).val() == 'NA') {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_request-" + t,
+                "msg": 'A Request must be selected'
+            });
+        }
+    }
+    
+    if(errCount > 0){
+
+        console.log("ERRORS: ", errMsgArray);
+
+        for (var e = 0; e < errMsgArray.length; e++) {
+
+            var errorId = errMsgArray[e]['id'];
+            var errorMsg = errMsgArray[e]['msg'];
+
+            $("#" + errorId).addClass('required');
+            $("#" + errorId + "_error").removeClass('noerror');
+            $("#" + errorId + "_error").addClass('error');
+            $("#" + errorId + "_error").html(errorMsg);
+
+        }
+
+    } else {
+    
+        var requestForm = $("#scheduler-template-form").serialize();
+
+        $.ajax({
+            url: 'scheduler/template',
+            type: "POST",
+            data: {
+                "form": requestForm
+            },
+            success: function (response) {
+                console.log(response);
+                /* alert(successMsg);
+                $("#sidebar-right").css({"width": "0px"});
+                localStorage.removeItem('right-sidebar-content');
+                getWorkspace('requests',1); */
+            }
+        });
+    }
+});    
+
+$("#sidebar-right").on('change', '[id^=swing_request-]', function (e) {
+    
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+    var tempId = thisId.split('-').pop();
+    var reqId = $(this).val();
+
+    if($("#" + thisId).val() != 'NA') {
+
+        $.ajax({
+            url: '/request/scheduler/' + reqId,
+            type: "get",
+        }).done(function (response) {
+            console.log("REQ: ", response);
+
+            var request = response;
+            reqRef = request['ws_ref'];
+            reqSiteShort = request['ws_site_dept'];
+            reqRefDesc = "RR" + reqRef + "-" + reqSiteShort;
+
+            $("#swing_reference-" + tempId).val(reqRefDesc);
+            
+        });
+    } else {
+        $("#swing_reference-" + tempId).val("");
+    }
+
+    /*
+    console.log("TID: ", thisId);
+    var tempId = thisId.split('-').pop();
+    var selectionStr = "#" + thisId + " option:selected";
+    var selectedReq = $(selectionStr).text();
+    var selectedRefText = "RR" + selectedReq.substring(1, 6);
+
+    if($("#" + thisId).val() != 'NA') {
+        $("#swing_reference-" + tempId).val(selectedRefText);
+    } else {
+        $("#swing_reference-" + tempId).val("");
+    }
+    */
+});
+
+function viewTemplates() {
+
+    var swingTemplates = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    swingTemplates += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Swing Templates</div>';
+    swingTemplates += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div style="margin:0 15px 0 15px;border:0px solid red;">';
+
+    $("#sidebar-right").html("");
+
+    var spinHtml = '<div class="busy-indicator">';
+    spinHtml += '<div>';
+    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
+    spinHtml += '</div>';
+    spinHtml += '</div>';
+
+    //$("#sidebar-right").append(spinHtml);
+
+    var tempId = 1;
+    
+    swingTemplates += '<div style="margin-top:5px;margin-bottom:10px;font-size:12px;">Required Field<span class="required-label">*</span></div>';
+    
+    swingTemplates += '<form name="scheduler-template-form" id="scheduler-template-form">';
+
+    swingTemplates += '<input type="hidden" id="swing_id-' + tempId + '" name="swing_id-' + tempId + '" value="' + tempId + '">';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Request<span class="required-label">*</span></label>';
+    swingTemplates += '<select name="swing_request-' + tempId + '" id="swing_request-' + tempId + '" class="w3-select w3-border input-display"></select>';
+    swingTemplates += '<div id="swing_request-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Reference<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_reference-' + tempId + '" id="swing_reference-' + tempId + '" class="w3-input w3-border input-display" type="text" style="background-color:lightgrey" readonly="readonly">';
+    swingTemplates += '<div id="swing_reference-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label style="font-weight:bold;">Employee(s)<span class="required-label"<span>*</span></label>';
+    swingTemplates += '<select id="swing_emps-' + tempId + '" name="swing_emps-' + tempId + '[]" multiple="multiple" style="margin-top:10px;"></select>';
+    swingTemplates += '<div id="swing_emps_error-' + tempId + '" class="noerror" ></div>';
+    swingTemplates += '</div>';//DISPLAY
+    swingTemplates += '</div>';//ROW
+    
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Swing Type<span class="required-label">*</span></label>';
+    swingTemplates += '<select name="swing_type-' + tempId + '" id="swing_type-' + tempId + '" class="w3-select w3-border input-display">';
+    swingTemplates += '<option value="NA">Select an Swing Type</option>';
+    swingTemplates += '<option value="On">On</option>';
+    swingTemplates += '<option value="Off">Off</option>';
+    swingTemplates += '</select>';
+    swingTemplates += '<div id="swing_type-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Start Day<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_start_date-' + tempId + '" id="swing_start_date-' + tempId + '" class="w3-input w3-border datepicker input-display" type="text" readonly="readonly">';
+    swingTemplates += '<div id="swing_start_date-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div id="swing_type_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+
+    swingTemplates += '<label style="margin:0;">Swing Time<span class="required-label"<span>*</span></label>';
+    swingTemplates += '<div style="margin:0;">';
+    swingTemplates += '<input id="day_shift-' + tempId + '" name="shift_time-' + tempId + '" class="w3-radio input-display" type="radio" value="D">';
+    swingTemplates += '<label style="margin-left:5px;font-weight:normal;">Day</label>';
+    swingTemplates += '<input id="night_shift-' + tempId + '" name="shift_time-' + tempId + '" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+    swingTemplates += '<label style="margin-left:5px;font-weight:normal;">Night</label>';
+    swingTemplates += '</div>';
+    swingTemplates += '</div>';//ITEM
+
+    swingTemplates += '<div class="w3-quarter" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Recur<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_recurrence-' + tempId + '" id="swing_recurrence-' + tempId + '" class="w3-input w3-border input-display" type="text">';
+    swingTemplates += '<div id="swing_recurrence-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';//ITEM
+
+    swingTemplates += '</div>';//ROW
+
+    swingTemplates += '</form>';
+
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="save-swing-template" class="w3-button w3-padding-large w3-darkblue w3-margin-bottom" style="margin-top:15px;">Build Template</button>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';//CONTAINER
+
+    $("#sidebar-right").html("");
+
+    $("#sidebar-right").append(swingTemplates);
+
+    $.ajax({
+        url: '/requests',
+        type: "get",
+    }).done(function (response) {
+        console.log("REQUESTS: ", response);
+        var requests = response.requests;
+        var swingRequests = '<option value="NA">Select a Request</option>';
+
+        for (var r = 0; r < requests.length; r++) {
+            reqId = requests[r]['ws_id'];            
+            swingRequests += '<option value="' + reqId + '">' + reqId + '</option>';
+        }
+
+        $("#swing_request-" + tempId).html("");
+        $("#swing_request-" + tempId).append(swingRequests);
+    });
+
+    $.ajax({
+        url: '/employees',
+        type: "get",
+    }).done(function (response) {
+        console.log("EMPLOYEES: ", response);
+        var employees = response;
+        var swingEmployees = "";
+
+        for (var e = 0; e < employees.length; e++) {
+            empId = employees[e]['emp_id'];
+            empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+            swingEmployees += '<option value="' + empId + '">' + empName + '</option>';
+        }
+
+        $("#swing_emps-" + tempId).html("");
+        $("#swing_emps-" + tempId).append(swingEmployees);
+        //$("#swing_emps-" + tempId).multiSelect();
+
+        $("[id^=swing_emps-]").multiSelect();
+    });
+}
+
+//SWING TEMPLATES
+
+/* $("body").on('click','#scheduler-swing-templates', function (e) {
+
+    e.preventDefault();
+
+    displaySchedulerAvailability();
+
+}); */
+
+$("body").on('click','#scheduler-swing-templates', function (e) {
+
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+
+    console.log("TID", thisId);
+
+    var sidebarContent = thisId.split('-').pop();
+
+    console.log("SBCTEMP", sidebarContent);
+
+    var currentRightSidebar = localStorage.getItem('right-sidebar-content');
+    var isClose = document.getElementById("sidebar-right").style.width === "500px";
+
+    if (!isClose) {
+
+        $("#sidebar-right").css({"width": "500px"});
+        setSidebarRightContent(sidebarContent)
+
+    } else {
+
+        if (currentRightSidebar != sidebarRightContent) {
+            setSidebarContent(sidebarContent)
+        } else {
+            $("#sidebar-right").css({"width": "0px"});
+            localStorage.removeItem('right-sidebar-content');
+        }
+
+    }
+
+    localStorage.setItem('right-sidebar-content', sidebarContent);
+
+});
 
 //AVAILABILITY
 
