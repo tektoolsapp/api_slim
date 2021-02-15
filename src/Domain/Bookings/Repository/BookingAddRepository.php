@@ -12,7 +12,11 @@ class BookingAddRepository
     private $recurrence;
     private $maxShifts;
 
-    public function __construct(PDO $connection, SchedulerRecurrence $recurrence, BookingShiftMaxRepository $maxShifts)
+    public function __construct(
+            PDO $connection, 
+            SchedulerRecurrence $recurrence, 
+            BookingShiftMaxRepository $maxShifts
+        )
     {
         $this->connection = $connection;
         $this->recurrence = $recurrence;
@@ -137,6 +141,7 @@ class BookingAddRepository
 
                     $booking['BatchId'] = $batchId;
                     $booking['ShiftId'] = $shiftId;
+                    $booking['BookingType'] = 'On';
                     $booking['Start'] = $theStartDate;
                     $booking['End'] = $theEndDate;
 
@@ -158,6 +163,7 @@ class BookingAddRepository
 
             $batchId = mt_rand(100000, 999999);
             $booking['BatchId'] = $batchId;
+            $booking['BookingType'] = 'On';
 
             $models = array();
 
@@ -197,8 +203,18 @@ class BookingAddRepository
 
     public function postBooking(array $booking) {
 
-        $booking['StartDay'] = strtotime($booking['Start']);
-        $booking['EndDay'] = strtotime($booking['End']);
+        $startDay = strtotime($booking['Start']);
+        $endDay = strtotime($booking['End']);
+        
+        $booking['StartDay'] = $startDay;
+        $booking['EndDay'] = $endDay;
+
+        //SET THE BOOKING SHIFT TIME
+        $bookingTime = date("H:i A", $startDay);
+        $bookingTimeArray = explode(" ", $bookingTime);
+        $bookingTime = $bookingTimeArray[1];
+
+        $booking['AmPm'] = $bookingTime;
 
         $bookingId = mt_rand(100000, 999999);
         $booking['BookingId'] = $bookingId;
@@ -213,6 +229,8 @@ class BookingAddRepository
         } else {
             $booking['IsAllDay'] = 1;
         }
+
+        //dump($booking);
 
         $columnsArray = array_keys($booking);
         $columnsString = implode(',', $columnsArray);

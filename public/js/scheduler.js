@@ -172,11 +172,15 @@ function setSidebarRightContent(currentRightSidebar){
 
     } else if (action == 'criteria') {
 
-        viewCriteria()
+        viewCriteria();
     
     } else if (action == 'templates') {
 
-        viewTemplates()
+        viewTemplates();
+    
+    } else if (action == 'delete') {
+        
+        deleteShifts();
 
     } else {
 
@@ -186,8 +190,1098 @@ function setSidebarRightContent(currentRightSidebar){
 
 }
 
+$("#sidebar-right").on('click', '[id^=next_swing-]', function (e) {
+
+    e.preventDefault(); 
+    
+    var thisId = $(this).prop('id');
+    var tempId = thisId.split('-').pop();
+
+    var nextId = parseInt(tempId) + 1;
+
+    nextSwing(tempId, nextId);
+
+});
+
+$("#sidebar-right").on('click', '[id^=remove_swing-]', function (e) {
+
+    e.preventDefault();
+    
+    //var nextTempVal = $("[id^=next_swing-]").prop("id");;    
+    var thisId = $(this).prop('id');
+    var tempId = thisId.split('-').pop();
+
+    console.log("REMOVE: ", tempId);
+
+    $("#swing-" + tempId).remove();
+    $("#swing_request-" + tempId).remove();
+    $("#swing_reference-" + tempId).remove();
+    $("#swing_emps-" + tempId).remove();
+
+    var selIndex = 2;
+
+    $('#add-next-2').children().each(function() {
+
+        var targetId = $(this).prop("id");
+        var res = targetId.substring(0, 6);
+
+        console.log("SEL INDEX:", selIndex);
+
+        if(res == 'swing-') {    
+
+            console.log("NEW TEMP ID: ", selIndex);
+            
+            var thisSwingTempId = this.id;
+
+            $("#" + this.id).prop("id", "swing-" + selIndex);
+
+            var thisTempIdPrefixArray = thisSwingTempId.split("-");
+            var thisTempId = thisTempIdPrefixArray[1];
+
+            $("#swing_request-" + thisTempId).prop("id", "swing_request-" + selIndex);
+            $("#swing_request-" + selIndex).prop("name", "swing_request-" + selIndex);
+            $("#swing_reference-" + thisTempId).prop("id", "swing_reference-" + selIndex);
+            $("#swing_reference-" + selIndex).prop("name", "swing_reference-" + selIndex);
+            $("#swing_emps-" + thisTempId).prop("id", "swing_emps-" + selIndex);
+            $("#swing_emps-" + selIndex).prop("name", "swing_emps-" + selIndex);
+            
+            $(this).find("h3").each(function(){
+                $(this).html("Swing " + selIndex); 
+            });    
+            
+            $(this).find("input").each(function(){
+                
+                //console.log(this.id); 
+                var thisId = this.id;
+                var thisIdPrefixArray = thisId.split("-");
+                var thisIdPrefix = thisIdPrefixArray[0];
+                var thisIdIndex = thisIdPrefixArray[1];
+                var thisNewPrefix = thisIdPrefix + "-" + selIndex; 
+
+                $(this).prop("id", thisNewPrefix);
+                
+                if(thisIdPrefix == 'day_shift' || thisIdPrefix == 'night_shift'){
+                    var shiftTimePrefix = "shift_time-" + selIndex;
+                    $(this).prop("name", shiftTimePrefix);    
+                } else {
+                    $(this).prop("name", thisNewPrefix);
+                }
+                
+                var thisError = thisIdPrefix + "-" + thisIdIndex + "_error";
+                var thisNewError = thisIdPrefix + "-" + selIndex + "_error";
+                
+                $("#" + thisError).prop("id", thisNewError);
+
+            });
+
+            $(this).find("select").each(function(){
+                
+                //console.log(this.id); 
+                var thisSelectId = this.id;
+                var thisSelectIdPrefixArray = thisSelectId.split("-");
+                var thisSelectIdPrefix = thisSelectIdPrefixArray[0];
+                var thisSelectIdIndex = thisSelectIdPrefixArray[1];
+                var thisNewSelectPrefix = thisSelectIdPrefix + "-" + selIndex; 
+
+                $(this).prop("id", thisNewSelectPrefix);
+                $(this).prop("name", thisNewSelectPrefix);
+
+                var thisSelectError = thisSelectIdPrefix + "-" + thisSelectIdIndex + "_error";
+                var thisSelectNewError = thisSelectIdPrefix + "-" + selIndex + "_error";
+                
+                $("#" + thisSelectError).prop("id", thisSelectNewError);
+            });
+
+            $(this).find("button").each(function(){
+                
+                //console.log(this.id); 
+                $("#" + this.id).prop("id", "remove_swing-" + selIndex);
+            }); 
+
+            selIndex++;
+        }
+        //console.log("FINAL SEL INDEX: ",selIndex);
+    });
+
+    $("#template-actions").find("button").each(function(){
+              
+        //console.log(this.id); 
+        var inputs = $("#add-next-2").find($("input") );  
+        var numInputs = inputs.length;
+        console.log("INPUTS: ",numInputs);
+
+        var adjSelIndex = parseInt(selIndex) - 1;
+
+        //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){    
+            if(numInputs > 0){
+                $("#" + this.id).prop("id", "next_swing-" + adjSelIndex);
+            } else {
+                $("#" + this.id).prop("id", "next_swing-1");
+            }    
+        }
+    }); 
+});
+
+function nextSwing(tempId, nextId) {
+
+    var followingId = parseInt(nextId) + 1;
+
+    //console.log("TEMPID: ", tempId);
+    //console.log("NEXTID: ", nextId);
+    //console.log("FOLLID: ", followingId);
+
+    var thisRequestId = $("#swing_request-1").val(); 
+    var thisRequestRef = $("#swing_reference-1").val(); 
+    var thisSwingEmps = $("#swing_emps-1").val();
+
+    console.log("THIS SWING EMPS: " + thisSwingEmps);
+
+    //SHOULD BE THE VALUE OF THE LOCAL STORAGE
+
+    $checkErrors = 0;
+    $checkErrorsMsg = '';
+    
+    if(thisRequestId == 'NA'){
+        $checkErrors++;
+        $checkErrorsMsg += '<p class="error">A request must be selected before adding Another Swing.</p>'
+    }
+
+    if(thisSwingEmps === null){
+        $checkErrors++;
+        $checkErrorsMsg += '<p class="error">At least 1 Employee be selected before adding Another Swing.</p>'
+    }
+
+    if($checkErrors > 0){
+        
+        document.getElementById("add-swing-error-modal").style.display = "block";
+        $("#swing-error-display").html($checkErrorsMsg);
+    
+    } else {
+    
+        var nextTemplate = '<div>';
+
+        var nextTemplate = '<input type="hidden" id="swing_request-' + nextId + '" name="swing_request-' + nextId + '" value="' + thisRequestId + '">';
+        nextTemplate += '<input type="hidden" id="swing_reference-' + nextId + '" name="swing_reference-' + nextId + '" value="' + thisRequestRef + '">';
+        nextTemplate += '<input type="hidden" id="swing_emps-' + nextId + '" name="swing_emps-' + nextId + '" value="' + thisSwingEmps + '">';
+
+        nextTemplate += '<div id="swing-' + nextId + '" style="margin-top:20px;padding:0 10px 10px 10px;border:1px solid #CCC;box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19);">';
+        
+        nextTemplate += '<h3>Swing ' + nextId + ':</h3>';
+        
+        nextTemplate += '<div class="w3-row">';
+
+        nextTemplate += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+        nextTemplate += '<label>Swing Type<span class="required-label">*</span></label>';
+        nextTemplate += '<select name="swing_type-' + nextId + '" id="swing_type-' + nextId + '" class="w3-select w3-border input-display">';
+        nextTemplate += '<option value="NA">Select an Swing Type</option>';
+        nextTemplate += '<option value="On">On</option>';
+        nextTemplate += '<option value="Off">Off</option>';
+        nextTemplate += '</select>';
+        nextTemplate += '<div id="swing_type-' + nextId + '_error" class="noerror" ></div>';
+        nextTemplate += '</div>';
+
+        nextTemplate += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+        nextTemplate += '<label>Start Day<span class="required-label">*</span></label>';
+        nextTemplate += '<input name="swing_start_date-' + nextId + '" id="swing_start_date-' + nextId + '" class="w3-input w3-border datepicker input-display" type="text" readonly="readonly">';
+        nextTemplate += '<div id="swing_start_date-' + nextId + '_error" class="noerror" ></div>';
+        nextTemplate += '</div>';
+
+        nextTemplate += '</div>';
+
+        nextTemplate += '<div class="w3-row">';
+
+        nextTemplate += '<div id="swing_type_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+
+        nextTemplate += '<label style="margin:0;">Swing Time<span class="required-label"<span>*</span></label>';
+        nextTemplate += '<div style="margin:0;">';
+        nextTemplate += '<input id="day_shift-' + nextId + '" name="shift_time-' + nextId + '" class="w3-radio input-display" type="radio" value="D">';
+        nextTemplate += '<label style="margin-left:5px;font-weight:normal;">Day</label>';
+        nextTemplate += '<input id="night_shift-' + nextId + '" name="shift_time-' + nextId + '" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+        nextTemplate += '<label style="margin-left:5px;font-weight:normal;">Night</label>';
+        nextTemplate += '</div>';
+        nextTemplate += '</div>';//ITEM
+
+        nextTemplate += '<div class="w3-quarter" style="padding:0 10px 10px 0;">';
+        nextTemplate += '<label>Recur (Days)<span class="required-label">*</span></label>';
+        nextTemplate += '<input name="swing_recurrence-' + nextId + '" id="swing_recurrence-' + nextId + '" class="w3-input w3-border input-display" type="text">';
+        nextTemplate += '<div id="swing_recurrence-' + nextId + '_error" class="noerror" ></div>';
+        nextTemplate += '</div>';//ITEM
+
+        nextTemplate += '</div>';//ROW
+
+        nextTemplate += '<div class="w3-center" style="margin-top:5px;">';
+        nextTemplate += '<button id="remove_swing-' + nextId + '" class="w3-button w3-padding-medium w3-pink w3-margin-bottom" style="margin-top:15px;">Remove this Swing</button>';
+        nextTemplate += '</div>';
+
+        nextTemplate += '</div>';
+
+        nextTemplate += '</div>';
+
+        $("#add-next-2").append(nextTemplate);
+
+        $("#day_shift-" + nextId).prop('checked',true);
+        $("#night_shift-" + nextId).prop('checked',false);
+
+        //SET NEXT SWING ID PROPERTY
+        $("#next_swing-" + tempId).prop("id", "next_swing-" + nextId);
+
+    }
+}
+
+$("#sidebar-right").on('click', '#load-swing-template', function (e) {
+
+    //GET THE TEMPLATES
+
+    $.ajax({
+        url: 'scheduler/templates',
+        type: "GET",
+        success: function (response) {
+            console.log(response);
+            var templates = response;
+            var displayTemplates = '<ul class="w3-ul w3-card-4 w3-hoverable">';
+            
+            for (var t = 0; t < templates.length; t++) {
+
+                var templateDesc = templates[t]['template_desc'];
+                var templateId = templates[t]['template_id'];
+
+                displayTemplates += '<li class="w3-bar">';
+                displayTemplates += '<div id="loading-swing-template-' + templateId + '" class="w3-button w3-medium w3-darkblue w3-right">Load</div>';
+                displayTemplates += '<div class="w3-left">';
+                displayTemplates += '<span class="w3-large">' + templateDesc + '</span><br>';
+                displayTemplates += '</div>';
+                displayTemplates += '</li>'
+            }
+
+            displayTemplates += '</ul>';
+            displayTemplates += '</div>';  
+
+            $("#scheduler-templates-display").html(displayTemplates);
+        
+        }
+    });
+    
+    //MY LOAD
+    document.getElementById("load-scheduler-template-modal").style.display = "block";
+    
+});
+
+$("body").on('click', '[id^=loading-swing-template]', function (e) {
+    
+    var thisId = $(this).prop('id');
+    var templateId = thisId.split('-').pop();
+    console.log("LOADINGX: ", templateId);
+
+    $.ajax({
+        url: 'scheduler/template/' + templateId,
+        type: "GET",
+        success: function (response) {
+            
+            console.log("RESP TEMP: ", response);
+
+            var template = response[0];
+            console.log("LOAD TEMP: ", template);
+            
+            var lastTemplateStored = template['template_json']; 
+            console.log("LOAD JSON: ", lastTemplateStored);
+                            
+            var lastTemplateStoredArray = JSON.parse(lastTemplateStored);
+            console.log(lastTemplateStoredArray);
+            var setTemplateEmployees = lastTemplateStoredArray[0]['swing_emps'];
+
+            currEmpsArray = setTemplateEmployees;
+
+            console.log(currEmpsArray);
+
+            localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
+
+            $("#add-next-2").html("");
+
+            for (var s = 0; s < lastTemplateStoredArray.length; s++) {
+                
+                if(s == 0){
+                    var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                    $("#swing_request-1").val(swingRequest);
+                    var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                    $("#swing_reference-1").val(swingReference);
+                    var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                    $("#swing_emps-1").val(swingEmps);
+                    swingType = lastTemplateStoredArray[s]['swing_type']; 
+                    $("#swing_type-1").val(swingType);
+                    var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                    $("#swing_start_date-1").val(swingStartDate);
+                    var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                    if(shiftTime == 'D') {
+                        $("#day_shift").prop("checked", true);
+                        $("#night_shift").prop("checked", false);
+                    } else {
+                        $("#day_shift").prop("checked", false);
+                        $("#night_shift").prop("checked", true);
+                    }
+                    var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                    $("#swing_recurrence-1").val(swingRecurrence);
+                
+                    $.ajax({
+                        url: '/employees',
+                        type: "get",
+                    }).done(function (response) {
+                        
+                        console.log("EMPLOYEES X: ", response);
+                        
+                        var employees = response;
+                        var swingEmployees = "";
+                
+                        for (var e = 0; e < employees.length; e++) {
+                            
+                            console.log("LOOP SELECT: ");
+                            
+                            empId = employees[e]['emp_id'];
+
+                            console.log("EMP: ", e);
+                                                    
+                            if(currEmpsArray.includes(empId) == true){
+                                var selected = 'selected';
+                            } else {
+                                var selected = '';
+                            }   
+                                
+                            empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+                            swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
+                        }
+                
+                        $("#swing_emps-1").html("");
+                        $("#swing_emps-1").append(swingEmployees);
+                
+                        $("#swing_emps-1").multiSelect({
+                            afterSelect: function(values){
+                
+                                console.log("AFTER SELECT X");
+                                
+                                var thisSelectedValue = values[0];
+                                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                
+                                if(currSchedTemplateEmps == null){
+                                    var tempEmps = [];
+                                    tempEmps.push(thisSelectedValue);   
+                
+                                } else {
+                                    var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                                    if(tempEmps.includes(thisSelectedValue) == false){
+                                        tempEmps.push(thisSelectedValue);
+                                        tempEmps.sort() 
+                                    }                
+                                }
+                
+                                var storeEmps = JSON.stringify(tempEmps);
+                                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                                //PUSH TO CURRENT SWINGS
+                                $("#template-actions").find("button").each(function(){
+                                    //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+                                    if(this.id != 'save-swing-template' 
+                                        && this.id != 'save-as-swing-template' 
+                                        && this.id != 'auto-date-template' 
+                                        && this.id != 'reset-template-swings'
+                                    ){    
+                                        var thisCheckId = $(this).prop('id');
+                                        checkFields = thisCheckId.split('-').pop();
+                                    }
+                                });
+
+                                console.log("CHECKFIELDS X: ", checkFields);
+                
+                                for (var c = 0; c < checkFields; c++) {
+                                    var thisEmpSwing = parseInt(c) + 1;
+                                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                                }    
+                
+                            },
+                            afterDeselect: function(values){
+                
+                                console.log("AFTER DE-SELECT X");
+                                
+                                var thisDeselectedValue = values[0];
+                
+                                function removeTempEmp(array, item){
+                                    for(var i in array){
+                                        if(array[i]==item){
+                                            array.splice(i,1);
+                                            break;
+                                        }
+                                    }
+                                }
+                
+                                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                
+                                removeTempEmp(tempEmps, thisDeselectedValue);
+                                
+                                var storeEmps = JSON.stringify(tempEmps);
+                                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                                //PUSH TO CURRENT SWINGS
+                                $("#template-actions").find("button").each(function(){
+                                    if(this.id != 'save-swing-template' 
+                                        && this.id != 'save-as-swing-template' 
+                                        && this.id != 'auto-date-template' 
+                                        && this.id != 'reset-template-swings'
+                                    ){    
+                                        var thisCheckId = $(this).prop('id');
+                                        checkFields = thisCheckId.split('-').pop();
+                                    }
+                                });
+                
+                                for (var c = 0; c < checkFields; c++) {
+                                    var thisEmpSwing = parseInt(c) + 1;
+                                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                                }
+                
+                            }
+                        });
+
+                    });
+
+                } else {
+
+                    var nextId = parseInt(s) + 1;
+
+                    nextSwing(s, nextId);
+
+                    var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                    $("#swing_request-" + nextId).val(swingRequest);
+                    var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                    $("#swing_reference-" + nextId).val(swingReference);
+                    
+                    var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                    $("#swing_emps-" + nextId).val(swingEmps);
+                    
+                    swingType = lastTemplateStoredArray[s]['swing_type']; 
+                    $("#swing_type-" + nextId).val(swingType);
+                    var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                    $("#swing_start_date-" + nextId).val(swingStartDate);
+                    var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                    if(shiftTime == 'D') {
+                        $("#day_shift").prop("checked", true);
+                        $("#night_shift").prop("checked", false);
+                    } else {
+                        $("#day_shift").prop("checked", false);
+                        $("#night_shift").prop("checked", true);
+                    }
+                    var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                    $("#swing_recurrence-" + nextId).val(swingRecurrence);
+                }
+            
+            } 
+
+            document.getElementById("load-scheduler-template-modal").style.display = "none";
+
+        }
+    });
+
+});
+
+$("#sidebar-right").on('click', '#reload-swing-template', function (e) {
+
+    var lastTemplateStored = localStorage.getItem('scheduler-template-last-stored');
+
+    console.log("LAST SAVED: ");
+    console.log(lastTemplateStored);
+
+    if(lastTemplateStored != null) {
+        
+        var lastTemplateStoredArray = JSON.parse(lastTemplateStored);
+        console.log(lastTemplateStoredArray);
+        var setTemplateEmployees = lastTemplateStoredArray[0]['swing_emps'];
+
+        currEmpsArray = setTemplateEmployees;
+
+        console.log(currEmpsArray);
+
+        localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
+
+        //}
+
+        //var setTemplateEmployees = lastTemplateStored[0]['swing-emps'];
+
+        //if(setTemplateEmployees == null){
+            //var currEmpsArray = JSON.parse(setTemplateEmployees);
+        //} else {
+            //currEmpsArray = [];
+        //}
+
+        //var lastTemplateStored = localStorage.getItem('scheduler-template-last-stored');
+
+        //if(lastTemplateStored != null) {
+        
+        //var lastTemplateStoredArray = JSON.parse(lastTemplateStored);
+        //console.log(lastTemplateStoredArray);
+
+        $("#add-next-2").html("");
+
+        for (var s = 0; s < lastTemplateStoredArray.length; s++) {
+            
+            if(s == 0){
+                var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                $("#swing_request-1").val(swingRequest);
+                var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                $("#swing_reference-1").val(swingReference);
+                var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                $("#swing_emps-1").val(swingEmps);
+                swingType = lastTemplateStoredArray[s]['swing_type']; 
+                $("#swing_type-1").val(swingType);
+                var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                $("#swing_start_date-1").val(swingStartDate);
+                var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                if(shiftTime == 'D') {
+                    $("#day_shift-1").prop("checked", true);
+                    $("#night_shift-1").prop("checked", false);
+                } else {
+                    $("#day_shift-1").prop("checked", false);
+                    $("#night_shift-1").prop("checked", true);
+                }
+                var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                $("#swing_recurrence-1").val(swingRecurrence);
+            
+                $.ajax({
+                    url: '/employees',
+                    type: "get",
+                }).done(function (response) {
+                    
+                    console.log("EMPLOYEES X: ", response);
+                    
+                    var employees = response;
+                    var swingEmployees = "";
+            
+                    for (var e = 0; e < employees.length; e++) {
+                        
+                        console.log("LOOP SELECT: ");
+                        
+                        empId = employees[e]['emp_id'];
+
+                        console.log("EMP: ", e);
+                        
+                        //if(typeof currSchedTemplateEmps != "undefined"){
+                        
+                            if(currEmpsArray.includes(empId) == true){
+                                var selected = 'selected';
+                            } else {
+                                var selected = '';
+                            }   
+                            
+                        
+
+                        empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+                        swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
+                    }
+            
+                    $("#swing_emps-1").html("");
+                    $("#swing_emps-1").append(swingEmployees);
+            
+                    $("#swing_emps-1").multiSelect({
+                        afterSelect: function(values){
+            
+                            console.log("AFTER SELECT X");
+                            
+                            var thisSelectedValue = values[0];
+                            var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+
+                            //var currSchedTemplateEmps = currEmpsArray;
+            
+                            if(currSchedTemplateEmps == null){
+                                var tempEmps = [];
+                                tempEmps.push(thisSelectedValue);   
+            
+                            } else {
+                                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                                if(tempEmps.includes(thisSelectedValue) == false){
+                                    tempEmps.push(thisSelectedValue);
+                                    tempEmps.sort() 
+                                }                
+                            }
+            
+                            var storeEmps = JSON.stringify(tempEmps);
+                            localStorage.setItem('scheduler-templates-employees',storeEmps);
+            
+                            //PUSH TO CURRENT SWINGS
+                            $("#template-actions").find("button").each(function(){
+                                //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+                                if(this.id != 'save-swing-template' 
+                                    && this.id != 'save-as-swing-template' 
+                                    && this.id != 'auto-date-template' 
+                                    && this.id != 'reset-template-swings'
+                                ){    
+                                    var thisCheckId = $(this).prop('id');
+                                    checkFields = thisCheckId.split('-').pop();
+                                }
+                            });
+
+                            console.log("CHECKFIELDS X: ", checkFields);
+            
+                            for (var c = 0; c < checkFields; c++) {
+                                var thisEmpSwing = parseInt(c) + 1;
+                                $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                            }    
+            
+                        },
+                        afterDeselect: function(values){
+            
+                            console.log("AFTER DE-SELECT X");
+                            
+                            var thisDeselectedValue = values[0];
+            
+                            function removeTempEmp(array, item){
+                                for(var i in array){
+                                    if(array[i]==item){
+                                        array.splice(i,1);
+                                        break;
+                                    }
+                                }
+                            }
+            
+                            var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                            var tempEmps = JSON.parse(currSchedTemplateEmps); 
+            
+                            removeTempEmp(tempEmps, thisDeselectedValue);
+                            
+                            var storeEmps = JSON.stringify(tempEmps);
+                            localStorage.setItem('scheduler-templates-employees',storeEmps);
+            
+                            //PUSH TO CURRENT SWINGS
+                            $("#template-actions").find("button").each(function(){
+                                //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+                                if(this.id != 'save-swing-template' 
+                                    && this.id != 'save-as-swing-template' 
+                                    && this.id != 'auto-date-template' 
+                                    && this.id != 'reset-template-swings'
+                                ){    
+                                    var thisCheckId = $(this).prop('id');
+                                    checkFields = thisCheckId.split('-').pop();
+                                }
+                            });
+            
+                            for (var c = 0; c < checkFields; c++) {
+                                var thisEmpSwing = parseInt(c) + 1;
+                                $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                            }
+            
+                        }
+                    });
+
+                });
+
+            } else {
+
+                var nextId = parseInt(s) + 1;
+
+                nextSwing(s, nextId);
+
+                var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                $("#swing_request-" + nextId).val(swingRequest);
+                var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                $("#swing_reference-" + nextId).val(swingReference);
+                
+                var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                $("#swing_emps-" + nextId).val(swingEmps);
+                
+                swingType = lastTemplateStoredArray[s]['swing_type']; 
+                $("#swing_type-" + nextId).val(swingType);
+                var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                $("#swing_start_date-" + nextId).val(swingStartDate);
+                var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                if(shiftTime == 'D') {
+                    $("#day_shift-" + nextId).prop("checked", true);
+                    $("#night_shift-" + + nextId).prop("checked", false);
+                } else {
+                    $("#day_shift").prop("checked", false);
+                    $("#night_shift").prop("checked", true);
+                }
+                var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                $("#swing_recurrence-" + nextId).val(swingRecurrence);
+            }
+        
+        } 
+
+    } else {
+        alert("nothing to reload"); 
+    }
+
+});
+
+function getSwingDates(tempId){
+
+    console.log("LOOP: ", tempId);
+
+    var shiftDate = $("#swing_start_date-" + tempId).val();
+    console.log("SHIFT DATE: ", shiftDate);
+    var shiftRecur = $("#swing_recurrence-" + tempId).val();
+
+    var errCount = 0;
+    var errMsg = '';
+    
+    if(shiftDate.length < 1){
+        errCount++;
+        errMsg += '<p class="error">No Start Date provided for Swing ' + tempId + '.</p>';
+    }
+
+    if(shiftRecur.length < 1){
+        errCount++;
+        errMsg += '<p class="error">No Recur Days provided for Swing ' + tempId + '.</p>';
+    }
+    
+    if(errCount < 1){
+
+        var shiftDateArray = shiftDate.split("-");
+        var shiftDateFormat = new Date( shiftDateArray[2], shiftDateArray[1] - 1, shiftDateArray[0]);
+        var initShiftdateStr = shiftDateFormat.getTime();
+        var timeAddition = parseInt(shiftRecur) * 24 * 60 * 60 * 1000;
+        var nextSwingDateStr = initShiftdateStr + timeAddition;
+
+        var checkNextDate = new Date(nextSwingDateStr);
+        var curr_date = checkNextDate.getDate();
+        var curr_month = checkNextDate.getMonth() + 1;
+        var curr_year = checkNextDate.getFullYear();
+
+        var swingDateFormat = curr_date + "-" + curr_month + "-" + curr_year;
+
+        //var checkDateFormat = checkNextDate.toLocaleDateString("en-UK");
+        //console.log("CHECK DATE: ", swingDateFormat);
+
+        return swingDateFormat;
+
+    } else {
+        document.getElementById("auto-date-error-modal").style.display = "block";
+        $("#auto-date-display").html(errMsg);
+    }
+}
+
+$("#sidebar-right").on('click', '#auto-date-template', function (e) {
+    
+    $("#template-actions").find("button").each(function(){
+        
+        console.log("RUNNING");
+        
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){
+            var thisCheckId = $(this).prop('id');
+            checkFields = thisCheckId.split('-').pop();
+        }
+    });
+
+    console.log("AUTO CHECKFIELDS: ", checkFields);
+
+    if(checkFields > 1){
+    
+        for (var c = 0; c < checkFields; c++) {
+            var tempId = c + 1;
+            var nextId = tempId + 1;
+            var nextSwingDate = getSwingDates(tempId);
+
+            console.log("SET DATE :", nextId);
+            console.log(nextSwingDate);
+
+            $("#swing_start_date-" + nextId).val(nextSwingDate);
+        }
+    
+    } else {
+        
+        var errCountVoid = 0;
+        var errMsgVoid = '';
+        
+        var thisSwingStartDate = $("#swing_start_date-1").val();
+        var thisSwingRecur = $("#swing_recurrence-1").val();
+        
+        if(thisSwingStartDate.length < 1 || thisSwingRecur.length < 1){
+        
+            if(thisSwingStartDate.length < 1){
+                errCountVoid++;
+                errMsgVoid += '<p class="error">No Start Date provided for Swing 1.</p>';
+            }
+        
+            if(thisSwingRecur.length < 1){                
+                errCountVoid++;
+                errMsgVoid += '<p class="error">No Recur Days provided for Swing 1.</p>';
+            }
+
+            if(errCountVoid > 0){
+                var autoDateErrorsMsg = errMsgVoid;
+                document.getElementById("auto-date-error-modal").style.display = "block";
+                $("#auto-date-display").html(autoDateErrorsMsg);
+
+            }
+
+        } else {
+            var autoDateErrorsMsg = '<p class="error">No Dates to update.</p>';
+            document.getElementById("auto-date-error-modal").style.display = "block";
+            $("#auto-date-display").html(autoDateErrorsMsg);
+        }
+    }
+});
+
+$("#sidebar-right").on('click', '#reset-template-swings', function (e) {
+    //alert("RESET TEMPLATES"); 
+    setTemplates();
+});
+
+$("body").on('click', '#cancel-swing-delete', function (e) {
+    document.getElementById("delete-swing-batch-modal").style.display = "none";
+});    
+
+$("body").on('click', '#delete-bookings-template', function (e) {
+
+    var deleteExisting = $("#select-template-update").val();
+
+    var deleteErrCount = 0;
+    var deleteErrMsg = '';
+
+    if(deleteExisting == 'NA'){
+        deleteErrCount++;
+        deleteErrMsg += '<p>No Existing Template was Selected for Deletion.</p>';
+    }
+
+    if(deleteErrCount < 1){
+
+        var r = confirm("Are you sure you want to delete the Selected Template?");
+        if (r == true) {
+        
+            $.ajax({
+                url: 'scheduler/booking/template/delete',
+                type: "POST",
+                data: {
+                    "template_id": deleteExisting,
+                },
+                success: function (response) {
+                    //console.log(response);
+                    var status = response.status;
+                    var templateArray = response.template_array;
+                    console.log("MY TEMPLATE: ", templateArray);
+
+                    document.getElementById("save-scheduler-template-modal").style.display = "none";
+
+                }
+            });
+        }
+
+    } else {
+        $("#save-template-errors").html(deleteErrMsg);
+        $("#save-template-errors").removeClass("noerror");
+        $("#save-template-errors").addClass("error");
+    }    
+});
+
+$("body").on('click', '#save-bookings-template', function (e) {
+    
+    var saveErrCount = 0;
+    var saveErrMsg = '';
+
+    var updateExisting = $("#select-template-update").val();
+    console.log("UPEX: ", updateExisting);
+
+    var updateDesc = $("#template_desc").val();
+
+    if(updateExisting == 'NA' && updateDesc.length < 1 ){
+        saveErrCount++;
+        saveErrMsg += '<p>Either Select an Existing Template to Update OR Add a New Template Name.</p>';
+    }
+
+    if(saveErrCount < 1){
+    
+        if(updateExisting != 'NA'){
+            var saveUrl = 'scheduler/booking/template';
+            var updateTemplateDesc = 'NA';
+        } else {
+            var saveUrl = 'scheduler/bookings/template';
+            var updateTemplateDesc = updateDesc;
+        } 
+        
+        console.log("SAVE URL: ",saveUrl);
+        console.log("TEMP ID: ", updateExisting);
+
+        e.preventDefault();
+
+        $("#scheduler-template-form").find("div.error").removeClass('error').addClass("noerror");
+        $("#scheduler-template-form").find("input.required").removeClass('required');
+        $("#scheduler-template-form").find("select.required").removeClass('required');
+
+        var errCount = 0;
+        var errMsgArray = [];
+
+        if($("#swing_request-1").val() == 'NA') {        
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_request-1",
+                "msg": 'A Request must be selected'
+            });
+        }
+        
+        if($("#swing_emps-1").val() === null) {           
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_emps-1",
+                "msg": 'At least 1 Employee must be selected'
+            });
+        }
+
+        $("#template-actions").find("button").each(function(){
+            if(this.id != 'save-swing-template' 
+                && this.id != 'save-as-swing-template' 
+                && this.id != 'auto-date-template' 
+                && this.id != 'reset-template-swings'
+            ){    
+                var thisCheckId = $(this).prop('id');
+                checkFields = thisCheckId.split('-').pop();
+            }
+        });
+        
+        checkFields = parseInt(checkFields) + 1;
+        
+        for (var c = 1; c < checkFields; c++) {
+        
+            if($("[id^=swing_type-" + c).val() == 'NA') {                  
+                errCount++;
+                errMsgArray.push({
+                    "id": "swing_type-" + c,
+                    "msg": 'A Swing Type must be selected'
+                });
+            }
+
+            if($("#swing_start_date-" + c).val().length < 1) {
+                errCount++;
+                errMsgArray.push({
+                    "id": "swing_start_date-" + c,
+                    "msg": 'A Start Day must be selected'
+                });
+            }
+
+            if($("#swing_recurrence-" + c).val().length < 1) {
+                errCount++;
+                errMsgArray.push({
+                    "id": "swing_recurrence-" + c,
+                    "msg": 'A Recurring Number of days must be provided'
+                });
+            }
+        }
+        
+        if(errCount > 0){
+
+            console.log("ERRORS: ", errMsgArray);
+
+            for (var e = 0; e < errMsgArray.length; e++) {
+
+                var errorId = errMsgArray[e]['id'];
+                var errorMsg = errMsgArray[e]['msg'];
+
+                if(errorId == 'swing_emps-1'){
+                    $("#swing_emps_error-1").removeClass('noerror');
+                    $("#swing_emps_error-1").addClass('error');
+                } else {    
+                    $("#" + errorId).addClass('required');
+                    $("#" + errorId + "_error").removeClass('noerror');
+                    $("#" + errorId + "_error").addClass('error');
+                }
+                
+                if(errorId == 'swing_emps-1'){
+                    $("#swing_emps_error-1").html(errorMsg);    
+                } else {
+                    $("#" + errorId + "_error").html(errorMsg);
+                }
+            }
+
+        } else {
+                
+            var requestForm = $("#scheduler-template-form").serialize();
+
+            $.ajax({
+                url: saveUrl,
+                type: "POST",
+                data: {
+                    "template_id": updateExisting,
+                    "template_name": updateTemplateDesc, 
+                    "form": requestForm
+                },
+                success: function (response) {
+                    //console.log(response);
+                    var status = response.status;
+                    var templateArray = response.template_array;
+                    console.log("MY TEMPLATE: ", templateArray);
+
+                    document.getElementById("save-scheduler-template-modal").style.display = "none";
+
+                }
+            });
+        }
+
+    } else {
+        $("#save-template-errors").html(saveErrMsg);
+        $("#save-template-errors").removeClass("noerror");
+        $("#save-template-errors").addClass("error");
+    }
+});
+
+$("#sidebar-right").on('click', '#save-as-swing-template', function (e) {
+
+    $("#save-template-errors").html("");
+    $("#save-template-errors").removeClass("error");
+    $("#save-template-errors").addClass("noerror");
+    
+    $.ajax({
+        url: 'scheduler/templates',
+        type: "GET",
+        success: function (response) {
+            console.log(response);
+            var templates = response;
+            
+            var displayTemplates = '<form id="save-template-form">';
+            
+            displayTemplates += '<select id="select-template-update" name="select-template-update" style="margin-top:15px;" class="w3-select w3-border input-display">';
+
+            displayTemplates += '<option value="NA">Update an Existing Template</option>';
+        
+            for (var t = 0; t < templates.length; t++) {
+                var templateDesc = templates[t]['template_desc'];
+                var templateId = templates[t]['template_id'];
+
+                displayTemplates += '<option value="' + templateId + '">' + templateDesc + '</option>';
+            }
+
+            displayTemplates += '<h5>Update an Existing Template:</h5>';
+            displayTemplates += '</select>';
+
+            displayTemplates += '<div id="template-desc" style="padding:15px 10px 10px 0;">';
+            displayTemplates += '<label style="font-weight:bold;">Or Create a New Template:</label>';
+            displayTemplates += '<input name="template_desc" id="template_desc" class="w3-input w3-border input-display" type="text" placeholder="Add a New Temnplate Name...">';
+            displayTemplates += '</div>';
+
+            displayTemplates += '</form>';
+
+            $("#scheduler-templates-select-display").html(displayTemplates);
+        
+        }
+    });
+    
+    document.getElementById("save-scheduler-template-modal").style.display = "block";
+
+});
+
+$("#sidebar-right").on('click', '#cancel-save-swing-template', function (e) {
+    //CANCEL SWING
+    e.preventDefault();
+
+    $("#sidebar-right").html("");
+    $("#sidebar-right").css({"width": "0px"});
+});    
+
 $("#sidebar-right").on('click', '#save-swing-template', function (e) {
 
+    //alert("SAVING");
+    
     e.preventDefault();
 
     $("#scheduler-template-form").find("div.error").removeClass('error').addClass("noerror");
@@ -197,35 +1291,85 @@ $("#sidebar-right").on('click', '#save-swing-template', function (e) {
     var errCount = 0;
     var errMsgArray = [];
 
-    var numTemps = 2
+    if($("#swing_request-1").val() == 'NA') {        
+        errCount++;
+        errMsgArray.push({
+            "id": "swing_request-1",
+            "msg": 'A Request must be selected'
+        });
+    }
+    
+    if($("#swing_emps-1").val() === null) {           
+        errCount++;
+        errMsgArray.push({
+            "id": "swing_emps-1",
+            "msg": 'At least 1 Employee must be selected'
+        });
+    }
 
-    for (var t = 1; t < numTemps; t++) {
-        
-        //console.log("LOOP ERR: " + t);
-        
-        if($("#swing_request-" + t).val() == 'NA') {
+    $("#template-actions").find("button").each(function(){
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){    
+            var thisCheckId = $(this).prop('id');
+            checkFields = thisCheckId.split('-').pop();
+        }
+    });
+    
+    checkFields = parseInt(checkFields) + 1;
+    
+    for (var c = 1; c < checkFields; c++) {
+    
+        if($("[id^=swing_type-" + c).val() == 'NA') {                  
             errCount++;
             errMsgArray.push({
-                "id": "swing_request-" + t,
-                "msg": 'A Request must be selected'
+                "id": "swing_type-" + c,
+                "msg": 'A Swing Type must be selected'
+            });
+        }
+
+        if($("#swing_start_date-" + c).val().length < 1) {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_start_date-" + c,
+                "msg": 'A Start Day must be selected'
+            });
+        }
+
+        if($("#swing_recurrence-" + c).val().length < 1) {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_recurrence-" + c,
+                "msg": 'A Recurring Number of days must be provided'
             });
         }
     }
     
     if(errCount > 0){
 
-        console.log("ERRORS: ", errMsgArray);
+        //console.log("ERRORS: ", errMsgArray);
 
         for (var e = 0; e < errMsgArray.length; e++) {
 
             var errorId = errMsgArray[e]['id'];
             var errorMsg = errMsgArray[e]['msg'];
 
-            $("#" + errorId).addClass('required');
-            $("#" + errorId + "_error").removeClass('noerror');
-            $("#" + errorId + "_error").addClass('error');
-            $("#" + errorId + "_error").html(errorMsg);
-
+            if(errorId == 'swing_emps-1'){
+                $("#swing_emps_error-1").removeClass('noerror');
+                $("#swing_emps_error-1").addClass('error');
+            } else {    
+                $("#" + errorId).addClass('required');
+                $("#" + errorId + "_error").removeClass('noerror');
+                $("#" + errorId + "_error").addClass('error');
+            }
+            
+            if(errorId == 'swing_emps-1'){
+                $("#swing_emps_error-1").html(errorMsg);    
+            } else {
+                $("#" + errorId + "_error").html(errorMsg);
+            }
         }
 
     } else {
@@ -239,17 +1383,23 @@ $("#sidebar-right").on('click', '#save-swing-template', function (e) {
                 "form": requestForm
             },
             success: function (response) {
-                console.log(response);
-                /* alert(successMsg);
-                $("#sidebar-right").css({"width": "0px"});
-                localStorage.removeItem('right-sidebar-content');
-                getWorkspace('requests',1); */
+                //console.log(response);
+                var status = response.status;
+                var templateArray = response.template_array;
+                console.log("MY TEMPLATE: ", templateArray);
+
+                localStorage.setItem('scheduler-template-last-stored',templateArray);
+
+                var resetEmps = [];
+                localStorage.setItem('scheduler-templates-employees', JSON.stringify(resetEmps));
+
+                window.location.assign('/scheduler');
             }
         });
     }
 });    
 
-$("#sidebar-right").on('change', '[id^=swing_request-]', function (e) {
+$("#sidebar-right").on('change', '#swing_request-1', function (e) {
     
     e.preventDefault();
 
@@ -271,53 +1421,71 @@ $("#sidebar-right").on('change', '[id^=swing_request-]', function (e) {
             reqRefDesc = "RR" + reqRef + "-" + reqSiteShort;
 
             $("#swing_reference-" + tempId).val(reqRefDesc);
-            
+
+            //PUSH TO CURRENT SWINGS (FROM 2)
+            $("#template-actions").find("button").each(function(){
+                //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+                if(this.id != 'save-swing-template' 
+                    && this.id != 'save-as-swing-template' 
+                    && this.id != 'auto-date-template' 
+                    && this.id != 'reset-template-swings'
+                ){    
+                    console.log("THIS ID: ", $(this).prop('id'));
+                    
+                    var thisCheckId = $(this).prop('id');
+                    checkFields = thisCheckId.split('-').pop();
+                }
+            });
+
+            console.log("CHECKFIELDS: ", checkFields);
+
+            for (var c = 0; c < checkFields; c++) {
+                var thisEmpSwing = parseInt(c) + 1;                
+                $("#swing_request-" + thisEmpSwing).val(reqId); 
+                $("#swing_reference-" + thisEmpSwing).val(reqRefDesc);  
+            }
         });
     } else {
         $("#swing_reference-" + tempId).val("");
     }
-
-    /*
-    console.log("TID: ", thisId);
-    var tempId = thisId.split('-').pop();
-    var selectionStr = "#" + thisId + " option:selected";
-    var selectedReq = $(selectionStr).text();
-    var selectedRefText = "RR" + selectedReq.substring(1, 6);
-
-    if($("#" + thisId).val() != 'NA') {
-        $("#swing_reference-" + tempId).val(selectedRefText);
-    } else {
-        $("#swing_reference-" + tempId).val("");
-    }
-    */
 });
 
-function viewTemplates() {
+function setTemplates(swingTemplates){
+
+    $("#sidebar-right").html("");
+
+    var tempId = 1;
+    
+    //INITIALISE LOCAL STORAGE OF EMPS
+
+    var setTemplateEmployees = localStorage.getItem('scheduler-templates-employees');
+
+    //if(setTemplateEmployees != null){
+        //var currEmpsArray = JSON.parse(setTemplateEmployees);
+    //} else {
+        currEmpsArray = [];
+    //}
+
+    console.log("SET TEMP EMPS: ", currEmpsArray);
+    
+    localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
 
     var swingTemplates = '<div class="w3-bar w3-darkblue" style="width:100%;">';
     swingTemplates += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Swing Templates</div>';
     swingTemplates += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
     swingTemplates += '</div>';
 
-    swingTemplates += '<div style="margin:0 15px 0 15px;border:0px solid red;">';
+    swingTemplates += '<div id="outer-templates-container" style="margin:0 15px 0 15px;border:0px solid red;">';
 
-    $("#sidebar-right").html("");
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="reload-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin-top:10px;">Reload Last Used Swing Details</button>';
+    swingTemplates += '<button id="load-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:10px 0 0 10px;">Load a Swing Template</button>';
 
-    var spinHtml = '<div class="busy-indicator">';
-    spinHtml += '<div>';
-    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
-    spinHtml += '</div>';
-    spinHtml += '</div>';
+    swingTemplates += '</div>';
 
-    //$("#sidebar-right").append(spinHtml);
-
-    var tempId = 1;
-    
     swingTemplates += '<div style="margin-top:5px;margin-bottom:10px;font-size:12px;">Required Field<span class="required-label">*</span></div>';
     
     swingTemplates += '<form name="scheduler-template-form" id="scheduler-template-form">';
-
-    swingTemplates += '<input type="hidden" id="swing_id-' + tempId + '" name="swing_id-' + tempId + '" value="' + tempId + '">';
 
     swingTemplates += '<div class="w3-row">';
 
@@ -340,9 +1508,15 @@ function viewTemplates() {
     swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
     swingTemplates += '<label style="font-weight:bold;">Employee(s)<span class="required-label"<span>*</span></label>';
     swingTemplates += '<select id="swing_emps-' + tempId + '" name="swing_emps-' + tempId + '[]" multiple="multiple" style="margin-top:10px;"></select>';
-    swingTemplates += '<div id="swing_emps_error-' + tempId + '" class="noerror" ></div>';
+    swingTemplates += '<div id="swing_emps_error-' + tempId +'" class="noerror" ></div>';
     swingTemplates += '</div>';//DISPLAY
     swingTemplates += '</div>';//ROW
+
+    swingTemplates += '<div id="swing-templates-container" style="border:0px solid brown">';
+    
+    swingTemplates += '<div id="swing-' + tempId + '" style="margin-top:10px;padding:0 10px 10px 10px;border:1px solid #CCC; box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19);">';
+    
+    swingTemplates += '<h3>Swing ' + tempId + ':</h3>';
     
     swingTemplates += '<div class="w3-row">';
 
@@ -378,17 +1552,36 @@ function viewTemplates() {
     swingTemplates += '</div>';//ITEM
 
     swingTemplates += '<div class="w3-quarter" style="padding:0 10px 10px 0;">';
-    swingTemplates += '<label>Recur<span class="required-label">*</span></label>';
+    swingTemplates += '<label>Recur (Days)<span class="required-label">*</span></label>';
     swingTemplates += '<input name="swing_recurrence-' + tempId + '" id="swing_recurrence-' + tempId + '" class="w3-input w3-border input-display" type="text">';
     swingTemplates += '<div id="swing_recurrence-' + tempId + '_error" class="noerror" ></div>';
     swingTemplates += '</div>';//ITEM
 
     swingTemplates += '</div>';//ROW
 
+    swingTemplates += '</div>';//SWING ID CONTAINER
+
+    swingTemplates += '<div id="add-next-2"></div>';//ADD NEXT HERE
+
+    swingTemplates += '</div>';//SWING TEMPLATES CONTAINER
+
     swingTemplates += '</form>';
 
+    swingTemplates += '<div id="template-actions">';
+    
     swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
-    swingTemplates += '<button id="save-swing-template" class="w3-button w3-padding-large w3-darkblue w3-margin-bottom" style="margin-top:15px;">Build Template</button>';
+    swingTemplates += '<button id="next_swing-' + tempId + '" class="w3-button w3-padding-medium w3-pink w3-margin-bottom" style="margin-top:10px;">Add Another Swing</button>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="auto-date-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 0;">Auto Date</button>';
+    swingTemplates += '<button id="reset-template-swings" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Reset Shifts</button>';
+    swingTemplates += '<button id="save-as-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Save as Template</button>';
+    swingTemplates += '<button id="cancel-save-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Cancel</button>';
+    swingTemplates += '<button id="save-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Create Shifts</button>';
+
+    swingTemplates += '</div>';
+
     swingTemplates += '</div>';
 
     swingTemplates += '</div>';//CONTAINER
@@ -396,6 +1589,9 @@ function viewTemplates() {
     $("#sidebar-right").html("");
 
     $("#sidebar-right").append(swingTemplates);
+
+    $("#day_shift-" + tempId).prop('checked',true);
+    $("#night_shift-" + tempId).prop('checked',false);
 
     $.ajax({
         url: '/requests',
@@ -424,16 +1620,147 @@ function viewTemplates() {
 
         for (var e = 0; e < employees.length; e++) {
             empId = employees[e]['emp_id'];
+            
+            if(typeof currSchedTemplateEmps != "undefined"){
+            
+                if(currEmpsArray.includes(empId) == true){
+                    var selected = 'selected';
+                } else {
+                    var selected = '';
+                }    
+            
+            } else {
+                var selected = '';
+            }
+
             empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
-            swingEmployees += '<option value="' + empId + '">' + empName + '</option>';
+            swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
         }
 
         $("#swing_emps-" + tempId).html("");
         $("#swing_emps-" + tempId).append(swingEmployees);
-        //$("#swing_emps-" + tempId).multiSelect();
 
-        $("[id^=swing_emps-]").multiSelect();
+        $("#swing_emps-1").multiSelect({
+            afterSelect: function(values){
+
+                console.log("AFTER SELECT Y");
+                
+                var thisSelectedValue = values[0];
+                
+                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+
+                console.log("LOCAL STORAGE INIT Y: ", currSchedTemplateEmps);
+
+                //MY HERE    
+
+                if(localStorage.getItem('scheduler-templates-employees') == null){
+                
+                    //if(typeof currSchedTemplateEmps === "undefined" || currSchedTemplateEmps === null){
+
+                    console.log("UNDEFINED NULL");
+                    
+                    //if(currSchedTemplateEmps == null){
+                     var tempEmps = [];
+                     tempEmps.push(thisSelectedValue);
+                     
+                     console.log("NEW TEMP EMPS Y: ", tempEmps);
+
+                } else {
+                    
+                    console.log("DEFINED NOT NULL");
+                    
+                    var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                    if(tempEmps.includes(thisSelectedValue) == false){
+                        tempEmps.push(thisSelectedValue);
+                        tempEmps.sort() 
+                    } 
+                    
+                    console.log("EXIST TEMP EMPS Y: ", tempEmps);
+                }
+
+                var storeEmps = JSON.stringify(tempEmps);
+                console.log("STORE EMPS: ");
+                console.log(storeEmps);
+
+                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                console.log("LOCAL STORAGE: ", localStorage.getItem('scheduler-templates-employees'));
+
+                //PUSH TO CURRENT SWINGS
+                $("#template-actions").find("button").each(function(){
+                    //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+                    if(this.id != 'save-swing-template' 
+                        && this.id != 'save-as-swing-template' 
+                        && this.id != 'auto-date-template' 
+                        && this.id != 'reset-template-swings'
+                    ){    
+                        var thisCheckId = $(this).prop('id');
+                        checkFields = thisCheckId.split('-').pop();
+                    }
+                });
+
+                console.log("CHECKFIELDS Y: ", checkFields);
+
+                for (var c = 0; c < checkFields; c++) {
+                    var thisEmpSwing = parseInt(c) + 1;
+                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                }    
+
+            },
+            afterDeselect: function(values){
+
+                console.log("AFTER DE-SELECT Y");
+                
+                var thisDeselectedValue = values[0];
+
+                function removeTempEmp(array, item){
+                    for(var i in array){
+                        if(array[i]==item){
+                            array.splice(i,1);
+                            break;
+                        }
+                    }
+                }
+
+                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+
+                console.log("LOCAL STORAGE REMOVE: ", tempEmps);
+
+                removeTempEmp(tempEmps, thisDeselectedValue);
+                
+                var storeEmps = JSON.stringify(tempEmps);
+                localStorage.setItem('scheduler-templates-employees',storeEmps);
+
+                console.log("LOCAL STORAGE AFTER REMOVE: ", tempEmps);
+
+                //PUSH TO CURRENT SWINGS
+                $("#template-actions").find("button").each(function(){
+                    //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
+                    if(this.id != 'save-swing-template' 
+                        && this.id != 'save-as-swing-template' 
+                        && this.id != 'auto-date-template' 
+                        && this.id != 'reset-template-swings'
+                    ){    
+                        var thisCheckId = $(this).prop('id');
+                        checkFields = thisCheckId.split('-').pop();
+                    }
+                });
+
+                for (var c = 0; c < checkFields; c++) {
+                    var thisEmpSwing = parseInt(c) + 1;
+                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                }
+
+            }
+        });
     });
+}
+
+function viewTemplates() {
+
+    setTemplates();
+
 }
 
 //SWING TEMPLATES
@@ -585,8 +1912,10 @@ $("body").on('click','#remove-scheduler-availability', function (e) {
 
     e.preventDefault();
 
-    removeSchedulerAvailability();
+    $("#filter-scheduler-availability").css({"display" : "block"});
+    $("#remove-scheduler-availability").css({"display" : "none"});
 
+    removeSchedulerAvailability();
 });
 
 
@@ -594,8 +1923,10 @@ $("body").on('click','#filter-scheduler-availability', function (e) {
 
     e.preventDefault();
 
-    displaySchedulerAvailability();
+    $("#filter-scheduler-availability").css({"display" : "none"});
+    $("#remove-scheduler-availability").css({"display" : "block"});
 
+    displaySchedulerAvailability();
 });
 
 $("body").on('click','#filter-scheduler-criteria', function (e) {
@@ -667,6 +1998,334 @@ $("#sidebar-right").on('click', '#update-scheduler-filter', function (e) {
         alert("No Filter Criteria selected");
     }
 });
+
+$("#sidebar-right").on('click', '#cancel-delete-shifts', function (e) {
+
+    e.preventDefault();
+
+    $("#sidebar-right").css({"width": "0px"});
+    localStorage.removeItem('right-sidebar-content');
+});
+
+function bookingsDeletion(deleteActionType){
+
+    console.log("DEL ACTION: ", deleteActionType);
+    
+    if(deleteActionType == 'request'){
+        var deletionForm = $("#delete-form-req").serialize();
+    } else if(deleteActionType == 'batch'){
+        var deletionForm = $("#delete-form-batch").serialize();
+    } else if(deleteActionType == 'shift'){
+        var deletionForm = $("#delete-form-shift").serialize();
+    }
+    
+    console.log("DEL FORM: ", deletionForm);
+
+    $.ajax({
+        url: '/bookings/delete',
+        type: "POST",
+        data: {
+            "delete_type": deleteActionType, 
+            "form": deletionForm
+        },
+        success: function (response) {
+            console.log(response);
+            window.location.assign('/scheduler');
+        }
+    });
+}
+
+$("body").on('click', '[id^=continue-delete-]', function (e) {
+    
+    var thisId = $(this).prop('id');
+
+    console.log("TDID", thisId);
+
+    var deleteType = thisId.split('-').pop();
+
+    console.log("DEL TYPE: ", deleteType);
+
+    if(deleteType == 'req'){
+        var deleteTypeId = $("#delete_req_id").val();
+        var deleteTypeDesc = 'Request ID#';
+        //var url = '/bookings/request/' + deleteTypeId;
+        //var continueBtn = 'continue-delete-request';
+    } else if(deleteType == 'batch'){
+        var deleteTypeId = $("#delete_batch_id").val();
+        var deleteTypeDesc = 'Batch ID#';
+        //var url = '/bookings/batch/' + deleteTypeId;
+        //var continueBtn = 'continue-delete-batch';
+    } else if(deleteType == 'shift'){
+        var deleteTypeId = $("#delete_shift_id").val();
+        var deleteTypeDesc = 'Shift ID#';
+        //var url = '/bookings/shift/' + deleteTypeId;
+        //var continueBtn = 'continue-delete-shift';
+    }
+    
+    var r = confirm("Are you sure you want to delete Shifts connected to " + deleteTypeDesc + ":" + deleteTypeId + "?");
+    if (r == true) {
+    
+        //var thisId = $(this).prop('id');
+        var deleteActionType = thisId.split('-').pop();
+        console.log("DAT: ", deleteType);
+
+        bookingsDeletion(deleteType);
+    }
+});
+
+$("#sidebar-right").on('click', '[id^=delete-shifts-action-]', function (e) {
+
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+
+    console.log("TDID", thisId);
+
+    var deleteType = thisId.split('-').pop();
+
+    console.log("DEL TYPE: ", deleteType);
+
+    if(deleteType == 'req'){
+        var deleteTypeId = $("#delete_req_id").val();
+        var deleteTypeDesc = 'Request ID#';
+        var url = '/bookings/request/' + deleteTypeId;
+        var continueBtn = 'continue-delete-request';
+    } else if(deleteType == 'batch'){
+        var deleteTypeId = $("#delete_batch_id").val();
+        var deleteTypeDesc = 'Batch ID#';
+        var url = '/bookings/batch/' + deleteTypeId;
+        var continueBtn = 'continue-delete-batch';
+    } else if(deleteType == 'shift'){
+        var deleteTypeId = $("#delete_shift_id").val();
+        var deleteTypeDesc = 'Shift ID#';
+        var url = '/bookings/shift/' + deleteTypeId;
+        var continueBtn = 'continue-delete-shift';
+    }
+
+    if(deleteTypeId.length < 1){
+        alert("No " + deleteTypeDesc + " was selected for deletion.")
+    } else {
+
+        //var r = confirm("Are you sure you want to delete Shifts connected to " + deleteTypeDesc + ":" + deleteTypeId + "?");
+        //if (r == true) {
+            $.ajax({
+                url: url,
+                async: false,
+                type: "GET",
+                success: function (response) {
+                    console.log("DELETE TYPE: ", response);
+
+                    if(deleteType == 'req'){
+                        var deleteDetails = JSON.stringify(response);    
+
+                    } else {
+                        var deleteDetails = response;
+                    }
+
+                    $("#batch-deletion-details").html(deleteDetails);
+                }
+            });
+
+            document.getElementById("delete-swing-batch-modal").style.display = "block";
+            
+            $('[id^=continue-delete-]').css({"display" : "none"});
+            $("#" + continueBtn).css({"display" : "inline-block"});
+        //}
+    }
+
+});
+
+$("#sidebar-right").on('click', '#delete_type_req', function (e) {
+
+    $("#delete-required-fields").css({"display" : "block"});
+    $("#delete-form-req").css({"display" : "block"});
+    $("#delete-form-batch").css({"display" : "none"});
+    $("#delete-form-shift").css({"display" : "none"});
+    $("#delete-form-emp").css({"display" : "none"});
+   
+    $("#delete-shifts-action-req").css({"display" : "inline-block"});
+    $("#delete-shifts-action-batch").css({"display" : "none"});
+    $("#delete-shifts-action-shift").css({"display" : "none"});
+    $("#delete-shifts-action-emp").css({"display" : "none"});
+});
+
+$("#sidebar-right").on('click', '#delete_type_batch', function (e) {
+    
+    $("#delete-required-fields").css({"display" : "block"});
+    $("#delete-form-req").css({"display" : "none"});
+    $("#delete-form-batch").css({"display" : "block"});
+    $("#delete-form-shift").css({"display" : "none"});
+    $("#delete-form-emp").css({"display" : "none"});
+
+    $("#delete-shifts-action-req").css({"display" : "none"});
+    $("#delete-shifts-action-batch").css({"display" : "inline-block"});
+    $("#delete-shifts-action-shift").css({"display" : "none"});
+    $("#delete-shifts-action-emp").css({"display" : "none"});
+});
+
+$("#sidebar-right").on('click', '#delete_type_shift', function (e) {
+    
+    $("#delete-required-fields").css({"display" : "block"});
+    $("#delete-form-req").css({"display" : "none"});
+    $("#delete-form-batch").css({"display" : "none"});
+    $("#delete-form-shift").css({"display" : "block"});
+    $("#delete-form-emp").css({"display" : "none"});
+
+    $("#delete-shifts-action-req").css({"display" : "none"});
+    $("#delete-shifts-action-batch").css({"display" : "none"});
+    $("#delete-shifts-action-shift").css({"display" : "inline-block"});
+    $("#delete-shifts-action-emp").css({"display" : "none"});
+});
+
+function deleteShifts(){
+    
+    //DELETE SHIFTS
+    
+    $("#sidebar-right").html("");
+
+    var deleteShiftsForm = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    deleteShiftsForm += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Delete Shifts</div>';
+    deleteShiftsForm += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    deleteShiftsForm += '</div>';
+
+    deleteShiftsForm += '<div class="w3-container" style="margin:0 0 15px 0;border:0px solid green;">';
+    deleteShiftsForm += '<h5>Delete By:</h5>';
+
+    deleteShiftsForm += '<div class="w3-row">';
+
+    deleteShiftsForm += '<input id="delete_type_req" name="delete_type" class="w3-radio input-display" type="radio" value="req">';
+    deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Request</label>';
+    deleteShiftsForm += '<input id="delete_type_batch" name="delete_type" class="w3-radio" type="radio" value="batch" style="margin-left:10px;">';
+    deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Batch</label>';
+    deleteShiftsForm += '<input id="delete_type_shift" name="delete_type" class="w3-radio" type="radio" value="shift" style="margin-left:10px;">';
+    deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Shift</label>';
+    deleteShiftsForm += '<input id="delete_type_emp" name="delete_type" class="w3-radio" type="radio" value="emp" style="margin-left:10px;">';
+    deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Employee</label>';
+
+    deleteShiftsForm += '</div>'; //ROW
+    deleteShiftsForm += '</div>';//CONTAINER
+
+    deleteShiftsForm += '<div id="delete-required-fields"  class="w3-container" style="display:none;margin-top:0px;border:0px solid red;">';
+    deleteShiftsForm += '<div style="margin-top:5px;margin-bottom:15px;font-size:12px;">Required Field<span class="required-label">*</span></div>';
+    
+    deleteShiftsForm += '<form id="delete-form-req" style="display:none">';
+    deleteShiftsForm += '<div class="w3-row">';
+    deleteShiftsForm += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
+    deleteShiftsForm += '<label style="font-weight:bold;">Request ID#<span class="required-label">*</span></label>';
+    deleteShiftsForm += '<input name="delete_req_id" id="delete_req_id" class="w3-input w3-border input-display" type="text">';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</form>';
+
+    deleteShiftsForm += '<form id="delete-form-batch" style="display:none">';
+    deleteShiftsForm += '<div class="w3-row">';
+    deleteShiftsForm += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
+    deleteShiftsForm += '<label style="font-weight:bold;">Batch ID#<span class="required-label">*</span></label>';
+    deleteShiftsForm += '<input name="delete_batch_id" id="delete_batch_id" class="w3-input w3-border input-display" type="text">';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</form>';
+
+    deleteShiftsForm += '<form id="delete-form-shift" style="display:none">';
+    deleteShiftsForm += '<div class="w3-row">';
+    deleteShiftsForm += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
+    deleteShiftsForm += '<label style="font-weight:bold;">Shift ID#<span class="required-label">*</span></label>';
+    deleteShiftsForm += '<input name="delete_shift_id" id="delete_shift_id" class="w3-input w3-border input-display" type="text">';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</form>';
+
+    deleteShiftsForm += '<form id="delete-form-emp" style="display:none">';
+    deleteShiftsForm += '<div class="w3-row">';
+    deleteShiftsForm += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
+    deleteShiftsForm += '<label style="font-weight:bold;">Employee<span class="required-label">*</span></label>';
+    deleteShiftsForm += '<input name="delete_emp_id" id="delete_emp_id" class="w3-input w3-border input-display" type="text">';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</div>';
+    deleteShiftsForm += '</form>';
+
+    deleteShiftsForm += '<div class="w3-center" style="margin-top:10px;">';
+    deleteShiftsForm += '<button id="cancel-delete-shifts" class="w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Cancel</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-req" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-batch" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-shift" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-emp" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
+    deleteShiftsForm += '</div>';
+
+    deleteShiftsForm += '</div>';//close container
+
+    $("#sidebar-right").append(deleteShiftsForm);
+
+}
+
+$("body").on('click','#scheduler-delete_shifts', function (e) {
+
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+
+    //alert("DELETE SHIFTS");
+
+    //alert("clicked");
+
+    //editShifts(request, booking);
+    ////
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+
+    console.log("TID", thisId);
+
+    var sidebarContent = thisId.split('-').pop();
+
+    console.log("SBC", sidebarContent);
+
+    var currentRightSidebar = localStorage.getItem('right-sidebar-content');
+    var isClose = document.getElementById("sidebar-right").style.width === "500px";
+
+    if (!isClose) {
+
+        $("#sidebar-right").css({"width": "500px"});
+        setSidebarRightContent(sidebarContent)
+
+    } else {
+
+        if (currentRightSidebar != sidebarRightContent) {
+            setSidebarContent(sidebarContent)
+        } else {
+            $("#sidebar-right").css({"width": "0px"});
+            localStorage.removeItem('right-sidebar-content');
+        }
+
+    }
+
+    localStorage.setItem('right-sidebar-content', sidebarContent);
+
+    ////
+});
+
+//$("#sidebar-right").on('click','#scheduler-edit-bookings', function (e) {
+
+    /* var paramDets = $(this).attr('id');
+    var paramsArr = paramDets.split("-");
+    var request = paramsArr[2];
+    var booking = paramsArr[3]; */
+
+    //alert("EDIT BKG: " + param);
+
+    /*
+    $.ajax({
+        url: '/email/send',
+        type: "POST",
+        success: function (response) {
+            console.log(response);
+        }
+    });
+    */
+
+    
+
+//});
 
 function viewCriteria() {
 
@@ -1103,7 +2762,7 @@ $("#scheduler").kendoScheduler({
             start,
             end
         );
-
+        
         console.log("CONFLICTS: ",conflicts);
 
         if(conflicts.length > 0){
@@ -1300,6 +2959,7 @@ $("#scheduler").kendoScheduler({
                     bookingId: {from: "BookingId", type: "number"},
                     batchId: {from: "BatchId", type: "number"},
                     shiftId: {from: "ShiftId", type: "number"},
+                    bookingType: {from: "BookingType"},
                     requestDesc: {from: "RequestDesc", type: "text", validation: {required: true}},
                     requestId: {from: "RequestId", type: "number", validation: {required: true}},
                     title: {from: "Title", defaultValue: "No title", validation: {required: true}},
@@ -1307,6 +2967,7 @@ $("#scheduler").kendoScheduler({
                     startDay: {from: "StartDay"},
                     end: {type: "date", from: "End"},
                     endDay: {from: "EndDay"},
+                    amPm: {from: "AmPm"},
                     startTimezone: {from: "StartTimezone"},
                     endTimezone: {from: "EndTimezone"},
                     description: {from: "Description"},
@@ -1329,6 +2990,16 @@ $("#scheduler").kendoScheduler({
     ]
 });
 
+$("#scheduler").kendoTooltip({
+    filter: ".k-event:not(.k-event-drag-hint) > div, .k-task",
+    position: "top",
+    width: 250,
+    border: {
+        width: 20,
+        color: "green"
+      },
+    content: kendo.template($('#template').html())
+});
 
 var availDisplay = localStorage.getItem('display-scheduler-availability');
 

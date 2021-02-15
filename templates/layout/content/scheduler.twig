@@ -3,10 +3,11 @@
 {% block middle_col %}
     <div>
         <h1 class="w3-xlarge w3-left"><b>Scheduler</b></h1>
-        <button id="filter-scheduler-criteria" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 0 10px 0;">Filter Employees</button>
+        <button id="scheduler-delete_shifts" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 0 10px 0;">Delete Shifts</button>
         <button id="scheduler-swing-templates" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Swing Templates</button>
-        <button id="filter-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Check Availability</button>
-        <button id="remove-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Clear Availability</button>
+        <button id="filter-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;display:block;">Check Availability</button>
+        <button id="remove-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;display:none;">Clear Availability</button>
+        <button id="filter-scheduler-criteria" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Filter Employees</button>
         <button id="set-scheduler-resources" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">All Employees</button>
     </div>
 
@@ -35,12 +36,59 @@
     </script>
 
     <script id="booking-template" type="text/x-kendo-template">
+        #
+        if(bookingType == 'Off'){
+            if(resources[0].color == 'red'){
+                #
+                <div style="background-color:pink;">
+                #
+            } else if (resources[0].color == 'blue'){
+                #
+                <div style="background-color:lightblue;">
+                #
+            }
+        }
 
-        <div style="padding:3px;"><img src="assets/sun.png" height="22px"></div>
+        if(amPm == 'AM'){
+            #
+            <div style="padding:3px;"><img src="assets/sun.png" height="22px"></div>
+            #
+
+        } else {
+            #
+            <div style="padding:3px;"><img src="assets/moon.png" height="16px"></div>
+            #
+        }
+
+        #
+
         <div style="padding:4px 0px 0px 6px;writing-mode:tb-rl;">#: title #</div>
+    
+    </script>
 
-        # console.log("bla") #
-
+    <script id="template" type="text/x-kendo-template">
+        
+        #var element = target.is(".k-task") ? target : target.parent();#
+        #var uid = element.attr("data-uid");#
+        #var scheduler = target.closest("[data-role=scheduler]").data("kendoScheduler");#
+        #var model = scheduler.occurrenceByUid(uid);#
+        #
+        if(model){
+            #
+            <strong>Start: </strong> #=kendo.format('{0:d}',model.start)#
+            <strong></strong> #=kendo.format('{0:t}',model.start)#<br />
+            <strong>End: </strong> #=kendo.format('{0:d}',model.end)#
+            <strong></strong> #=kendo.format('{0:t}',model.end)#<br />
+            <strong>Batch:</strong> #=model.batchId#<br />
+            <strong>Shift:</strong> #=model.shiftId#<br />
+            <strong>Notes:</strong> #=model.description#<br />
+            #
+        } else {
+            #
+            <strong>No event data is available</strong>
+            #
+        }
+        #
     </script>
 
     <script id="customEditorTemplate" type="text/x-kendo-template">
@@ -150,10 +198,29 @@
         <div id="req_desc_errors" style="margin:-5px 0 5px 110px;display:none;"></div>
 
         <div class="k-edit-label"><label for="title">Reference</label></div>
-
         <div data-container-for="title" class="k-edit-field">
         <input type="text" class="k-textbox" name="title" required="required" disabled="disabled" data-bind="value:title">
         </div>
+
+        #
+        if(tranId){
+        
+        #
+        <div class="k-edit-label"><label for="description">Batch Id</label></div>
+        <div data-container-for="batchId" class="k-edit-field">
+        <input type="text" class="k-textbox" name="batchId" required="required" disabled="disabled" data-bind="value:batchId">
+        </div>
+
+        <div class="k-edit-label"><label for="shiftId">Shift Id</label></div>
+        <div data-container-for="shiftId" class="k-edit-field">
+        <input type="text" class="k-textbox" name="shiftId" required="required" disabled="disabled" data-bind="value:shiftId">
+        </div>
+
+        #
+        }
+        #
+
+        <div style="clear:both;"></div>
 
         <div class="k-edit-label">
         <label for="start">Start</label>
@@ -204,7 +271,7 @@
 
         </div>
 
-        <div class="k-edit-label"><label for="description">Description</label></div>
+        <div class="k-edit-label"><label for="description">Notes</label></div>
         <div data-container-for="description" class="k-edit-field">
         <textarea name="description" class="k-textbox" style="width:400px;padding:8px;" data-bind="value:description"></textarea>
         </div>
@@ -347,6 +414,34 @@
 
         .available {
             background-color:mediumseagreen;
+        }
+        
+        .k-callout {
+            width: 12px;
+            height: 12px;
+            border-width: 6px;
+            border-style: solid;
+            box-sizing: border-box;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .k-tooltip.k-widget {
+            border-color: black !important;
+            border-radius: 0px; 
+        }
+        
+        .k-tooltip {
+            border: 0;
+            background: black !important; //specify tooltip's color
+            border-color: black !important;
+            border-width: 1px;
+            border-style: solid;
+            border-radius: 0px; 
+            outline: 0;
+            color: white !important;
+            width: 300px; //specify tooltip's width
+            height: 300px; //specify tooltip's height
         }
 
     </style>

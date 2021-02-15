@@ -2318,6 +2318,7 @@ function viewWorkspace(wsRequests, totalRecords, page){
             var wsBgCol = '';
         }
 
+        wsTable += '<tr>';
         wsTable += '<td>' + wsId + '</td>';
         wsTable += '<td>RR' + wsRef + '</td>';
         wsTable += '<td>' + wsDate + '</td>';

@@ -12,9 +12,9 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.0/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v394">
+    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v395">
     <link rel="stylesheet" href="{{ base_path() }}/css/pdf-export.css?v3">
-    <link rel="stylesheet" href="{{ base_path() }}/js/lou-multi-select-57fb8d3/css/multi-select.css?v8" media="screen" type="text/css">
+    <link rel="stylesheet" href="{{ base_path() }}/js/lou-multi-select-57fb8d3/css/multi-select.css?v9" media="screen" type="text/css">
 </head>
 
 <body>
@@ -27,6 +27,81 @@
             </div>
         </div>
     </div>
+</div>
+
+<div id="add-swing-error-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Notice!</div>
+            <span onclick="document.getElementById('add-swing-error-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="swing-error-display" class="w3-container"></div>
+    </div>
+</div>
+
+<div id="auto-date-error-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Notice!</div>
+            <span onclick="document.getElementById('auto-date-error-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="auto-date-display" class="w3-container"></div>
+    </div>
+</div>
+
+<div id="save-scheduler-template-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Save Swing Template</div>
+            <span onclick="document.getElementById('save-scheduler-template-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="scheduler-templates-select-display" class="w3-container"></div>
+
+        <div id="save-template-errors" class="noerror" style="margin:10px 15px 15px 15px;"></div>
+
+        <div class="ws-container">
+            <div class="w3-center" style="display:block;padding:10px 0 15px 0;">
+                <button class="w3-button w3-darkblue" type="button" id="save-bookings-template">Save Template</button>
+                <button class="w3-button w3-darkblue" type="button" id="delete-bookings-template" style="margin-left:10px;" >Delete Selected Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="load-scheduler-template-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Swing Templates</div>
+            <span onclick="document.getElementById('load-scheduler-template-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="scheduler-templates-display" class="w3-container" style="padding:15px;"></div>
+    </div>
+</div>
+
+<div id="delete-swing-batch-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Batch Deletion Details</div>
+            <span onclick="document.getElementById('delete-swing-batch-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        
+        <div id="batch-deletion-details" class="w3-container" style="height:400px;overflow-y:scroll;word-wrap:break-word;"></div>
+
+        <div class="ws-container">
+            <div class="w3-center" style="display:block;padding:15px 0 15px 0;border-top:1px solid #CCC;">
+                <button style="margin-right:10px;" class="w3-button w3-darkblue" type="button" id="cancel-swing-delete">Cancel</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-request">Continue R</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-batch">Continue B</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-shift">Continue S</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-emp">Continue E</button>
+            </div>
+        </div>
+    </div> 
 </div>
 
 <div id="scheduler-error" class="w3-modal">

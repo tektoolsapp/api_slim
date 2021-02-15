@@ -3,23 +3,19 @@
 namespace App\Domain\Requests\Repository;
 
 use PDO;
-//use MongoDB\Client as Mongo;
 use App\Domain\Customers\Repository\CustomerSiteFetchRepository;
 
 class RequestSchedulerRawRepository
 {
     private $connection;
-    //private $mongo;
     private $site;
 
     public function __construct(
             PDO $connection, 
-            //Mongo $mongo, 
             CustomerSiteFetchRepository $site
         )
     {
         $this->connection = $connection;
-        //$this->mongo = $mongo;
         $this->site = $site;
     }
 

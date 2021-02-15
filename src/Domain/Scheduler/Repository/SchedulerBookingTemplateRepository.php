@@ -6,7 +6,7 @@ use App\Domain\Utility\Repository\BookingShiftMaxRepository;
 use DomainException;
 use PDO;
 
-class SchedulerTemplateRepository
+class SchedulerBookingTemplateRepository
 {
     private $connection;
     private $maxShifts;
@@ -20,7 +20,7 @@ class SchedulerTemplateRepository
         $this->maxShifts = $maxShifts;
     }
 
-    public function bookingsFromTemplate(array $template)
+    public function updateTemplate($templateId, array $template)
     {
         
         //dump($template);
@@ -186,36 +186,36 @@ class SchedulerTemplateRepository
 
                     //dump($booking);
 
-                    $postBooking = $this->postBooking($booking);
+                    //$postBooking = $this->postBooking($booking);
                 }
             }
         }
 
+        $templateJson = json_encode($templatesArray);
+
+        $postArray = array(
+            'template_json' => $templateJson,
+            'template_id' => $templateId
+        );
+
+        $columnsArray = array_keys($postArray);
+        $columnString = '';
+
+        for ($c=0; $c < sizeof($columnsArray)-1; $c++) {
+            $columnString .= $columnsArray[$c]." = ?,";
+        }
+
+        $columnString = rtrim($columnString, ',');
+        $valuesArray = array_values($postArray);
+
+        $query = "UPDATE swing_templates SET $columnString WHERE template_id = ?";
+        $this->connection->prepare($query)->execute($valuesArray);
+
         $returnArray = array(
             "template_array" => json_encode($templatesArray),
-            "status" => 'posted'
+            "status" => 'updated'
         );
             
         return $returnArray;
-    }
-
-    public function postBooking(array $booking) {
-
-        $columnsArray = array_keys($booking);
-        $columnsString = implode(',', $columnsArray);
-        $valuesArray = array_values($booking);
-        $valuesCount = count($valuesArray);
-
-        $valuesPlaceholder = '';
-        for ($i=0; $i < $valuesCount; $i++) {
-            $valuesPlaceholder .= '?,';
-        }
-        $valuesPlaceholder = rtrim($valuesPlaceholder, ',');
-
-        $query = "INSERT INTO bookings ($columnsString) VALUES ($valuesPlaceholder)";
-        $this->connection->prepare($query)->execute($valuesArray);
-        
-        return 'posted';
-
     }
 }

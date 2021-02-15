@@ -6,7 +6,7 @@ use App\Domain\Utility\Repository\BookingShiftMaxRepository;
 use DomainException;
 use PDO;
 
-class SchedulerTemplateRepository
+class SchedulerBookingsTemplateRepository
 {
     private $connection;
     private $maxShifts;
@@ -20,7 +20,7 @@ class SchedulerTemplateRepository
         $this->maxShifts = $maxShifts;
     }
 
-    public function bookingsFromTemplate(array $template)
+    public function bookingsFromTemplate($templateName, array $template)
     {
         
         //dump($template);
@@ -186,11 +186,36 @@ class SchedulerTemplateRepository
 
                     //dump($booking);
 
-                    $postBooking = $this->postBooking($booking);
+                    //$postBooking = $this->postBooking($booking);
                 }
             }
         }
 
+        //$templateCode = 'CODE';
+        $templateDesc = $templateName;
+        $templateJson = json_encode($templatesArray);
+
+        $postArray = array(
+            //'template_code' => $templateCode,
+            'template_desc' => $templateDesc,
+            'template_json' => $templateJson,
+            'template_status' => 'A',
+        );
+
+        $columnsArray = array_keys($postArray);
+        $columnsString = implode(',', $columnsArray);
+        $valuesArray = array_values($postArray);
+        $valuesCount = count($valuesArray);
+
+        $valuesPlaceholder = '';
+        for ($i=0; $i < $valuesCount; $i++) {
+            $valuesPlaceholder .= '?,';
+        }
+        $valuesPlaceholder = rtrim($valuesPlaceholder, ',');
+
+        $query = "INSERT INTO swing_templates ($columnsString) VALUES ($valuesPlaceholder)";
+        $this->connection->prepare($query)->execute($valuesArray);
+    
         $returnArray = array(
             "template_array" => json_encode($templatesArray),
             "status" => 'posted'
@@ -199,7 +224,7 @@ class SchedulerTemplateRepository
         return $returnArray;
     }
 
-    public function postBooking(array $booking) {
+    /* public function postBooking(array $booking) {
 
         $columnsArray = array_keys($booking);
         $columnsString = implode(',', $columnsArray);
@@ -217,5 +242,5 @@ class SchedulerTemplateRepository
         
         return 'posted';
 
-    }
+    } */
 }

@@ -25,59 +25,62 @@ class BookingUpdateRepository
 
         //dump($booking);
 
-        $booking['StartDay'] = strtotime($booking['Start']);
-        $booking['EndDay'] = strtotime($booking['End']);
+        //$booking['StartDay'] = strtotime($booking['Start']);
+        //$booking['EndDay'] = strtotime($booking['End']);
+
+        $startDay = strtotime($booking['Start']);
+        $endDay = strtotime($booking['End']);
+        
+        $booking['StartDay'] = $startDay;
+        $booking['EndDay'] = $endDay;
+
+        //SET THE BOOKING SHIFT TIME
+        $bookingTime = date("H:i A", $startDay);
+        $bookingTimeArray = explode(" ", $bookingTime);
+        $bookingTime = $bookingTimeArray[1];
+
+        $booking['AmPm'] = $bookingTime;
+
+        //dump($bookingTime);
+
+        //$bookingId = mt_rand(100000, 999999);
+        //$booking['BookingId'] = $bookingId;
+        
+        $booking['UserId'] = implode(",",$booking['UserId']);
 
         $bookingId = $booking['BookingId'];
 
-        //CHECK FOR CONFLICTS
+        //dump($bookingId);
 
-        /*
-        $conflicts = $this->conflicts->getConflicts(
-            $bookingId,
-            $booking['UserId'],
-            $booking['Start'],
-            $booking['End']
-        );
-        */
+        unset($booking['BookingId']);
+        //$booking['UserId'] = implode(",", $booking['UserId']);
+        
+        $booking['BookingId'] = $bookingId;
+        
+        if ($booking['IsAllDay'] == false) {
+            $booking['IsAllDay'] = 0;
+        } else {
+            $booking['IsAllDay'] = 1;
+        }
 
-        //dump($conflicts);
+        $booking['RecurrenceRule'] = '';
 
-        //if(empty($conflicts)) {
+        $columnsArray = array_keys($booking);
+        $columnString = '';
 
-            unset($booking['BookingId']);
-            $booking['UserId'] = implode(",", $booking['UserId']);
-            $booking['BookingId'] = $bookingId;
-            if ($booking['IsAllDay'] == false) {
-                $booking['IsAllDay'] = 0;
-            } else {
-                $booking['IsAllDay'] = 1;
-            }
+        for ($c = 0; $c < sizeof($columnsArray) - 1; $c++) {
+            $columnString .= $columnsArray[$c] . " = ?,";
+        }
 
-            $booking['RecurrenceRule'] = '';
+        $columnString = rtrim($columnString, ',');
+        $valuesArray = array_values($booking);
 
-            $columnsArray = array_keys($booking);
-            $columnString = '';
+        $query = "UPDATE bookings SET $columnString WHERE BookingId = ?";
+        $this->connection->prepare($query)->execute($valuesArray);
 
-            for ($c = 0; $c < sizeof($columnsArray) - 1; $c++) {
-                $columnString .= $columnsArray[$c] . " = ?,";
-            }
-
-            $columnString = rtrim($columnString, ',');
-            $valuesArray = array_values($booking);
-
-            $query = "UPDATE bookings SET $columnString WHERE BookingId = ?";
-            $this->connection->prepare($query)->execute($valuesArray);
-
-            //return 'OK';
+        $booking['UserId'] = explode(",",$booking['UserId']);
 
         return $booking;
-
-        /*
-        } else {
-                return $conflicts;
-            }
-        */
 
     }
 }
