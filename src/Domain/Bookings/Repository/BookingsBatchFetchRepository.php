@@ -36,8 +36,8 @@ class BookingsBatchFetchRepository
         //$employees = $this->employees->getEmployees();
         //$trades = $this->trades->getTrades();
 
-        dump("BATCH ID");
-        dump($batchId);
+        //dump("BATCH ID");
+        //dump($batchId);
        
         $sql = "SELECT * FROM bookings WHERE BatchId = :BatchId AND BookingStatus <> 'X';";
         $statement = $this->connection->prepare($sql);

@@ -36,8 +36,8 @@ final class BookingsDeleteAction
             $deleteId = $formDetails['delete_shift_id'];
         }
         
-        dump($deleteType);
-        dump($deleteId);
+        //dump($deleteType);
+        //dump($deleteId);
 
         $deletion = $this->bookingsDelete->deleteBookings($deleteType, $deleteId);
 

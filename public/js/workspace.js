@@ -140,6 +140,8 @@ $("#workspace").on('click','[id^=row_]', function (e) {
     actionButton += '<button class="w3-button w3-small w3-padding-small w3-hover"><i class="fas fa-ellipsis-h"></i></button>';
     actionButton += '<div class="w3-dropdown-content w3-bar-block w3-border" style="' + posStyle +';">';
     actionButton += '<a id="workspace-action-edit_' + rowId + '" href="#" class="w3-bar-item w3-button">Edit</a>';
+    actionButton += '<a id="workspace-action-schedule_' + rowId + '" href="#" class="w3-bar-item w3-button">Update Swings</a>';
+    actionButton += '<a id="workspace-action-swings_' + rowId + '" href="#" class="w3-bar-item w3-button">View Swings</a>';
     actionButton += '<a id="workspace-action-view_' + rowId + '"href="#" class="w3-bar-item w3-button">View Request Shifts</a>';
     actionButton += '<a id="workspace-action-pdf_' + rowId + '" href="#" class="w3-bar-item w3-button">Rio PDFs</a>';
     actionButton += '<a id="workspace-action-quote_' + rowId + '" href="#" class="w3-bar-item w3-button">Quote</a>';
@@ -181,26 +183,40 @@ function sidebarAction(thisId){
 
     console.log("SBC", sidebarContent);
 
-    var currentRightSidebar = localStorage.getItem('right-sidebar-content');
-    var isClose = document.getElementById("sidebar-right").style.width === "500px";
+    var sidebarCheckArray = sidebarContent.split('_');
 
-    if (!isClose) {
+    var sideBarCheck = sidebarCheckArray[0];
 
-        $("#sidebar-right").css({"width": "500px"});
-        setSidebarRightContent(sidebarContent)
+    if(sideBarCheck == 'swings'){
+
+        var param = sidebarCheckArray[1];
+        
+        actionSwings(param);
 
     } else {
+    
+        var currentRightSidebar = localStorage.getItem('right-sidebar-content');
+        var isClose = document.getElementById("sidebar-right").style.width === "500px";
 
-        if (currentRightSidebar != sidebarRightContent) {
-            setSidebarContent(sidebarContent)
+        if (!isClose) {
+
+            $("#sidebar-right").css({"width": "500px"});
+            setSidebarRightContent(sidebarContent)
+
         } else {
-            $("#sidebar-right").css({"width": "0px"});
-            localStorage.removeItem('right-sidebar-content');
+
+            if (currentRightSidebar != sidebarRightContent) {
+                setSidebarContent(sidebarContent)
+            } else {
+                $("#sidebar-right").css({"width": "0px"});
+                localStorage.removeItem('right-sidebar-content');
+            }
+
         }
 
-    }
+        localStorage.setItem('right-sidebar-content', sidebarContent);
 
-    localStorage.setItem('right-sidebar-content', sidebarContent);
+    }
 
 }
 
@@ -227,6 +243,12 @@ function setSidebarRightContent(currentRightSidebar){
         console.log("PARAM1:", param);
 
         updateRequest('update', param);
+    
+    } else if (action == 'schedule') {
+
+        //alert("SHIFTS PARAM1:", param);
+
+        actionUpdateSwings(param);   
 
     } else if (action == 'email') {
 
@@ -1194,11 +1216,21 @@ $("#sidebar-right").on('click','[id^=send-email]', function (e) {
     var paramsArr = paramDets.split("-");
     var param = paramsArr[2];
 
+    var spinHtml = '<div class="busy-indicator">';
+    spinHtml += '<div>';
+    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
+    spinHtml += '</div>';
+    spinHtml += '</div>';
+
+    $("#email-send-container").append(spinHtml);
+
     $.ajax({
-        url: '/email/send',
+        url: '/email/send/' + param,
         type: "POST",
         success: function (response) {
             console.log(response);
+            $("#email-send-container").html("");
+            alert("Email was successfully sent.");
         }
     });
 
@@ -1504,6 +1536,34 @@ $("body").on('click','[id^=quote-preview-pdf]', function (e) {
 
     $("#workspace").html("");
 
+    //GET REQUEST DETAILS
+
+    var requestDets = function () {
+        var result = $.ajax({
+            type: "get",
+            url: 'request/' + param,
+            async: false,
+            success: function (response) {
+                //console.log("GET REQ: ",response);
+            }
+        }) .responseText ;
+        return  result;
+    }
+
+    var requestDetails = requestDets();
+
+    requestDetails = JSON.parse(requestDetails);
+    console.log("GET REQ: ", requestDetails);
+
+    var quoteCustomerName = requestDetails.ws_customer_name;
+    var quoteDate = requestDetails.ws_quote_date;
+    var quoteRef = requestDetails.ws_ref;
+    var quoteSiteDesc = requestDetails.ws_site_desc;
+    var quoteSiteShortDesc = requestDetails.ws_site_short_desc;
+    var quoteRefTxt = "RR" + quoteRef + '-' + quoteSiteShortDesc;
+
+    console.log("Q DATE: ", quoteDate);
+
     var previewQuote = '<div style="clear:both;"></div>';
     //QUOTE CONTAINER
     previewQuote += '<div class="page-container hidden-on-narrow" style="margin-bottom:35px;border:0px solid green;">';
@@ -1542,17 +1602,17 @@ $("body").on('click','[id^=quote-preview-pdf]', function (e) {
 
                     previewQuote += '<div class="pdf-container">';
                     previewQuote += '<div class="details-item" style="width:120px;">CLIENT:</div>';
-                    previewQuote += '<div class="details-item" style="width:330px;">Pilbara Iron Ore (RTIO)</div>';
+                    previewQuote += '<div class="details-item" style="width:330px;">' + quoteCustomerName + '</div>';
                     previewQuote += '<div class="details-item" style="width:80px;">DATE:</div>';
-                    previewQuote += '<div class="details-item" style="width:110px;">20-Dec-2020</div>';
+                    previewQuote += '<div class="details-item" style="width:110px;">' + quoteDate + '</div>';
                     previewQuote += '<div style="clear:both;"></div>';
                     previewQuote += '</div>';
 
                     previewQuote += '<div class="pdf-container">';
                     previewQuote += '<div class="details-item" style="width:120px;">SITE/DEPT:</div>';
-                    previewQuote += '<div class="details-item" style="width:330px;">Brockman 2</div>';
+                    previewQuote += '<div class="details-item" style="width:330px;">' + quoteSiteDesc + '</div>';
                     previewQuote += '<div class="details-item" style="width:80px;">QUOTE#:</div>';
-                    previewQuote += '<div class="details-item" style="width:110px;">' + param + '</div>';
+                    previewQuote += '<div class="details-item" style="width:110px;">' + quoteRefTxt + '</div>';
                     previewQuote += '<div style="clear:both;"></div>';
                     previewQuote += '</div>';
 
@@ -1688,10 +1748,16 @@ $("body").on('click','[id^=quote-preview-pdf]', function (e) {
             for (var b = 0; b < numBookings; b++) {
 
                 var itemNum = b + 1;
+
+                var itemRate = bookings[b]['rate'];
+                var itemRateCode = bookings[b]['rate_code'];
+                
                 var itemQty = bookings[b]['hours'];
                 var itemDesc = bookings[b]['trade_type'];
-                var itemRate = bookings[b]['rate'];
-                itemRate = itemRate.toFixed(2);
+                var itemDescTxt = itemDesc + '-MEM-' + itemRateCode;   
+
+                console.log("THE RATE: ",itemRate);
+                itemRate = parseFloat(itemRate).toFixed(2);
                 var itemUnits = bookings[b]['units'];
                 var itemExtension = bookings[b]['extension'];
                 var itemExtensionDisp = itemExtension.toFixed(2);
@@ -1732,7 +1798,7 @@ $("body").on('click','[id^=quote-preview-pdf]', function (e) {
                     quoteBookings += '<div class="pdf-container">';
                     quoteBookings += '<div class="row-item" style="width:50px;">' + itemNum + '</div>';
                     quoteBookings += '<div class="row-item" style="width:50px;">' + itemQty + '</div>';
-                    quoteBookings += '<div class="row-item align-left" style="width:300px;"><span style="font-weight:bold;">' + itemDesc + '</span><br>';
+                    quoteBookings += '<div class="row-item align-left" style="width:300px;"><span style="font-weight:bold;">' + itemDescTxt + '</span><br>';
                     quoteBookings += shiftDisplay + '</div>';
                     quoteBookings += '<div class="row-item" style="width:80px;">' + itemRate + '</div>';
                     quoteBookings += '<div class="row-item" style="width:50px;">' + itemUnits + '</div>';
@@ -1747,7 +1813,7 @@ $("body").on('click','[id^=quote-preview-pdf]', function (e) {
                     quoteBookings += '<div class="pdf-container">';
                     quoteBookings += '<div class="row-item" style="width:50px;">' + itemNum + '</div>';
                     quoteBookings += '<div class="row-item" style="width:50px;">' + itemQty + '</div>';
-                    quoteBookings += '<div class="row-item align-left" style="width:300px;"><span style="font-weight:bold;">' + itemDesc + '</span><br>';
+                    quoteBookings += '<div class="row-item align-left" style="width:300px;"><span style="font-weight:bold;">' + itemDescTxt + '</span><br>';
                     quoteBookings += shiftDisplay + '</div>';
                     quoteBookings += '<div class="row-item" style="width:80px;">' + itemRate + '</div>';
                     quoteBookings += '<div class="row-item" style="width:50px;">' + itemUnits + '</div>';
@@ -1862,7 +1928,7 @@ function actionView(param) {
                 }
 
                 bookingsDisplay += '<li class="w3-bar">';
-                bookingsDisplay += '<div class="travel w3-button w3-medium w3-darkblue w3-right">Travel</div>';
+                //bookingsDisplay += '<div class="travel w3-button w3-medium w3-darkblue w3-right">Travel</div>';
                 bookingsDisplay += '<div id="edit-booking-' + param + '-' + bookingId + '" class="w3-button w3-medium w3-darkblue w3-right" style="margin-right:10px;">Edit</div>';
 
                 bookingsDisplay += '<div class="w3-left"><input type="checkbox" class="w3-check"></div>';
@@ -1921,6 +1987,60 @@ function actionQuote(param) {
     $("#sidebar-right").append(actionQuote);
 }
 
+function actionUpdateSwings(param) {
+
+    $("#sidebar-right").html("");
+
+    var actionUpdateSwings = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    actionUpdateSwings += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Update Swings - Request #' + param + '</div>';
+    actionUpdateSwings += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    actionUpdateSwings += '</div>';
+    actionUpdateSwings += '<div class="w3-center" style="margin-top:10px;">';
+    //actionUpdateSwings += '<button class="cancel-request-update w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Cancel</button>';
+    //actionUpdateSwings += '<button id="prepare-quote-' + param + '" class="w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Prepare</button>';
+    //actionUpdateSwings += '<button id="view-quote-' + param + '" class="w3-button w3-darkblue w3-mobile w3-medium">View</button>';
+    actionUpdateSwings += '</div>';
+    actionUpdateSwings += '</div>';
+
+    $("#sidebar-right").append(actionUpdateSwings);
+}
+
+function actionSwings(param) {
+
+    //$("#sidebar-right").html("");
+
+    $("#workspace").html("");
+
+    /* var spinHtml = '<div class="busy-indicator">';
+    spinHtml += '<div>';
+    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
+    spinHtml += '</div>';
+    spinHtml += '</div>';
+
+    $("#workspace").append(spinHtml); */
+
+    $("#work-space-header").html("");
+
+    var workSpaceHeader = '<h1 class="w3-xlarge w3-left"><b>Swings - Request #' + param + '</b></h1>';
+    workSpaceHeader += '<button id="workspace-view-requests" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin-bottom:10px;">View Requests</button>';
+
+    $("#work-space-header").append(workSpaceHeader);
+    
+    
+    //var actionSwings = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    //actionSwings += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Action Shifts</div>';
+    //actionSwings += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    //actionSwings += '</div>';
+    
+    var actionSwings = '<div style="clear:both;"></div>';
+    actionSwings += '<div class="w3-center" style="margin-top:10px;">SHIFTS';
+
+    actionSwings += '</div>';
+
+    $("#workspace").append(actionSwings);
+}
+
+
 function actionEmail(param) {
 
     $("#sidebar-right").html("");
@@ -1930,11 +2050,15 @@ function actionEmail(param) {
     actionEmail += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
     actionEmail += '</div>';
     actionEmail += '<div class="w3-center" style="margin-top:10px;">';
+
     actionEmail += '<button class="cancel-request-update w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Cancel</button>';
     actionEmail += '<button id="edit-email-' + param + '" class="w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Edit</button>';
     actionEmail += '<button id="view-email-' + param + '" class="w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">View</button>';
     actionEmail += '<button id="send-email-' + param + '" class="w3-button w3-darkblue w3-mobile w3-medium">Send</button>';
     actionEmail += '</div>';
+
+    actionEmail += '<div id="email-send-container" class="w3-center" style="margin-top:60px;"></div>';
+
     actionEmail += '</div>';
 
     $("#sidebar-right").append(actionEmail);
@@ -2109,6 +2233,43 @@ function updateRequest(mode, param){
     updateRequest += '</div>';
 
     updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    updateRequest += '<label>Quote Date</label>';
+    updateRequest += '<input name="ws_quote_date" id="ws_quote_date" class="w3-input w3-border datepicker input-display" type="text" readonly="readonly">';
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
+
+    updateRequest += '<div id="rec_flights_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+    updateRequest += '<label style="margin:0;">Received Flights:</label>';
+
+    updateRequest += '<div style="margin:0">';
+    updateRequest += '<input id="rec_flights_yes" name="ws_rec_flights" class="w3-radio input-display" type="radio" value="Y">';
+    updateRequest += '<label style="margin-left:5px;font-weight:normal;">Yes</label>';
+    updateRequest += '<input id="rec_flights_no" name="ws_rec_flights" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+    updateRequest += '<label style="margin-left:5px;font-weight:normal;">No</label>';
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div id="flights_sent_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+    updateRequest += '<label style="margin:0;">Flights Sent:</label>';
+
+    updateRequest += '<div style="margin:0">';
+    updateRequest += '<input id="flights_sent_yes" name="ws_flights_sent" class="w3-radio input-display" type="radio" value="Y">';
+    updateRequest += '<label style="margin-left:5px;font-weight:normal;">Yes</label>';
+    updateRequest += '<input id="flights_sent_no" name="ws_flights_sent" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+    updateRequest += '<label style="margin-left:5px;font-weight:normal;">No</label>';
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '</div>';
+
+    updateRequest += '<div class="w3-row">';
     updateRequest += '<div style="padding:0 10px 10px 0;">';
     updateRequest += '<label>Comments<span class="required-label">*</span></label>';
     updateRequest += '<textarea name="ws_comments" id="ws_comments" class="w3-input w3-border input-display" placeholder="Enter any comments here"></textarea>';
@@ -2160,6 +2321,9 @@ function updateRequest(mode, param){
     updateRequest += '</div>';
 
     $("#sidebar-right").append(updateRequest);
+
+    $("#rec_flights_no").prop("checked", true);
+    $("#flights_sent_no").prop("checked", true);
 
     //ADD TRADE TYPES
 

@@ -24,7 +24,9 @@ final class EmailSendAction
         array $args = []
     ): ResponseInterface {
 
-        $pdf = $this->emailSend->sendEmail();
+        $reqId = $args['req_id'];
+        
+        $pdf = $this->emailSend->sendEmail($reqId);
 
         $response->getBody()->write((string)json_encode($pdf));
 

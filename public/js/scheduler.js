@@ -312,9 +312,9 @@ $("#sidebar-right").on('click', '[id^=remove_swing-]', function (e) {
 
         var adjSelIndex = parseInt(selIndex) - 1;
 
-        //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
         if(this.id != 'save-swing-template' 
-            && this.id != 'save-as-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
             && this.id != 'auto-date-template' 
             && this.id != 'reset-template-swings'
         ){    
@@ -582,9 +582,9 @@ $("body").on('click', '[id^=loading-swing-template]', function (e) {
                 
                                 //PUSH TO CURRENT SWINGS
                                 $("#template-actions").find("button").each(function(){
-                                    //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
                                     if(this.id != 'save-swing-template' 
-                                        && this.id != 'save-as-swing-template' 
+                                        && this.id != 'save-as-swing-template'
+                                        && this.id != 'cancel-save-swing-template' 
                                         && this.id != 'auto-date-template' 
                                         && this.id != 'reset-template-swings'
                                     ){    
@@ -627,7 +627,8 @@ $("body").on('click', '[id^=loading-swing-template]', function (e) {
                                 //PUSH TO CURRENT SWINGS
                                 $("#template-actions").find("button").each(function(){
                                     if(this.id != 'save-swing-template' 
-                                        && this.id != 'save-as-swing-template' 
+                                        && this.id != 'save-as-swing-template'
+                                        && this.id != 'cancel-save-swing-template' 
                                         && this.id != 'auto-date-template' 
                                         && this.id != 'reset-template-swings'
                                     ){    
@@ -809,9 +810,9 @@ $("#sidebar-right").on('click', '#reload-swing-template', function (e) {
             
                             //PUSH TO CURRENT SWINGS
                             $("#template-actions").find("button").each(function(){
-                                //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
                                 if(this.id != 'save-swing-template' 
-                                    && this.id != 'save-as-swing-template' 
+                                    && this.id != 'save-as-swing-template'
+                                    && this.id != 'cancel-save-swing-template' 
                                     && this.id != 'auto-date-template' 
                                     && this.id != 'reset-template-swings'
                                 ){    
@@ -853,9 +854,9 @@ $("#sidebar-right").on('click', '#reload-swing-template', function (e) {
             
                             //PUSH TO CURRENT SWINGS
                             $("#template-actions").find("button").each(function(){
-                                //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
                                 if(this.id != 'save-swing-template' 
-                                    && this.id != 'save-as-swing-template' 
+                                    && this.id != 'save-as-swing-template'
+                                    && this.id != 'cancel-save-swing-template'
                                     && this.id != 'auto-date-template' 
                                     && this.id != 'reset-template-swings'
                                 ){    
@@ -966,7 +967,8 @@ $("#sidebar-right").on('click', '#auto-date-template', function (e) {
         console.log("RUNNING");
         
         if(this.id != 'save-swing-template' 
-            && this.id != 'save-as-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
             && this.id != 'auto-date-template' 
             && this.id != 'reset-template-swings'
         ){
@@ -1131,7 +1133,8 @@ $("body").on('click', '#save-bookings-template', function (e) {
 
         $("#template-actions").find("button").each(function(){
             if(this.id != 'save-swing-template' 
-                && this.id != 'save-as-swing-template' 
+                && this.id != 'save-as-swing-template'
+                && this.id != 'cancel-save-swing-template' 
                 && this.id != 'auto-date-template' 
                 && this.id != 'reset-template-swings'
             ){    
@@ -1309,7 +1312,8 @@ $("#sidebar-right").on('click', '#save-swing-template', function (e) {
 
     $("#template-actions").find("button").each(function(){
         if(this.id != 'save-swing-template' 
-            && this.id != 'save-as-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
             && this.id != 'auto-date-template' 
             && this.id != 'reset-template-swings'
         ){    
@@ -1424,9 +1428,9 @@ $("#sidebar-right").on('change', '#swing_request-1', function (e) {
 
             //PUSH TO CURRENT SWINGS (FROM 2)
             $("#template-actions").find("button").each(function(){
-                //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
                 if(this.id != 'save-swing-template' 
-                    && this.id != 'save-as-swing-template' 
+                    && this.id != 'save-as-swing-template'
+                    && this.id != 'cancel-save-swing-template' 
                     && this.id != 'auto-date-template' 
                     && this.id != 'reset-template-swings'
                 ){    
@@ -1688,9 +1692,9 @@ function setTemplates(swingTemplates){
 
                 //PUSH TO CURRENT SWINGS
                 $("#template-actions").find("button").each(function(){
-                    //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
                     if(this.id != 'save-swing-template' 
-                        && this.id != 'save-as-swing-template' 
+                        && this.id != 'save-as-swing-template'
+                        && this.id != 'cancel-save-swing-template' 
                         && this.id != 'auto-date-template' 
                         && this.id != 'reset-template-swings'
                     ){    
@@ -1736,9 +1740,9 @@ function setTemplates(swingTemplates){
 
                 //PUSH TO CURRENT SWINGS
                 $("#template-actions").find("button").each(function(){
-                    //if(this.id != 'save-swing-template' && this.id != 'save-as-swing-template'){
                     if(this.id != 'save-swing-template' 
-                        && this.id != 'save-as-swing-template' 
+                        && this.id != 'save-as-swing-template'
+                        && this.id != 'cancel-save-swing-template' 
                         && this.id != 'auto-date-template' 
                         && this.id != 'reset-template-swings'
                     ){    
@@ -2106,15 +2110,15 @@ $("#sidebar-right").on('click', '[id^=delete-shifts-action-]', function (e) {
         alert("No " + deleteTypeDesc + " was selected for deletion.")
     } else {
 
-        //var r = confirm("Are you sure you want to delete Shifts connected to " + deleteTypeDesc + ":" + deleteTypeId + "?");
-        //if (r == true) {
-            $.ajax({
-                url: url,
-                async: false,
-                type: "GET",
-                success: function (response) {
-                    console.log("DELETE TYPE: ", response);
+        $.ajax({
+            url: url,
+            async: false,
+            type: "GET",
+            success: function (response) {
+                console.log("DELETE TYPE: ", response);
 
+                if(response.length > 0){
+                
                     if(deleteType == 'req'){
                         var deleteDetails = JSON.stringify(response);    
 
@@ -2122,15 +2126,26 @@ $("#sidebar-right").on('click', '[id^=delete-shifts-action-]', function (e) {
                         var deleteDetails = response;
                     }
 
-                    $("#batch-deletion-details").html(deleteDetails);
-                }
-            });
+                    $('[id^=continue-delete-]').css({"display" : "none"});
+        
+                    if(deleteTypeId.length > 0){
+                        $("#" + continueBtn).css({"display" : "inline-block"});
+                    }
 
-            document.getElementById("delete-swing-batch-modal").style.display = "block";
-            
-            $('[id^=continue-delete-]').css({"display" : "none"});
-            $("#" + continueBtn).css({"display" : "inline-block"});
-        //}
+                } else {
+                    var deleteDetails = '<p class="error">Nothing to Delete</p>';
+                }
+
+                $("#batch-deletion-details").html(deleteDetails);
+
+                
+            }
+        });
+
+        document.getElementById("delete-swing-batch-modal").style.display = "block";
+        
+        
+        
     }
 
 });

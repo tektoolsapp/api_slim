@@ -17,8 +17,8 @@ class BookingsShiftFetchRepository
 
     public function getBookingsShift($ShiftId)
     {
-        dump("Shift ID");
-        dump($ShiftId);
+        //dump("Shift ID");
+        //dump($ShiftId);
        
         $sql = "SELECT * FROM bookings WHERE ShiftId = :ShiftId AND BookingStatus <> 'X';";
         $statement = $this->connection->prepare($sql);

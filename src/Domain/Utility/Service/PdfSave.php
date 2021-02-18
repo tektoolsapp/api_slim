@@ -4,20 +4,28 @@ namespace App\Domain\Utility\Service;
 
 use App\Domain\Requests\Repository\RequestFetchQuotesRepository;
 use App\Domain\Requests\Repository\RequestUpdateQuotesRepository;
+use App\Domain\Employees\Repository\EmployeesRepository;
+use App\Domain\Utility\Service\CommonFunctions;
 
 class PdfSave
 {
 
     private $chfArray;
     private $requestQuotes;
+    private $employees;
+    private $common;
 
     public function __construct(
         RequestFetchQuotesRepository $requestQuotes,
-        RequestUpdateQuotesRepository $chfArray
+        RequestUpdateQuotesRepository $chfArray,
+        EmployeesRepository $employees,
+        CommonFunctions $common
     )
     {
         $this->requestQuotes = $requestQuotes;
         $this->chfArray = $chfArray;
+        $this->employees = $employees;
+        $this->common = $common;
     }
 
     public function savePdf($pdfContent)
@@ -27,13 +35,27 @@ class PdfSave
         $type = strtolower($pdfContent['type']);
         $emp = $pdfContent['emp'];
 
+        //GET EMPLOYEE DETAILS
+        $employees = $this->employees->getEmployees();
+        $employeesLookup = $this->common->searchArray($employees, 'emp_id',$emp);
+        $employeeFirstName = $employeesLookup[0]['first_name'];
+        $employeeLastName = strtoupper($employeesLookup[0]['last_name']);
+        $employeeRehire = $employeesLookup[0]['emp_rehire'];
+        if($employeeRehire == 'Y') {
+            $rehireTxt = 'Rehire';
+        } else {
+            $rehireTxt = 'NewHire';
+        }
+
         $target_dir = 'pdfs/completed/'; // add the specific path to save the file
         $extension = 'pdf';
         //$file = uniqid() .'.'. $extension; // rename file as a unique name
 
         $rand = mt_rand(100000, 999999);
 
-        $file = $paddedReq."_".$type."_".$emp."_".$rand;
+        $file = $employeeLastName."_".$employeeFirstName."_".strtoupper($type)."_".$rehireTxt." ".$rand;
+
+        //$file = $paddedReq."_".$type."_".$emp."_".$rand;
         $file_dir = $target_dir . $file .'.'. $extension;
 
         //ADD THE FILE TO THE REQUEST

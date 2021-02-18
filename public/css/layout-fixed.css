@@ -438,7 +438,7 @@ div.total-box-generate {
     margin-left:80px;
     width:calc(100% - 80px);
     /*overflow:visible;*/
-    z-index:999;
+    z-index:10;
     border-left: 1px solid #CCCCCC;
     /*overflow:visible;*/
 }

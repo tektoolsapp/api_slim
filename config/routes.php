@@ -49,16 +49,11 @@ return function (App $app) {
         ->add(RedirectIfGuest::class)
         ->add(Guard::class);
     $app->get('/scheduler/filter', \App\Action\SchedulerFilterAction::class)->setName('scheduler-filter');
-
     $app->post('/scheduler/template', \App\Action\SchedulerTemplateAction::class)->setName('scheduler-template');
-
     $app->get('/scheduler/template/{template_id}', \App\Action\SchedulerFetchTemplateAction::class)->setName('scheduler-fetch-template');
-
     $app->get('/scheduler/templates', \App\Action\SchedulerTemplatesAction::class)->setName('scheduler-templates');
-
     $app->post('/scheduler/bookings/template', \App\Action\SchedulerBookingsTemplateAction::class)->setName('scheduler-bookings-template');
     $app->post('/scheduler/booking/template', \App\Action\SchedulerBookingTemplateAction::class)->setName('scheduler-booking-template');
-
     $app->post('/scheduler/booking/template/delete', \App\Action\SchedulerBookingDeleteTemplateAction::class)->setName('scheduler-booking-template-delete');
 
     //EMPLOYEES
@@ -81,9 +76,7 @@ return function (App $app) {
     $app->get('/bookings/availability', \App\Action\BookingsAvailabilityAction::class)->setName('bookings-availability');
     $app->get('/bookings/request/{req_id}', \App\Action\BookingsRequestFetchAction::class)->setName('bookings-request-fetch');
     $app->get('/booking/{booking_id}', \App\Action\BookingFetchAction::class)->setName('booking-fetch');
-
     $app->get('/bookings/batch/{batch_id}', \App\Action\BookingsBatchFetchAction::class)->setName('bookings-batch-fetch');
-
     $app->get('/bookings/shift/{shift_id}', \App\Action\BookingsShiftFetchAction::class)->setName('bookings-shift-fetch');
     $app->get('/bookings/emp/{emp_name}', \App\Action\BookingsShiftFetchAction::class)->setName('bookings-emp-fetch');
 
@@ -91,9 +84,7 @@ return function (App $app) {
     $app->post('/booking/add', \App\Action\BookingAddAction::class)->setName('booking-add');
     $app->post('/booking/update', \App\Action\BookingUpdateAction::class)->setName('booking-update');
     $app->post('/booking/delete', \App\Action\BookingDeleteAction::class)->setName('booking-delete');
-
     $app->post('/bookings/delete', \App\Action\BookingsDeleteAction::class)->setName('bookings-delete');
-
     $app->get('/bookings/conflict', \App\Action\BookingsConflictAction::class)->setName('bookings-conflict');
 
     //CUSTOMERS
@@ -130,7 +121,7 @@ return function (App $app) {
     $app->get('/pdf/fields/{req}/{pdf}', \App\Action\PdfFieldsAction::class)->setName('pdf-fields');
 
     //EMAIL
-    $app->post('/email/send', \App\Action\EmailSendAction::class)->setName('email-send');
+    $app->post('/email/send/{req_id}', \App\Action\EmailSendAction::class)->setName('email-send');
 
     //FILE UPLOAD
     $app->post('/filepond/process', \App\Action\FilePondProcessAction::class);

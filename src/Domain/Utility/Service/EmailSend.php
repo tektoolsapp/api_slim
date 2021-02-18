@@ -7,54 +7,96 @@ use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkException;
 use Postmark\Models\PostmarkAttachment;
 use Postmark\PostmarkAdminClient;
+use App\Domain\Requests\Repository\RequestFetchRepository;
+use App\Domain\Customers\Repository\CustomerSitesAllFetchRepository;
+use App\Domain\Utility\Service\CommonFunctions;
 
 final class EmailSend
 {
     private $twig;
+    private $req;
+    private $sites;
+    private $common;
 
-    public function __construct(Twig $twig)
+    public function __construct(
+            Twig $twig, 
+            RequestFetchRepository $req, 
+            CustomerSitesAllFetchRepository $sites,
+            CommonFunctions $common
+        )
     {
         $this->twig = $twig;
+        $this->req = $req;
+        $this->sites = $sites;
+        $this->common = $common;
     }
 
-    public function sendEmail()
+    public function sendEmail($reqId)
     {
 
-        $htmlBody = $this->twig->fetch('layout/email/email.test.twig');
+        dump($reqId);
 
-        $attachmentFile = __DIR__.'/../../../../public/pdfs/completed/000001_chf.pdf';
+        $request = $this->req->getRequest($reqId);
 
-        dump($attachmentFile);
+        $sitesLookup = $this->sites->getAllCustomerSites();
 
-        $attachment = PostmarkAttachment::fromFile
-        ($attachmentFile, 'attachment.pdf', 'application/pdf', 'application/pdf');
+        $thisSiteCode = $request['ws_site_dept'];
+        $siteDetails = $this->common->searchArray($sitesLookup, 'site_code', $thisSiteCode);
+        $siteDesc = $siteDetails[0]['site_desc'];
+        $siteShortDesc = $siteDetails[0]['site_short_desc'];
+
+        $reqRef = $request['ws_ref'];
+
+        $quoteRef = "RR".$reqRef."-".$siteShortDesc;
+
+        //dump($request);
+        
+        //BUILD/ADD RIO ATTACHMENTS
+        $rioPdfs = $request['ws_quote_pdfs'];
+        $rioPdfsArray = json_decode($rioPdfs, true);
+        $attachmentArray = array();
+
+        for ($d=0; $d < sizeof($rioPdfsArray); $d++) {
+            
+            $rioPdf = $rioPdfsArray[$d];
+
+            ${"attachmentFile".$d} = __DIR__.'/../../../../public/pdfs/completed/'.$rioPdf;
+            $attachment = PostmarkAttachment::fromFile
+            
+            (${"attachmentFile".$d}, $rioPdf, 'application/pdf', 'application/pdf');
+            
+            array_push($attachmentArray, $attachment);
+        }
+        
+        //BUILD/ADD QUOTE ATTACHMENT
+        $quotePdf = __DIR__.'/../../../../public/pdfs/quotes/quote_'.$reqId.'.pdf';
+
+        //dump($quotePdf);
+
+        $quoteAttachment = PostmarkAttachment::fromFile
+            ($quotePdf, $quotePdf, 'application/pdf', 'application/pdf');
+
+        array_push($attachmentArray, $quoteAttachment);
+
+        $emailAddressee = $request['ws_cust_contact'];
+        $rrMobiliser = $request['ws_mobiliser'];
+        
+        $fetchArray = array(
+
+            'email_addressee' => $emailAddressee,
+            'rr_mobiliser' => $rrMobiliser
+        );
+        
+        $htmlBody = $this->twig->fetch('layout/email/email.test.twig', $fetchArray);
 
         $exceptionMsg = '';
-
-        /*
-        sendEmail(
-            $from,
-            $to,
-            $subject,
-            $htmlBody = NULL,
-            $textBody = NULL,
-            $tag = NULL,
-            $trackOpens = true,
-            $replyTo = NULL,
-            $cc = NULL,
-            $bcc = NULL,
-            $headers = NULL,
-            $attachments = NULL,
-            $trackLinks = NULL
-        )
-        */
 
         try {
             $client = new PostmarkClient("97d8e7c1-e30c-43d6-8d35-2e1593e2e506");
             $sendResult = $client->sendEmail(
-                "allan.hyde@tektools.com.au",
-                "allan.hyde@livepages.com.au",
-                "Hello from Postmark!",
+                "allan.hyde@tektools.com.au", //FROM
+                "allan.hyde@livepages.com.au", //TO
+                "READY RESOURCES MOBILISATION QUOTATION - ".$quoteRef,
                 $htmlBody,
                 NULL,
                 NULL,
@@ -63,7 +105,7 @@ final class EmailSend
                 NULL,
                 NULL,
                 NULL,
-                [$attachment],
+                $attachmentArray,
                 NULL
             );
 
@@ -80,7 +122,7 @@ final class EmailSend
             // was unreachable or times out.
         }
 
-        //dump($exceptionMsg);
+        dump($exceptionMsg);
 
         //dump($sendResult);
 

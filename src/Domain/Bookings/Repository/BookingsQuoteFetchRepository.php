@@ -3,7 +3,6 @@
 namespace App\Domain\Bookings\Repository;
 
 use PDO;
-//use MongoDB\Client as Mongo;
 use App\Domain\Employees\Repository\EmployeesRepository;
 use App\Domain\Employees\Repository\TradesRepository;
 use App\Domain\Requests\Repository\RequestFetchRepository;
@@ -13,7 +12,6 @@ use App\Domain\Utility\Service\CommonFunctions;
 class BookingsQuoteFetchRepository
 {
     private $connection;
-    //private $mongo;
     private $employees;
     private $trades;
     private $reqDets;
@@ -23,7 +21,6 @@ class BookingsQuoteFetchRepository
 
     public function __construct(
         PDO $connection,
-        //Mongo $mongo,
         EmployeesRepository $employees,
         TradesRepository $trades,
         RequestFetchRepository $reqDets,
@@ -32,7 +29,6 @@ class BookingsQuoteFetchRepository
     )
     {
         $this->connection = $connection;
-        //$this->mongo = $mongo;
         $this->employees = $employees;
         $this->trades = $trades;
         $this->reqDets = $reqDets;
@@ -59,6 +55,83 @@ class BookingsQuoteFetchRepository
 
         $updateRioPdfs = array();
 
+        //GET THE QUOTE DETAILS FROM THE REQUEST
+
+        $tradeRatesArray = array();
+        $ratesSubArray = array();
+
+        $tradeType1 = $request['ws_trade_type_1'];
+        $tradeType2 = $request['ws_trade_type_2'];
+        $tradeType3 = $request['ws_trade_type_3'];
+
+        if($tradeType1 != 'N'){
+            
+            $tradeTypeRateType1 = $request['ws_trade_rate_1'];
+            
+            $tradesLookup = $this->common->searchArray($trades, 'trade_code', $tradeType1);
+
+            if($tradeTypeRateType1 == 'LT'){
+
+                $rate1 = $tradesLookup[0]['lt_rate'];
+            
+            } else if($tradeTypeRateType1 == 'ST'){
+
+                $rate1 = $tradesLookup[0]['st_rate'];
+
+            } else if($tradeTypeRateType1 == 'FS'){
+
+                $rate1 = $tradesLookup[0]['fs_rate'];
+
+            }
+
+            //$request['ws_trade_applicable_rate_1'] = $rate1;
+
+            $ratesSubArray = array(
+                "trade_type" => $tradeType1,
+                "rate_code" => $tradeTypeRateType1,
+                "rate" => $rate1
+            );
+
+            array_push($tradeRatesArray,$ratesSubArray);
+
+            $ratesSubArray = array();
+        }
+
+        if($tradeType2 != 'N'){
+            
+            $tradeTypeRateType2 = $request['ws_trade_rate_2'];
+            
+            $tradesLookup = $this->common->searchArray($trades, 'trade_code', $tradeType2);
+
+            if($tradeTypeRateType2 == 'LT'){
+
+                $rate2 = $tradesLookup[0]['lt_rate'];
+            
+            } else if($tradeTypeRateType2 == 'ST'){
+
+                $rate2 = $tradesLookup[0]['st_rate'];
+
+            } else if($tradeTypeRateType2 == 'FS'){
+
+                $rate2 = $tradesLookup[0]['fs_rate'];
+
+            }
+
+            //$request['ws_trade_applicable_rate_2'] = $rate2;
+
+            $ratesSubArray = array(
+                "trade_type" => $tradeType2,
+                "rate_code" => $tradeTypeRateType2,
+                "rate" => $rate2
+            );
+
+            array_push($tradeRatesArray,$ratesSubArray);
+
+            $ratesSubArray = array();
+        }
+
+        //dump($tradeRatesArray);
+
         $sql = "SELECT * FROM bookings WHERE RequestId = :RequestId AND BookingStatus <> 'X';";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['RequestId' => $reqId]);
@@ -71,7 +144,14 @@ class BookingsQuoteFetchRepository
             //EMPLOYEE LOOKUP
             $employee = $bookingsQuote[$b]['UserId'];
             $employeeLookup = $this->common->searchArray($employees, 'emp_id', $employee);
+            
+            //TRADE TYPE
             $tradeType = $employeeLookup[0]['trade_type'];
+
+            //REF TRADE TYPE TO GET RATE
+
+            //GET THE APPLICABLE RATE FOR THE TRADE TYPE
+            
             $empFirstName = $employeeLookup[0]['first_name'];
             $bookingsQuote[$b]['emp_first_name'] = $empFirstName;
             $empLastName = $employeeLookup[0]['last_name'];
@@ -95,6 +175,7 @@ class BookingsQuoteFetchRepository
             //TRADE TYPE LOOKUP
             $tradeLookup = $this->common->searchArray($trades, 'trade_code', $tradeType);
             $tradeDesc = $tradeLookup[0]['trade_desc'];
+            
             $requestMobiliser = $request['ws_mobiliser'];
             $bookingsQuote[$b]['request_mobiliser'] = $requestMobiliser;
             $bookingsQuote[$b]['trade_type'] = $tradeDesc;
@@ -117,10 +198,20 @@ class BookingsQuoteFetchRepository
             $bookingsQuote[$b]['end_date'] = $endDateFormat;
             $bookingsQuote[$b]['end_time'] = $endTimeFormat;
 
-            $bookingRate = 96;
+            $ratesLookup = $this->common->searchArray($tradeRatesArray, 'trade_type', $tradeType);
+            $bookingRateCode = $ratesLookup[0]['rate_code'];
+            $bookingRate = $ratesLookup[0]['rate'];
+
+            //dump($bookingRate);
+            
+            //$bookingRate = 96;
+            
+            $bookingsQuote[$b]['booking_rate_code'] = $bookingRateCode;
             $bookingsQuote[$b]['booking_rate'] = $bookingRate;
             $bookingHours = ($endDateTimeStr - $startDateTimeStr) / 3600;
             $bookingsQuote[$b]['booking_hours'] = $bookingHours;
+
+            $bookingsQuote[$b]['booking_quote_date'] = $request['ws_quote_date'];
 
         }
 
@@ -176,6 +267,7 @@ class BookingsQuoteFetchRepository
             $empSap = $bookingsQuote[$q]['emp_sap'];
             $requestMobiliser = $bookingsQuote[$q]['request_mobiliser'];
 
+            $bookingRateCode = $bookingsQuote[$q]['booking_rate_code'];
             $bookingRate = $bookingsQuote[$q]['booking_rate'];
             $bookingHours = $bookingsQuote[$q]['booking_hours'];
 
@@ -654,6 +746,7 @@ class BookingsQuoteFetchRepository
                 $bookingSubArray['trade_type'] = $tradeType;
                 $bookingSubArray['hours'] = $shiftHours;
                 $bookingSubArray['rate'] = $bookingRate;
+                $bookingSubArray['rate_code'] = $bookingRateCode;
                 $bookingSubArray['units'] = 'Hour';
                 $bookingSubArray['extension'] = $shiftHours * $bookingRate;
                 $bookingSubArray['shifts'] = $shiftArray;
