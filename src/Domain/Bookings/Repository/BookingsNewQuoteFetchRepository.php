@@ -9,7 +9,7 @@ use App\Domain\Requests\Repository\RequestFetchRepository;
 use App\Domain\Requests\Repository\RequestUpdateChfRepository;
 use App\Domain\Utility\Service\CommonFunctions;
 
-class BookingsQuoteFetchRepository
+class BookingsNewQuoteFetchRepository
 {
     private $connection;
     private $employees;
@@ -138,7 +138,7 @@ class BookingsQuoteFetchRepository
 
         $bookingsQuote = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        dump($bookingsQuote);
+        //dump($bookingsQuote);
 
         //ADD/UPDATE EMPLOYEE FIELDS AS REQUIRED
         for ($b=0; $b < sizeof($bookingsQuote); $b++) {

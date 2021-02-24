@@ -28,6 +28,8 @@ class BookingUpdateRepository
         //$booking['StartDay'] = strtotime($booking['Start']);
         //$booking['EndDay'] = strtotime($booking['End']);
 
+        date_default_timezone_set('Australia/West');
+
         $startDay = strtotime($booking['Start']);
         $endDay = strtotime($booking['End']);
         

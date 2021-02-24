@@ -20,8 +20,11 @@ final class DashboardAction
         ResponseInterface $response
     ): ResponseInterface {
 
+        $myVar = $_SERVER['JWT_SECRET'];
+        
         return $this->twig->render($response, 'layout/content/dashboard.twig', array(
             'title'=> 'DASHBOARD',
+            'secret' => $myVar
         ));
     }
 }

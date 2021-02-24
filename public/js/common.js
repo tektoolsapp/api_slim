@@ -57,6 +57,22 @@ $("#sidebar-left").on('click', '#save-employee-update', function (e) {
     $("#employee_update_form").find("div.error").removeClass('error').addClass("noerror");
     $("#employee_update_form").find("input.required").removeClass('required');
 
+    /* var myInputs = $('#employee_update_form :input');
+
+    var values = {};
+    myInputs.each(function() {
+        values[this.name] = $(this).val();
+    }); */
+
+    //console.log("VALUES: ", values);
+
+    var values = {};
+    $.each($('#employee_update_form').serializeArray(), function(i, field) {
+        values[field.name] = field.value;
+    });
+
+    console.log("VALUES: ", values);
+
     var errCount = 0;
     var errMsgArray = [];
 
@@ -66,6 +82,8 @@ $("#sidebar-left").on('click', '#save-employee-update', function (e) {
         console.log("CB:" + $(this).val());
         skillsSelected.push($(this).val());
     });
+
+    console.log("SK: ", $("#skill_811025").prop('checked'));
 
     var skillsArray = JSON.stringify(skillsSelected);
 
@@ -399,60 +417,65 @@ function updateEmployee(empId) {
 
     employeeForm += '</div>';
 
+    ////
+
     employeeForm += '<div class="w3-row">';
 
-    employeeForm += '<div id="emp_title_display" class="w3-half" style="padding:15px 10px 10px 10px;">';
-    employeeForm += '<label style="font-weight:bold;">Title</label>';
-    employeeForm += '<select name="emp_title" id="emp_title" class="w3-select w3-border input-display">';
-    employeeForm += '<option value="NA">Select a Title</option>';
-    employeeForm += '<option value="Mr">Mr</option>';
-    employeeForm += '<option value="Mrs">Mrs</option>';
-    employeeForm += '<option value="Ms">Ms</option>';
-    employeeForm += '<option value="Miss">Miss</option>';
-    employeeForm += '</select>';
-    employeeForm += '<div id="emp_title_error" class="noerror" ></div>';
+        employeeForm += '<div id="emp_title_display" class="w3-half" style="padding:15px 10px 10px 10px;">';
+            employeeForm += '<label style="font-weight:bold;">Title</label>';
+            employeeForm += '<select name="emp_title" id="emp_title" class="w3-select w3-border input-display">';
+            employeeForm += '<option value="NA">Select a Title</option>';
+            employeeForm += '<option value="Mr">Mr</option>';
+            employeeForm += '<option value="Mrs">Mrs</option>';
+            employeeForm += '<option value="Ms">Ms</option>';
+            employeeForm += '<option value="Miss">Miss</option>';
+            employeeForm += '</select>';
+            employeeForm += '<div id="emp_title_error" class="noerror" ></div>';
+        employeeForm += '</div>';
+
+        employeeForm += '<div id="gender_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+            employeeForm += '<label style="margin:0 0 0 10px;">Gender<span class="required-label"<span>*</span></label>';
+
+            employeeForm += '<div style="margin:0 0 0 10px;">';
+            employeeForm += '<input id="emp_gender_male" name="emp_gender" class="w3-radio input-display" type="radio" value="M">';
+            employeeForm += '<label style="margin-left:5px;font-weight:normal;">Male</label>';
+            employeeForm += '<input id="emp_gender_female" name="emp_gender" class="w3-radio" type="radio" value="F" style="margin-left:10px;">';
+            employeeForm += '<label style="margin-left:5px;font-weight:normal;">Female</label>';
+        employeeForm += '</div>';
+
     employeeForm += '</div>';
 
-    employeeForm += '<div id="gender_display" class="w3-half" style="padding:10px 0 10px 0px;">';
-    employeeForm += '<label style="margin:0 0 0 10px;">Gender<span class="required-label"<span>*</span></label>';
-
-    employeeForm += '<div style="margin:0 0 0 10px;">';
-    employeeForm += '<input id="emp_gender_male" name="emp_gender" class="w3-radio input-display" type="radio" value="M">';
-    employeeForm += '<label style="margin-left:5px;font-weight:normal;">Male</label>';
-    employeeForm += '<input id="emp_gender_female" name="emp_gender" class="w3-radio" type="radio" value="F" style="margin-left:10px;">';
-    employeeForm += '<label style="margin-left:5px;font-weight:normal;">Female</label>';
-    employeeForm += '</div>';
-
-    employeeForm += '</div>';
-    employeeForm += '<div class="w3-row">';
-
+    employeeForm += '<div class="w3-row" style="margin:10px 0 0 0;">';
+    
     employeeForm += '<div id="birth_date_display" class="w3-half" style="padding:10px 10px 10px 10px;">';
     employeeForm += '<label style="font-weight:bold;">Birth date<span class="required-label"<span>*</span></label>';
-    employeeForm += '<input name="birth_date" id="birth_date" class="w3-input w3-border datepicker-year input-display" type="text" style="padding:10px 0 10px 10px;">';
+    employeeForm += '<input name="birth_date" id="birth_date" class="w3-input w3-border datepicker-year input-display" type="text">';
     employeeForm += '<div id="birth_date_error" class="noerror" ></div>';
     employeeForm += '</div>';
+    
+    employeeForm += '<div id="emp_pin_display" class="w3-half" style="padding:15px 10px 10px 10px;">';
+    employeeForm += '<label style="font-weight:bold;">PIN</label>';
+    employeeForm += '<input name="emp_pin" id="emp_pin" class="w3-input w3-border input-display" type="text">';
+    employeeForm += '</div>';
 
-    //employeeForm += '</div>';
+    employeeForm += '</div>';
 
-    //employeeForm += '<div class="w3-row" style="margin:10px 0 0 0;">';
+    employeeForm += '<div class="w3-row" style="margin:10px 0 0 0;">';
+    
     employeeForm += '<div class="w3-half" style="padding:10px 10px 10px 10px;">';
     employeeForm += '<label>Trade Type<span class="required-label"<span>*</span></label>';
     employeeForm += '<select name="trade_type" id="trade_type" class="w3-select w3-border input-display"></select>';
-
     employeeForm += '<div id="trade_type_error" class="noerror" ></div>';
     employeeForm += '</div>';
 
     employeeForm += '</div>';
+    
     employeeForm += '<div class="w3-row">';
 
     employeeForm += '<div id="emp_sap_display" class="w3-half" style="padding:10px 10px 10px 10px;">';
     employeeForm += '<label style="font-weight:bold;">SAP Number</label>';
     employeeForm += '<input name="emp_sap" id="emp_sap" class="w3-input w3-border input-display" type="text">';
-    //employeeForm += '<div id="emp_sap_error" class="noerror" ></div>';
     employeeForm += '</div>';
-
-    //employeeForm += '</div>';
-    //employeeForm += '<div class="w3-row">';
 
     employeeForm += '<div id="rehire_display" class="w3-half" style="padding:10px 0 10px 0px;">';
     employeeForm += '<label style="margin:0 0 0 10px;">RIO Re-Hire<span class="required-label"<span>*</span></label>';
@@ -467,15 +490,7 @@ function updateEmployee(empId) {
     employeeForm += '</div>';
     employeeForm += '</div>';
 
-    /*
-    employeeForm += '<div class="w3-row">';
-    employeeForm += '<div id="color_display" style="padding:10px 10px 10px 10px;">';
-    employeeForm += '<label style="font-weight:bold;">Scheduler Colour<span class="required-label"<span>*</span></label>';
-    employeeForm += '<input name="color" id="color" class="w3-input w3-border input-display" type="text">';
-    employeeForm += '<div id="color_error" class="noerror" ></div>';
-
-    employeeForm += '</div>';
-    */
+    employeeForm += '<div style="clear:both;"></div>';
 
     //SKILLS
     employeeForm += '<label style="padding-left:10px;">Qualifications:</label>';

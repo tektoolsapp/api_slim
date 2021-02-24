@@ -49,15 +49,17 @@
             }
         }
 
-        if(amPm == 'AM'){
-            #
-            <div style="padding:3px;"><img src="assets/sun.png" height="22px"></div>
-            #
+        if(tranId != ''){
+            if(amPm == 'AM'){
+                #
+                <div style="padding:3px;"><img src="assets/sun.png" height="22px"></div>
+                #
 
-        } else {
-            #
-            <div style="padding:3px;"><img src="assets/moon.png" height="16px"></div>
-            #
+            } else if (amPm == 'PM'){
+                #
+                <div style="padding:3px;"><img src="assets/moon.png" height="16px"></div>
+                #
+            }
         }
 
         #

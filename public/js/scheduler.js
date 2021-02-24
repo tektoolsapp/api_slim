@@ -2938,23 +2938,23 @@ $("#scheduler").kendoScheduler({
         },
         transport: {
             read: {
-                url: "http://tt.local/bookings",
+                url: "http://rr.ttsite.com.au/bookings",
                 dataType: "json"
             },
             update: {
-                url: "http://tt.local/booking/update",
+                url: "http://rr.ttsite.com.au/booking/update",
                 dataType: "json",
                 contentType: "application/json",
                 type: "POST"
             },
             create: {
-                url: "http://tt.local/booking/add",
+                url: "http://rr.ttsite.com.au/booking/add",
                 dataType: "json",
                 contentType: "application/json",
                 type: "POST"
             },
             destroy: {
-                url: "http://tt.local/booking/delete",
+                url: "http://rr.ttsite.com.au/booking/delete",
                 dataType: "json",
                 contentType: "application/json",
                 type: "POST"

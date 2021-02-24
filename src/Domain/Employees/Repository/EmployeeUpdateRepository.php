@@ -26,7 +26,7 @@ class EmployeeUpdateRepository
     public function updateEmployee(array $employee)
     {
 
-        //dump($employee);
+        dump($employee);
 
         //GET/SET TRADE COLOR
         $trades = $this->trades->getTrades();

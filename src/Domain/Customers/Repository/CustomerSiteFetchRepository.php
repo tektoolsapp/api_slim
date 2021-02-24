@@ -21,7 +21,7 @@ class CustomerSiteFetchRepository
 
     public function getCustomerSite($customerSiteId)
     {
-        $sql = "SELECT * FROM customer_sites WHERE site_code = :site_code;";
+        $sql = "SELECT * FROM customer_sites WHERE site_code = :site_code";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['site_code' => $customerSiteId]);
 

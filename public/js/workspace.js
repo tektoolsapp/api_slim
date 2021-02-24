@@ -786,7 +786,7 @@ function createBlob(request,pdfType,url, emp, fields){
 
 function transformPdf(request,pdfType, emp, fields){
 
-    var url = "http://tt.local/pdfs/" + pdfType + ".pdf";
+    var url = "http://rr.ttsite.com.au/pdfs/" + pdfType + ".pdf";
 
     createBlob(request, pdfType, url, emp, fields);
 }
@@ -1729,7 +1729,7 @@ $("body").on('click','[id^=quote-preview-pdf]', function (e) {
     //GET THE REQUEST SHIFTS
 
     $.ajax({
-        url: "/bookings/quote/" + param,
+        url: "/newbookings/quote/" + param,
         type: "GET"
     }).done(function (response) {
 
@@ -1987,7 +1987,324 @@ function actionQuote(param) {
     $("#sidebar-right").append(actionQuote);
 }
 
+/////////SWINGS ADDED
+
+function setTemplates(swingTemplates){
+
+    $("#sidebar-right").html("");
+
+    var tempId = 1;
+    
+    //INITIALISE LOCAL STORAGE OF EMPS
+
+    var setTemplateEmployees = localStorage.getItem('scheduler-templates-employees');
+
+    //if(setTemplateEmployees != null){
+        //var currEmpsArray = JSON.parse(setTemplateEmployees);
+    //} else {
+        currEmpsArray = [];
+    //}
+
+    console.log("SET TEMP EMPS: ", currEmpsArray);
+    
+    localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
+
+    var swingTemplates = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    swingTemplates += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Update Request Swings</div>';
+    swingTemplates += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div id="outer-templates-container" style="margin:0 15px 0 15px;border:0px solid red;">';
+
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="reload-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin-top:10px;">Reload Last Used Swing Details</button>';
+    swingTemplates += '<button id="load-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:10px 0 0 10px;">Load a Swing Template</button>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div style="margin-top:5px;margin-bottom:10px;font-size:12px;">Required Field<span class="required-label">*</span></div>';
+    
+    swingTemplates += '<form name="scheduler-template-form" id="scheduler-template-form">';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Request<span class="required-label">*</span></label>';
+    swingTemplates += '<select name="swing_request-' + tempId + '" id="swing_request-' + tempId + '" class="w3-select w3-border input-display"></select>';
+    swingTemplates += '<div id="swing_request-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Reference<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_reference-' + tempId + '" id="swing_reference-' + tempId + '" class="w3-input w3-border input-display" type="text" style="background-color:lightgrey" readonly="readonly">';
+    swingTemplates += '<div id="swing_reference-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label style="font-weight:bold;">Employee(s)<span class="required-label"<span>*</span></label>';
+    swingTemplates += '<select id="swing_emps-' + tempId + '" name="swing_emps-' + tempId + '[]" multiple="multiple" style="margin-top:10px;"></select>';
+    swingTemplates += '<div id="swing_emps_error-' + tempId +'" class="noerror" ></div>';
+    swingTemplates += '</div>';//DISPLAY
+    swingTemplates += '</div>';//ROW
+
+    swingTemplates += '<div id="swing-templates-container" style="border:0px solid brown">';
+    
+    swingTemplates += '<div id="swing-' + tempId + '" style="margin-top:10px;padding:0 10px 10px 10px;border:1px solid #CCC; box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19);">';
+    
+    swingTemplates += '<h3>Swing ' + tempId + ':</h3>';
+    
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Swing Type<span class="required-label">*</span></label>';
+    swingTemplates += '<select name="swing_type-' + tempId + '" id="swing_type-' + tempId + '" class="w3-select w3-border input-display">';
+    swingTemplates += '<option value="NA">Select an Swing Type</option>';
+    swingTemplates += '<option value="On">On</option>';
+    swingTemplates += '<option value="Off">Off</option>';
+    swingTemplates += '</select>';
+    swingTemplates += '<div id="swing_type-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Start Day<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_start_date-' + tempId + '" id="swing_start_date-' + tempId + '" class="w3-input w3-border datepicker input-display" type="text" readonly="readonly">';
+    swingTemplates += '<div id="swing_start_date-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div id="swing_type_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+
+    swingTemplates += '<label style="margin:0;">Swing Time<span class="required-label"<span>*</span></label>';
+    swingTemplates += '<div style="margin:0;">';
+    swingTemplates += '<input id="day_shift-' + tempId + '" name="shift_time-' + tempId + '" class="w3-radio input-display" type="radio" value="D">';
+    swingTemplates += '<label style="margin-left:5px;font-weight:normal;">Day</label>';
+    swingTemplates += '<input id="night_shift-' + tempId + '" name="shift_time-' + tempId + '" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+    swingTemplates += '<label style="margin-left:5px;font-weight:normal;">Night</label>';
+    swingTemplates += '</div>';
+    swingTemplates += '</div>';//ITEM
+
+    swingTemplates += '<div class="w3-quarter" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Recur (Days)<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_recurrence-' + tempId + '" id="swing_recurrence-' + tempId + '" class="w3-input w3-border input-display" type="text">';
+    swingTemplates += '<div id="swing_recurrence-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';//ITEM
+
+    swingTemplates += '</div>';//ROW
+
+    swingTemplates += '</div>';//SWING ID CONTAINER
+
+    swingTemplates += '<div id="add-next-2"></div>';//ADD NEXT HERE
+
+    swingTemplates += '</div>';//SWING TEMPLATES CONTAINER
+
+    swingTemplates += '</form>';
+
+    swingTemplates += '<div id="template-actions">';
+    
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="next_swing-' + tempId + '" class="w3-button w3-padding-medium w3-pink w3-margin-bottom" style="margin-top:10px;">Add Another Swing</button>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="auto-date-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 0;">Auto Date</button>';
+    swingTemplates += '<button id="reset-template-swings" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Reset Shifts</button>';
+    swingTemplates += '<button id="save-as-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Save as Template</button>';
+    swingTemplates += '<button id="cancel-save-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Cancel</button>';
+    swingTemplates += '<button id="save-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Create Shifts</button>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';//CONTAINER
+
+    $("#sidebar-right").html("");
+
+    $("#sidebar-right").append(swingTemplates);
+
+    $("#day_shift-" + tempId).prop('checked',true);
+    $("#night_shift-" + tempId).prop('checked',false);
+
+    $.ajax({
+        url: '/requests',
+        type: "get",
+    }).done(function (response) {
+        console.log("REQUESTS: ", response);
+        var requests = response.requests;
+        var swingRequests = '<option value="NA">Select a Request</option>';
+
+        for (var r = 0; r < requests.length; r++) {
+            reqId = requests[r]['ws_id'];            
+            swingRequests += '<option value="' + reqId + '">' + reqId + '</option>';
+        }
+
+        $("#swing_request-" + tempId).html("");
+        $("#swing_request-" + tempId).append(swingRequests);
+    });
+
+    $.ajax({
+        url: '/employees',
+        type: "get",
+    }).done(function (response) {
+        console.log("EMPLOYEES: ", response);
+        var employees = response;
+        var swingEmployees = "";
+
+        for (var e = 0; e < employees.length; e++) {
+            empId = employees[e]['emp_id'];
+            
+            if(typeof currSchedTemplateEmps != "undefined"){
+            
+                if(currEmpsArray.includes(empId) == true){
+                    var selected = 'selected';
+                } else {
+                    var selected = '';
+                }    
+            
+            } else {
+                var selected = '';
+            }
+
+            empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+            swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
+        }
+
+        $("#swing_emps-" + tempId).html("");
+        $("#swing_emps-" + tempId).append(swingEmployees);
+
+        $("#swing_emps-1").multiSelect({
+            afterSelect: function(values){
+
+                console.log("AFTER SELECT Y");
+                
+                var thisSelectedValue = values[0];
+                
+                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+
+                console.log("LOCAL STORAGE INIT Y: ", currSchedTemplateEmps);
+
+                //MY HERE    
+
+                if(localStorage.getItem('scheduler-templates-employees') == null){
+                
+                    //if(typeof currSchedTemplateEmps === "undefined" || currSchedTemplateEmps === null){
+
+                    console.log("UNDEFINED NULL");
+                    
+                    //if(currSchedTemplateEmps == null){
+                     var tempEmps = [];
+                     tempEmps.push(thisSelectedValue);
+                     
+                     console.log("NEW TEMP EMPS Y: ", tempEmps);
+
+                } else {
+                    
+                    console.log("DEFINED NOT NULL");
+                    
+                    var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                    if(tempEmps.includes(thisSelectedValue) == false){
+                        tempEmps.push(thisSelectedValue);
+                        tempEmps.sort() 
+                    } 
+                    
+                    console.log("EXIST TEMP EMPS Y: ", tempEmps);
+                }
+
+                var storeEmps = JSON.stringify(tempEmps);
+                console.log("STORE EMPS: ");
+                console.log(storeEmps);
+
+                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                console.log("LOCAL STORAGE: ", localStorage.getItem('scheduler-templates-employees'));
+
+                //PUSH TO CURRENT SWINGS
+                $("#template-actions").find("button").each(function(){
+                    if(this.id != 'save-swing-template' 
+                        && this.id != 'save-as-swing-template'
+                        && this.id != 'cancel-save-swing-template' 
+                        && this.id != 'auto-date-template' 
+                        && this.id != 'reset-template-swings'
+                    ){    
+                        var thisCheckId = $(this).prop('id');
+                        checkFields = thisCheckId.split('-').pop();
+                    }
+                });
+
+                console.log("CHECKFIELDS Y: ", checkFields);
+
+                for (var c = 0; c < checkFields; c++) {
+                    var thisEmpSwing = parseInt(c) + 1;
+                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                }    
+
+            },
+            afterDeselect: function(values){
+
+                console.log("AFTER DE-SELECT Y");
+                
+                var thisDeselectedValue = values[0];
+
+                function removeTempEmp(array, item){
+                    for(var i in array){
+                        if(array[i]==item){
+                            array.splice(i,1);
+                            break;
+                        }
+                    }
+                }
+
+                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+
+                console.log("LOCAL STORAGE REMOVE: ", tempEmps);
+
+                removeTempEmp(tempEmps, thisDeselectedValue);
+                
+                var storeEmps = JSON.stringify(tempEmps);
+                localStorage.setItem('scheduler-templates-employees',storeEmps);
+
+                console.log("LOCAL STORAGE AFTER REMOVE: ", tempEmps);
+
+                //PUSH TO CURRENT SWINGS
+                $("#template-actions").find("button").each(function(){
+                    if(this.id != 'save-swing-template' 
+                        && this.id != 'save-as-swing-template'
+                        && this.id != 'cancel-save-swing-template' 
+                        && this.id != 'auto-date-template' 
+                        && this.id != 'reset-template-swings'
+                    ){    
+                        var thisCheckId = $(this).prop('id');
+                        checkFields = thisCheckId.split('-').pop();
+                    }
+                });
+
+                for (var c = 0; c < checkFields; c++) {
+                    var thisEmpSwing = parseInt(c) + 1;
+                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                }
+
+            }
+        });
+    });
+}
+
 function actionUpdateSwings(param) {
+
+    setTemplates();
+
+}
+
+//////
+
+/* function actionUpdateSwings(param) {
 
     $("#sidebar-right").html("");
 
@@ -2003,7 +2320,7 @@ function actionUpdateSwings(param) {
     actionUpdateSwings += '</div>';
 
     $("#sidebar-right").append(actionUpdateSwings);
-}
+} */
 
 function actionSwings(param) {
 
@@ -2033,7 +2350,47 @@ function actionSwings(param) {
     //actionSwings += '</div>';
     
     var actionSwings = '<div style="clear:both;"></div>';
-    actionSwings += '<div class="w3-center" style="margin-top:10px;">SHIFTS';
+    actionSwings += '<div class="w3-center" style="margin-top:10px;">SWINGS HERE';
+
+    //GET SOME SWINGS
+
+    var empId = 1;
+
+    var swingDets = function () {
+        var result = $.ajax({
+            type: "get",
+            url: '/bookings/' + param + "/" + empId,
+            async: false,
+            success: function (response) {
+                //console.log("GET REQ EMP: ",response);
+            }
+        }) .responseText ;
+        return  result;
+    }
+
+    //console.log("SWING DETS: ", JSON.strigify(swingDets));
+    var reqEmpDetails = swingDets();
+
+    reqEmpDetails = JSON.parse(reqEmpDetails);
+    console.log("GET REQ EMP: ", reqEmpDetails);
+
+    var empDets = function () {
+        var result = $.ajax({
+            type: "get",
+            url: '/api/employee/' + empId,
+            async: false,
+            success: function (response) {
+                //console.log("GET REQ EMP: ",response);
+            }
+        }) .responseText ;
+        return  result;
+    }
+
+    //console.log("SWING DETS: ", JSON.strigify(swingDets));
+    var empDetails = empDets();
+
+    empDetails = JSON.parse(empDetails);
+    console.log("GET EMP DETS: ", empDetails);
 
     actionSwings += '</div>';
 

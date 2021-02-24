@@ -12,17 +12,26 @@ use Slim\Views\Twig;
 
 use App\Util\Util;
 
+use App\Domain\Utility\Service\GenerateToken;
+
 final class UserSignInAction extends Util
 {
 
     private $twig;
     private $flash;
+    private $generateToken;
 
-    public function __construct(Twig $twig, Messages $flash, RouteParserInterface $routeParser)
+    public function __construct(
+            Twig $twig, 
+            Messages $flash, 
+            RouteParserInterface $routeParser, 
+            GenerateToken $generateToken
+        )
     {
         $this->twig = $twig;
         $this->flash = $flash;
         $this->routeParser = $routeParser;
+        $this->generateToken = $generateToken;
     }
 
     public function __invoke(
@@ -62,6 +71,16 @@ final class UserSignInAction extends Util
         }
 
         //dump($user);
+        
+        $id = $user['id'];
+
+        //dump($id);
+
+        $token = $this->generateToken->generateToken($id);
+
+        $_SESSION['my_token'] = $token; 
+
+        //dump($token);
 
         /*if($redirect = $data['redirect']){
             return $response

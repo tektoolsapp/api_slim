@@ -2,19 +2,21 @@
 
 namespace App\Action;
 
-use App\Domain\Bookings\Service\BookingsQuoteFetch;
+use App\Domain\Bookings\Service\BookingsNewQuoteFetch;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Views\Twig;
 
-final class BookingsQuoteFetchAction
+final class BookingsNewQuoteFetchAction
 {
-    private $bookingsQuoteFetch;
+    private $bookingsNewQuoteFetch;
     private $twig;
 
-    public function __construct(BookingsQuoteFetch $bookingsQuoteFetch, Twig $twig)
+    public function __construct(
+        BookingsNewQuoteFetch $bookingsNewQuoteFetch,
+        Twig $twig)
     {
-        $this->bookingsQuoteFetch = $bookingsQuoteFetch;
+        $this->bookingsNewQuoteFetch = $bookingsNewQuoteFetch;
         $this->twig = $twig;
     }
 
@@ -28,13 +30,13 @@ final class BookingsQuoteFetchAction
 
         $reqId = (int)$args['req_id'];
 
-        dump($reqId);
+        //dump($reqId);
 
         //die();
 
-        //$bookingsQuoteData = $this->bookingsQuoteFetch->getBookingsQuote($reqId);
+        $bookingsQuoteData = $this->bookingsNewQuoteFetch->getBookingsQuote($reqId);
 
-        //$response->getBody()->write((string)json_encode($bookingsQuoteData));
+        $response->getBody()->write((string)json_encode($bookingsQuoteData));
 
         return $response
             ->withHeader('Content-Type', 'application/json')

@@ -19,6 +19,23 @@ return function (App $app) {
 
     //$app->add(Guard::class);
 
+    $app->add(new Tuupola\Middleware\JwtAuthentication([
+        "secure" -> true,
+        "relaxed" => ["localhost", "rr.ttsite.com.au"],
+        "ignore"=> ["/auth/signin", '/api/signin'],
+        "path" => "/api", /* or ["/api", "/admin"] */
+        "secret" => $_SERVER['JWT_SECRET'],
+        "error"=>function($response,$arguments)
+          {
+              $data["success"] = false;
+              $data["response"]=$arguments["message"];
+              $data["status_code"]= "401";
+
+              return $response->withHeader("Content-type","application/json")
+                  ->getBody()->write(json_encode($data,JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT ));
+          }
+    ]));
+
     // Parse json, form data and xml
     $app->addBodyParsingMiddleware();
 

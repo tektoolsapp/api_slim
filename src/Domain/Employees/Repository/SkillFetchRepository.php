@@ -23,7 +23,7 @@ class SkillFetchRepository
 
     public function getSkill($skillId)
     {
-        $sql = "SELECT * FROM employee_skills WHERE skill_id = :skill_id;";
+        $sql = "SELECT * FROM employee_skills WHERE skill_id = :skill_id";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['skill_id' => $skillId]);
 

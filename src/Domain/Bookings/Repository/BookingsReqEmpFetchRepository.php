@@ -3,42 +3,38 @@
 namespace App\Domain\Bookings\Repository;
 
 use PDO;
-//use MongoDB\Client as Mongo;
 use App\Domain\Employees\Repository\EmployeesRepository;
 use App\Domain\Employees\Repository\TradesRepository;
 use App\Domain\Utility\Service\CommonFunctions;
 
-class BookingsRequestFetchRepository
+class BookingsReqEmpFetchRepository
 {
     private $connection;
-    //private $mongo;
     private $employees;
     private $trades;
     private $common;
 
     public function __construct(
         PDO $connection,
-        //Mongo $mongo,
         EmployeesRepository $employees,
         TradesRepository $trades,
         CommonFunctions $common
     )
     {
         $this->connection = $connection;
-        //$this->mongo = $mongo;
         $this->employees = $employees;
         $this->trades = $trades;
         $this->common = $common;
     }
 
-    public function getBookingsRequest($reqId)
+    public function getBookingsReqEmp($reqId, $empId)
     {
         $employees = $this->employees->getEmployees();
         $trades = $this->trades->getTrades();
 
-        $sql = "SELECT * FROM bookings WHERE RequestId = :RequestId AND BookingStatus <> 'X';";
+        $sql = "SELECT * FROM bookings WHERE RequestId = :RequestId AND UserId = :UserId AND BookingStatus <> 'X';";
         $statement = $this->connection->prepare($sql);
-        $statement->execute(['RequestId' => $reqId]);
+        $statement->execute(['RequestId' => $reqId, 'UserId' => $empId]);
 
         $bookingsRequest = $statement->fetchAll(PDO::FETCH_ASSOC);
 

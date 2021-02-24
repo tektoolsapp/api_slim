@@ -51,6 +51,8 @@ class BookingsQuoteFetchRepository
 
         $bookingsQuote = $statement->fetchAll(PDO::FETCH_ASSOC);
 
+        dump($bookingsQuote);
+
         //ADD/UPDATE EMPLOYEE FIELDS AS REQUIRED
         for ($b=0; $b < sizeof($bookingsQuote); $b++) {
 

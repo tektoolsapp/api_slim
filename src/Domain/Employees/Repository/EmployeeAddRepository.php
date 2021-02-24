@@ -34,6 +34,10 @@ class EmployeeAddRepository
         $tradeColor = $tradeLookup[0]['trade_color'];
         $employee['color'] = $tradeColor;
 
+        $rand = mt_rand(100000, 999999);
+        
+        $employee['emp_pin'] = $rand;
+
         $columnsArray = array_keys($employee);
         $columnsString = implode(',', $columnsArray);
         $valuesArray = array_values($employee);

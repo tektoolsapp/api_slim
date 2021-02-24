@@ -123,6 +123,8 @@ return [
         //$myVar = $_SESSION['my_var'];
         //$twig->getEnvironment()->addGlobal('test_var', $myVar);
 
+        $twig->getEnvironment()->addGlobal('token', $_SESSION['my_token']);
+
         $twig->getEnvironment()->addGlobal('user', Sentinel::check());
         $twig->getEnvironment()->addGlobal('flash', $container->get(Flash::class));
 

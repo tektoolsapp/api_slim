@@ -1,6 +1,7 @@
 {
     "require": {
         "cartalyst/sentinel": "^5.0",
+        "firebase/php-jwt": "^5.2",
         "illuminate/database": "^8.25",
         "illuminate/events": "^8.25",
         "mikehaertl/php-pdftk": "^0.9.2",
@@ -20,6 +21,7 @@
         "symfony/translation": "^5.2",
         "symfony/twig-bridge": "^5.2",
         "tmw/fpdm": "^2.9",
+        "tuupola/slim-jwt-auth": "^3.5",
         "vlucas/phpdotenv": "^5.2",
         "vlucas/valitron": "^1.4",
         "wildbit/postmark-php": "^4.0"

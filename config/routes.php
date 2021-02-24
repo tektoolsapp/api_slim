@@ -21,8 +21,10 @@ return function (App $app) {
 
         $route->post('/signout', \App\Action\UserSignoutAction::class)
             ->setName('user-signout');
-
-    })->add(Guard::class);
+       
+    });
+    
+    //->add(Guard::class);
 
     $app->get('/auth/register', \App\Action\UserRegisterAction::class)
         ->setName('user-register');
@@ -75,12 +77,19 @@ return function (App $app) {
     $app->get('/bookings', \App\Action\BookingsAction::class)->setName('bookings');
     $app->get('/bookings/availability', \App\Action\BookingsAvailabilityAction::class)->setName('bookings-availability');
     $app->get('/bookings/request/{req_id}', \App\Action\BookingsRequestFetchAction::class)->setName('bookings-request-fetch');
+    
+    $app->get('/bookings/{req_id}/{emp_id}', \App\Action\BookingsReqEmpFetchAction::class)->setName('bookings-req-emp-fetch');
+    
     $app->get('/booking/{booking_id}', \App\Action\BookingFetchAction::class)->setName('booking-fetch');
     $app->get('/bookings/batch/{batch_id}', \App\Action\BookingsBatchFetchAction::class)->setName('bookings-batch-fetch');
     $app->get('/bookings/shift/{shift_id}', \App\Action\BookingsShiftFetchAction::class)->setName('bookings-shift-fetch');
     $app->get('/bookings/emp/{emp_name}', \App\Action\BookingsShiftFetchAction::class)->setName('bookings-emp-fetch');
 
-    $app->get('/bookings/quote/{req_id}', \App\Action\BookingsQuoteFetchAction::class)->setName('bookings-quote-fetch');
+    //$app->get('/bookings/quote/{req_id}', \App\Action\BookingsQuoteFetchAction::class)->setName('bookings-quote-fetch');
+    
+    $app->get('/newbookings/quote/{req_id}', \App\Action\BookingsNewQuoteFetchAction::class)->setName('bookings-new-quote-fetch');
+
+
     $app->post('/booking/add', \App\Action\BookingAddAction::class)->setName('booking-add');
     $app->post('/booking/update', \App\Action\BookingUpdateAction::class)->setName('booking-update');
     $app->post('/booking/delete', \App\Action\BookingDeleteAction::class)->setName('booking-delete');
@@ -126,5 +135,16 @@ return function (App $app) {
     //FILE UPLOAD
     $app->post('/filepond/process', \App\Action\FilePondProcessAction::class);
     $app->delete('/filepond/revert', \App\Action\FilePondRevertAction::class);
+
+    //API
+    //$app->get('//{cust_id}', \App\Action\CustomerFetchAction::class)->setName('customer-fetch');
+
+    $app->post('/api/signin', \App\Action\ApiSigninAction::class)->setName('api-signin');
+    
+    $app->get('/api/employee', \App\Action\ApiEmployeeFetchAction::class)->setName('api-employee-fetch');
+
+    $app->get('/api/shifts', \App\Action\ApiEmployeeShiftsFetchAction::class)->setName('api-employee-shifts-fetch');
+
+
 
 };
