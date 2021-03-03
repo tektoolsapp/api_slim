@@ -22,7 +22,8 @@ return function (App $app) {
     $app->add(new Tuupola\Middleware\JwtAuthentication([
         "secure" -> true,
         "relaxed" => ["localhost", "rr.ttsite.com.au"],
-        "ignore"=> ["/auth/signin", '/api/signin'],
+        "ignore"=> ["/api/signin"],
+        //"ignore"=> ["/api"],
         "path" => "/api", /* or ["/api", "/admin"] */
         "secret" => $_SERVER['JWT_SECRET'],
         "error"=>function($response,$arguments)

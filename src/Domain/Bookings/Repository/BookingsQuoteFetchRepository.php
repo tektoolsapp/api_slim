@@ -16,7 +16,6 @@ class BookingsQuoteFetchRepository
     private $trades;
     private $reqDets;
     private $chfArray;
-
     private $common;
 
     public function __construct(

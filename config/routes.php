@@ -145,6 +145,10 @@ return function (App $app) {
 
     $app->get('/api/shifts', \App\Action\ApiEmployeeShiftsFetchAction::class)->setName('api-employee-shifts-fetch');
 
+    $app->post('/api/booking/update', \App\Action\ApiBookingUpdateAction::class)->setName('api-booking-update');
 
+    //FCM
+
+    $app->post('/fcm/send', \App\Action\FcmSendAction::class)->setName('fcm-send');
 
 };

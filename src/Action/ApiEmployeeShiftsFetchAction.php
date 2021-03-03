@@ -37,6 +37,8 @@ final class ApiEmployeeShiftsFetchAction
         //dump($authHeaderArray);
         $authHeader = $authHeaderArray[1];
         //dump($authHeader);
+
+        //die();
     
         //$data = $request->getParsedBody();
         //$params = $request->getQueryParams();
@@ -48,6 +50,8 @@ final class ApiEmployeeShiftsFetchAction
         $apiEmployeeShiftsData = $this->apiEmployeeShiftsFetch->getApiEmployeeShifts($authHeader);
 
         $response->getBody()->write((string)json_encode($apiEmployeeShiftsData));
+        
+        //sleep(10);
         
         return $response
             ->withHeader('Content-Type', 'application/json')
