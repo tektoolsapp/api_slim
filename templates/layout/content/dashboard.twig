@@ -9,11 +9,13 @@
 
     <div style="clear:both;"></div>
 
+    <div>Text</div>
+
     {{token}}
 
-    <div>
+    {# <div>
         <a id="fcm-send" href="#" class="w3-button w3-right w3-xlarge">&times;</a>
-    </div>
+    </div> #}
 
     <body>
     <div id="token"></div>
@@ -36,9 +38,9 @@
             'appId': '1:571826693647:web:4d97ac04d771fea1d5657a',
         };
 
-        firebase.initializeApp(config);
+        //firebase.initializeApp(config);
 
-        const messaging = firebase.messaging();
+        {# const messaging = firebase.messaging();
         messaging
             .requestPermission()
             .then(function () {
@@ -54,7 +56,7 @@
             .catch(function (err) {
                 ErrElem.innerHTML =  ErrElem.innerHTML + "; " + err
                 console.log("Unable to get permission to notify.", err);
-            });
+            }); #}
 
     </script>
 
@@ -67,7 +69,7 @@
 
     <script src="{{ base_path() }}/js/common.js"></script>
 
-    <script src="{{ base_path() }}/js/minipdf.js"></script>
+    {# <script src="{{ base_path() }}/js/minipdf.js"></script>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.3/pako.min.js" integrity="sha256-X7u/eQo6oIgWqc5jOmTjQn3loM8Lse0ock76Gkkn/Ro=" crossorigin="anonymous"></script>
 
@@ -271,7 +273,7 @@
 
             document.querySelector('.loading').setAttribute('style', 'display: none');
         });
-    </script>
+    </script> #}
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-app.js"></script>

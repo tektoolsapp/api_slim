@@ -655,6 +655,213 @@ $("#sidebar-left").on('click', '[id^=edit_employee_]', function (e) {
 
 });
 
+///NOTIFICATIONS
+
+$("#sidebar-left").on('click', '#send-notification', function (e) {
+
+    e.preventDefault();
+
+    $("#notifications_form").find("div.error").removeClass('error').addClass("noerror");
+    $("#notifications_form").find("input.required").removeClass('required');
+
+    /* var myInputs = $('#employee_update_form :input');
+
+    var values = {};
+    myInputs.each(function() {
+        values[this.name] = $(this).val();
+    }); */
+
+    //console.log("VALUES: ", values);
+
+    var values = {};
+    $.each($('#notification_form').serializeArray(), function(i, field) {
+        values[field.name] = field.value;
+    });
+
+    console.log("VALUES: ", values);
+
+    var errCount = 0;
+    var errMsgArray = [];
+
+    /* var skillsSelected = [];
+
+    $('#notifications_form input:checkbox:checked').each(function () {
+        console.log("CB:" + $(this).val());
+        skillsSelected.push($(this).val());
+    }); */
+
+    //console.log("SK: ", $("#skill_811025").prop('checked'));
+
+    //var skillsArray = JSON.stringify(skillsSelected);
+
+    /* console.log("SS: " + skillsSelected);
+    console.log("SKILLS: " + skillsArray);
+
+    $("#emp_skills").val(skillsArray); */
+
+    if ($("#message_title").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'message_title',
+            "msg": 'A Message Title must be entered'
+        });
+    }
+
+    if ($("#message_body").val().length < 1) {
+        errCount++;
+        errMsgArray.push({
+            "id": 'message_body',
+            "msg": 'Some Message Content must be entered'
+        });
+    }
+
+    if (errCount > 0) {
+
+        console.log("ERRORS: ", errMsgArray);
+
+        for (var e = 0; e < errMsgArray.length; e++) {
+
+            var errorId = errMsgArray[e]['id'];
+            var errorMsg = errMsgArray[e]['msg'];
+
+            $("#" + errorId).addClass('required');
+            $("#" + errorId + "_error").removeClass('noerror');
+            $("#" + errorId + "_error").addClass('error');
+            $("#" + errorId + "_error").html(errorMsg);
+
+        }
+
+    } else {
+
+        //var notificationsForm = $($("#notifications_form")[0].elements).not(".skill").serialize();
+
+        //console.log("EMP FORM: ", employeeForm);
+
+        //var empId = $("#emp_id").val();
+
+        /* if (empId.length > 0) {
+            var updateUrl = '/employee/' + empId;
+            var successMsg = "Employee was successfully updated";
+        } else {
+            var updateUrl = '/employee';
+            var successMsg = "Employee was successfully added";
+        } */
+
+        var notificationForm = $("#notification_form").serialize();
+
+        $.ajax({
+            url: '/fcm/add',
+            type: "POST",
+            data: {
+                "form": notificationForm
+            },
+            success: function (response) {
+                console.log(response);
+
+                //alert(successMsg);
+                //viewEmployees();
+            }
+        });
+    }
+
+});
+
+$("#sidebar-left").on('click', '#cancel-notification-send', function (e) {
+
+    e.preventDefault();
+
+    viewSkills();
+});
+
+function viewNotifications() {
+
+    //var sbContUrl = "/notifications";
+
+    //console.log("URL:", sbContUrl);
+
+    $("#sidebar-left").html("");
+
+    /* var spinHtml = '<div class="busy-indicator">';
+    spinHtml += '<div>';
+    spinHtml += '<i class="fa fa-spinner fa-spin w3-xxxlarge"></i>';
+    spinHtml += '</div>';
+    spinHtml += '</div>';
+
+    $("#sidebar-left").append(spinHtml); */
+    ///
+    $("#sidebar-left").html("");
+
+    var notificationForm = '<div style="width:100%;padding:10px;border:0px solid blue;">';
+    
+    notificationForm += '<h4 style="margin:10px 0 0 10px;">Send a Message</h4>';
+
+    notificationForm += '<form id="notification_form">';
+
+    notificationForm += '<div class="w3-row">';
+    notificationForm += '<div id="message_to_display" style="padding:10px 10px 10px 10px;">';
+    notificationForm += '<label style="font-weight:bold;">To<span class="required-label"<span>*</span></label>';
+    notificationForm += '<select name="message_to" id="message_to" class="w3-select w3-border input-display"></select>';
+    notificationForm += '<div id="message_to_error" class="noerror" ></div>';
+    notificationForm += '</div>';
+    notificationForm += '</div>';
+    
+    notificationForm += '<div class="w3-row">';
+    notificationForm += '<div id="message_title_display" style="padding:15px 10px 10px 10px;">';
+    notificationForm += '<label style="font-weight:bold;">Message Title<span class="required-label"<span>*</span></label>';
+    notificationForm += '<input name="message_title" id="message_title" class="w3-input w3-border input-display" type="text">';
+    notificationForm += '<div id="message_title_error" class="noerror" ></div>';
+    notificationForm += '</div>';
+    notificationForm += '</div>';
+
+    notificationForm += '<div class="w3-row">';
+    notificationForm += '<div id="message_body_display" style="padding:15px 10px 10px 10px;">';
+    notificationForm += '<label style="font-weight:bold;">Message Content<span class="required-label"<span>*</span></label>';
+    notificationForm += '<textarea class="w3-input w3-border input-display" rows="5" name="message_body" id="message_body"></textarea>';
+    notificationForm += '<div id="message_body_error" class="noerror" ></div>';
+    notificationForm += '</div>';
+    notificationForm += '</div>';
+
+    notificationForm += '</form>';
+
+    notificationForm += '</div>';
+
+    notificationForm += '<div class="w3-center" style="margin-top:10px;">';
+    notificationForm += '<button id="send-notification" class="w3-button w3-darkblue w3-mobile w3-medium">Send Message</button>';
+    notificationForm += '</div>';
+
+    notificationForm += '</div>';
+
+    $("#sidebar-left").append(notificationForm);
+
+    $.ajax({
+        url: '/users',
+        type: "GET",
+        async: false,
+        success: function (response) {
+
+            console.log("USERS", response);
+
+            var users = response;
+
+            $("#message_to").html("");
+
+            var messageToOptions = '<option value="N">Select a Recipient</option>';
+
+            for (var u = 0; u < users.length; u++) {
+
+                var userId = users[u]['id'];
+                var userName = users[u]['first_name'] + " " + users[u]['last_name'];
+
+                messageToOptions += '<option value="' + userId + '">' + userName + '</option>';
+            }
+
+            console.log("TO: ", messageToOptions);
+
+            $("#message_to").append(messageToOptions);
+        }
+    });
+}    
+
 function viewEmployees() {
 
     var sbContUrl = "/employees";
@@ -1402,20 +1609,16 @@ function setSidebarContent(currentSidebar) {
 
     $("#sidebar-left").html("");
 
-    if (currentSidebar == 1) {
-
+    /* if (currentSidebar == 1) {
         var sbCont = "<div>Workspace</div>";
+        $("#sidebar-left").append(sbCont); */
 
-        $("#sidebar-left").append(sbCont);
-
+    if (currentSidebar == 1) {    
+        viewNotifications();
     } else if (currentSidebar == 2) {
-
         viewEmployees();
-
     } else {
-
         viewCustomers();
-
     }
 }
 

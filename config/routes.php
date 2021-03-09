@@ -41,10 +41,18 @@ return function (App $app) {
         ->add(RedirectIfGuest::class)
         ->add(Guard::class);
 
-    $app->get('/users', \App\Action\UserListAction::class)->setName('user-list');
+    //$app->get('/users', \App\Action\UserListAction::class)->setName('user-list');
+
+    $app->get('/users', \App\Action\UsersAction::class)->setName('users');
+
+    
+    
     $app->get('/users/{id}', \App\Action\UserReadAction::class)->setName('users-get');
     $app->post('/users', \App\Action\UserCreateAction::class)->setName('user-post');
     $app->get('/hello', \App\Action\HelloAction::class);
+
+    //USERS
+    //$app->get('/users', \App\Action\UsersAction::class)->setName('users');
 
     //SCHEDULER
     $app->get('/scheduler', \App\Action\SchedulerAction::class)->setName('scheduler')
@@ -144,11 +152,22 @@ return function (App $app) {
     $app->get('/api/employee', \App\Action\ApiEmployeeFetchAction::class)->setName('api-employee-fetch');
 
     $app->get('/api/shifts', \App\Action\ApiEmployeeShiftsFetchAction::class)->setName('api-employee-shifts-fetch');
+    $app->get('/api/shift/{shift_id}', \App\Action\ApiEmployeeShiftFetchAction::class)->setName('api-employee-shift-fetch');
 
     $app->post('/api/booking/update', \App\Action\ApiBookingUpdateAction::class)->setName('api-booking-update');
+
+    $app->get('/api/messages/{message_to}', \App\Action\ApiMessagesFetchAction::class)->setName('api-messages-fetch');
 
     //FCM
 
     $app->post('/fcm/send', \App\Action\FcmSendAction::class)->setName('fcm-send');
+
+    $app->post('/fcm/update/{message_id}', \App\Action\FcmUpdateAction::class)->setName('fcm-update');
+
+    $app->post('/fcm/add', \App\Action\FcmAddAction::class)->setName('fcm-add');
+
+    $app->get('/fcm/{message_to}', \App\Action\FcmFetchAction::class)->setName('fcm-fetch');
+
+
 
 };
