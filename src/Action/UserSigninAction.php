@@ -80,6 +80,15 @@ final class UserSignInAction extends Util
 
         $_SESSION['my_token'] = $token; 
 
+        if($_SERVER['HTTP_HOST'] == 'rr.ttsite.com.au'){
+            $defUrl = 'http://rr.ttsite.com.au';    
+        } else {
+            $defUrl = 'https://mob.readyresourcesapp.com.au'; 
+        }
+
+        setcookie('defUrl', $defUrl, time() + (86400 * 30), "/"); // 86400 = 1 day
+        setcookie('host', $_SERVER['HTTP_HOST'], time() + (86400 * 30), "/"); // 86400 = 1 day
+
         //dump($token);
 
         /*if($redirect = $data['redirect']){

@@ -2718,12 +2718,33 @@ if(schedulerDate){
     var today = new Date(localStorage.getItem('scheduler-date'));
     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 } else {
-    console.log("DATE NOT SET");
+    console.log("XXXDATE NOT SET");
     var today = new Date();
     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 }
 
-console.log("DATE: ", date);
+console.log("--DATE: ", date);
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+
+var thisHost = getCookie('host');
+var defUrl = getCookie('defUrl');
+
+console.log("DEFURL", defUrl);
 
 $("#scheduler").kendoScheduler({
     date: date,
@@ -2938,23 +2959,27 @@ $("#scheduler").kendoScheduler({
         },
         transport: {
             read: {
-                url: "http://rr.ttsite.com.au/bookings",
+                //url: "http://rr.ttsite.com.au/bookings",
+                url: defUrl + "/bookings",
                 dataType: "json"
             },
             update: {
-                url: "http://rr.ttsite.com.au/booking/update",
+                //url: "http://rr.ttsite.com.au/booking/update",
+                url: defUrl + "/booking/update",
                 dataType: "json",
                 contentType: "application/json",
                 type: "POST"
             },
             create: {
-                url: "http://rr.ttsite.com.au/booking/add",
+                //url: "http://rr.ttsite.com.au/booking/add",
+                url: defUrl + "/booking/add",
                 dataType: "json",
                 contentType: "application/json",
                 type: "POST"
             },
             destroy: {
-                url: "http://rr.ttsite.com.au/booking/delete",
+                //url: "http://rr.ttsite.com.au/booking/delete",
+                url: defUrl + "/booking/delete",
                 dataType: "json",
                 contentType: "application/json",
                 type: "POST"

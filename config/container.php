@@ -123,6 +123,10 @@ return [
         //$myVar = $_SESSION['my_var'];
         //$twig->getEnvironment()->addGlobal('test_var', $myVar);
 
+        $host = $_SERVER['HTTP_HOST'];
+
+        $twig->getEnvironment()->addGlobal('host', $host);
+
         $twig->getEnvironment()->addGlobal('token', $_SESSION['my_token']);
 
         $twig->getEnvironment()->addGlobal('user', Sentinel::check());
