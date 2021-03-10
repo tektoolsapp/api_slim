@@ -2,3 +2,5 @@ vendor/
 .idea/
 public/pdfs/quotes/*
 public/pdfs/completed/*
+composer.json
+composer.lock
