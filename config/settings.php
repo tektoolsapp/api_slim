@@ -15,7 +15,6 @@ $settings['root'] = dirname(__DIR__);
 $settings['temp'] = $settings['root'] . '/tmp';
 $settings['public'] = $settings['root'] . '/public';
 
-
 // Database settings
 $settings['db'] = [
     'driver' => 'mysql',

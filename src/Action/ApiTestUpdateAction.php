@@ -2,33 +2,38 @@
 
 namespace App\Action;
 
-use App\Domain\Messages\Service\FcmUpdate;
+use App\Domain\Api\Service\ApiTestUpdate;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Views\Twig;
 
-final class FcmUpdateAction
+final class ApiTestUpdateAction
 {
-    private $twig;
+    private $apiTestUpdate;
 
-    public function __construct(Twig $twig)
+    public function __construct(
+            ApiTestUpdate $apiTestUpdate
+        )
     {
-        $this->twig = $twig;
+        $this->apiTestUpdate = $apiTestUpdate;
     }
 
     public function __invoke(
         ServerRequestInterface $request,
         ResponseInterface $response
     ): ResponseInterface {
-        
+
         $data = $request->getParsedBody();
 
-        extract($data);
-        parse_str($form, $formDetails);
+        dump($data);
+
+        //extract($data);
+        //parse_str($form, $formDetails);
 
         //dump($formDetails);
 
-        $returnData = $this->fcmUpdate->updateEmployee($formDetails);
+        $returnData = $this->apiTestUpdate->updateTest($data);
+
+        //$returnData = $data;
 
         $response->getBody()->write((string)json_encode($returnData));
 
@@ -36,5 +41,4 @@ final class FcmUpdateAction
             ->withHeader('Content-Type', 'application/json')
             ->withStatus(201);
     }
-          
 }

@@ -145,8 +145,6 @@ return function (App $app) {
     $app->delete('/filepond/revert', \App\Action\FilePondRevertAction::class);
 
     //API
-    //$app->get('//{cust_id}', \App\Action\CustomerFetchAction::class)->setName('customer-fetch');
-
     $app->post('/api/signin', \App\Action\ApiSigninAction::class)->setName('api-signin');
     
     $app->get('/api/employee', \App\Action\ApiEmployeeFetchAction::class)->setName('api-employee-fetch');
@@ -157,6 +155,9 @@ return function (App $app) {
     $app->post('/api/booking/update', \App\Action\ApiBookingUpdateAction::class)->setName('api-booking-update');
 
     $app->get('/api/messages/{message_to}', \App\Action\ApiMessagesFetchAction::class)->setName('api-messages-fetch');
+
+    $app->get('/api/test/{test_id}', \App\Action\ApiTestFetchAction::class)->setName('api-test-fetch');
+    $app->post('/api/test/{test_id}', \App\Action\ApiTestUpdateAction::class)->setName('api-test-update');
 
     //FCM
 

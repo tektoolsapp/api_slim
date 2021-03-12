@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Domain\Employees\Service;
+namespace App\Domain\Messages\Service;
 
-use App\Domain\Employees\Repository\EmployeeUpdateRepository;
+use App\Domain\Employees\Repository\FcmUpdateRepository;
 
-final class EmployeeUpdate
+final class FcmUpdate
 {
     private $repository;
 
-    public function __construct(EmployeeUpdateRepository $repository)
+    public function __construct(FcmUpdateRepository $repository)
     {
         $this->repository = $repository;
     }
 
-    public function updateEmployee(array $data)
+    public function updateMessage(array $data)
     {
-        $employee = $this->repository->updateEmployee($data);
+        $employee = $this->repository->updateMessage($data);
 
-        return $employee;
+        return $message;
     }
 
 }
