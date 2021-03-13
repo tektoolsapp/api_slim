@@ -30,10 +30,17 @@ final class FilePondProcessAction
         ServerRequestInterface $request,
         ResponseInterface $response
     ): ResponseInterface {
+        
+        //$files = $request->getUploadedFiles();
+
+        //dump($files);
+
+        //dump($request);
+        
         /** @var UploadedFile[] $uploadedFiles */
         $uploadedFiles = (array)($request->getUploadedFiles()['filepond'] ?? []);
 
-        //dump($uploadedFiles);
+        dump($uploadedFiles);
 
         if ($uploadedFiles) {
             return $this->moveTemporaryUploadedFile($uploadedFiles, $response);

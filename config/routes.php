@@ -144,6 +144,8 @@ return function (App $app) {
     $app->post('/filepond/process', \App\Action\FilePondProcessAction::class);
     $app->delete('/filepond/revert', \App\Action\FilePondRevertAction::class);
 
+    $app->post('/upload/files', \App\Action\UploadFilesAction::class)->setName('upload-files');;
+
     //API
     $app->post('/api/signin', \App\Action\ApiSigninAction::class)->setName('api-signin');
     
@@ -158,6 +160,10 @@ return function (App $app) {
 
     $app->get('/api/test/{test_id}', \App\Action\ApiTestFetchAction::class)->setName('api-test-fetch');
     $app->post('/api/test/{test_id}', \App\Action\ApiTestUpdateAction::class)->setName('api-test-update');
+
+    //API FILES
+
+    //$app->post('/files/upload', \App\Action\ApiFileUploadAction::class)->setName('api-file-upload');    
 
     //FCM
 

@@ -2663,8 +2663,8 @@ function updateRequest(mode, param){
     updateRequest += '</div>';
     updateRequest += '</div>';
 
-    //updateRequest += '<div class="fp2">Load FilePond 2</div>';
-    //updateRequest += '<div class="pond2"></div>';
+    updateRequest += '<div class="fp2">Load FilePond 2</div>';
+    updateRequest += '<div class="pond2"></div>';
 
     updateRequest += '</div>';
 

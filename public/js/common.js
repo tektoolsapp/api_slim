@@ -655,6 +655,91 @@ $("#sidebar-left").on('click', '[id^=edit_employee_]', function (e) {
 
 });
 
+//FIULE UPLOAD
+
+$("body").on("click", "#upload_file", function(event){
+    
+   //var form = $('#upload_form');
+   
+   //var data = new FormData(form[0]);
+
+   //console.log("DATA: ", data);
+
+   let files = new FormData(); // you can consider this as 'data bag'
+       // url = 'yourUrl';
+
+    var chkFiles = $('#filename')[0].files[0];
+    
+    console.log("CHECK FILES: ", chkFiles);
+    
+
+    files.append('fileName', $('#filename')[0].files[0]);
+
+    //console.log("FILES: ", files.values);
+
+    for (let [key, value] of files) {
+        console.log(`${key}: ${value}`)
+      }
+
+      $.ajax({
+        url: '/files/upload',
+        type: "POST",
+        data: files,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            console.log(response);
+
+            //alert(successMsg);
+            //viewEmployees();
+        }
+    });
+
+
+
+});
+
+$("body").on('click', '#upload_fileXXX', function (e) {
+    
+    e.preventDefault();
+
+    var form = $('#upload_form')[0];
+    
+    var data = new FormData(form);
+
+    //Form data
+    var form_data = $('#upload_form').serializeArray();
+    $.each(form_data, function (key, input) {
+        data.append(input.name, input.value);
+    });
+
+    //File data
+    var file_data = $('input[name="filename"]')[0].files;
+    for (var i = 0; i < file_data.length; i++) {
+        data.append("my_images[]", file_data[i]);
+    }
+
+    //Custom data
+    data.append('key', 'value');
+
+    console.log("DATA: ", data)
+
+    /* $.ajax({
+        url: '/files/upload',
+        type: "POST",
+        data: {
+            "form": uploadForm
+        },
+        success: function (response) {
+            console.log(response);
+
+            //alert(successMsg);
+            //viewEmployees();
+        }
+    }); */
+
+});
+
 ///NOTIFICATIONS
 
 $("#sidebar-left").on('click', '#send-notification', function (e) {

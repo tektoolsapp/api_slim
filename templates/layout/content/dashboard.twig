@@ -15,6 +15,26 @@
     
     {{token}}
 
+    
+    <!--
+    <form id="upload_form" accept-charset="multipart/form-data">
+        <input type="file" id="myFile" name="filename">
+        <input type="text" id="myText" name="myText">
+    </form>
+
+    
+
+    -->
+
+    <form method="post" action="upload/files" enctype="multipart/form-data">
+        <label>Select a file:</label>
+        <input type="file" name="user_file" required />
+        <br />
+        <input type="submit" value="XUpload" />
+    </form>
+
+    
+
     {# <div>
         <a id="fcm-send" href="#" class="w3-button w3-right w3-xlarge">&times;</a>
     </div> #}
@@ -26,6 +46,7 @@
     <div id="err"></div>
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-messaging.js"></script>
+    <!--
     <script>
         MsgElem = document.getElementById("msg");
         TokenElem = document.getElementById("token");
@@ -61,6 +82,8 @@
             }); #}
 
     </script>
+
+    -->
 
 {% endblock %}
 
@@ -296,5 +319,60 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     </script>
+
+   {#  <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+
+    <script>
+        FilePond.registerPlugin(
+            FilePondPluginImagePreview,
+        );
+
+        // Set default FilePond options
+        FilePond.setOptions({
+            // upload to this server end point
+            server: {
+
+            process:(fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
+
+                // fieldName is the name of the input field
+                // file is the actual file object to send
+                const formData = new FormData();
+                formData.append(fieldName, file, file.name);
+
+                const request = new XMLHttpRequest();
+                request.open('POST', 'filepond/process');
+
+                // Should call the progress method to update the progress to 100% before calling load
+                // Setting computable to false switches the loading indicator to infinite mode
+                request.upload.onprogress = (e) => {
+                    progress(e.lengthComputable, e.loaded, e.total);
+                };
+
+                // Should call the load method when done and pass the returned server file id
+                // this server file id is then used later on when reverting or restoring a file
+                // so your server knows which file to return without exposing that info to the client
+                request.onload = function () {
+                    if (request.status >= 200 && request.status < 300) {
+                        // the load method accepts either a string (id) or an object
+                        load(request.responseText);
+                    } else {
+                        // Can call the error method if something is wrong, should exit after
+                        error('oh no');
+                    }
+                };
+
+                request.send(formData);
+            },
+            revert: 'filepond/revert',
+            restore: 'filepond/restore?id=',
+            fetch: 'filepond/fetch?data=',
+            load: 'filepond/load',
+            fetch: 'filepond/fetch'
+        },
+    });
+
+    const pond = FilePond.create(document.querySelector('input[type="file"]')); #}
+</script>
 
 {% endblock %}
