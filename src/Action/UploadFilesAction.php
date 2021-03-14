@@ -26,12 +26,12 @@ final class UploadFilesAction
         $storageDirectory = __DIR__ . '/../../public/images';
         $uploadedFiles = $request->getUploadedFiles();
 
-        //dump($uploadedFiles);
+        dump($uploadedFiles);
 
         // handle single input with single file upload
-        $uploadedFile = $uploadedFiles['file'];
+        $uploadedFile = $uploadedFiles['example1'];
 
-        //dump($uploadedFile);
+        dump($uploadedFile);
         
         if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
             $filename = $this->moveUploadedFile($storageDirectory, $uploadedFile);

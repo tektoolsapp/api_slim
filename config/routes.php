@@ -144,7 +144,7 @@ return function (App $app) {
     $app->post('/filepond/process', \App\Action\FilePondProcessAction::class);
     $app->delete('/filepond/revert', \App\Action\FilePondRevertAction::class);
 
-    $app->post('/upload/files', \App\Action\UploadFilesAction::class)->setName('upload-files');
+    $app->post('/api/upload/files', \App\Action\UploadFilesAction::class)->setName('upload-files');
 
     //API
     $app->post('/api/signin', \App\Action\ApiSigninAction::class)->setName('api-signin');
