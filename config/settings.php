@@ -15,6 +15,8 @@ $settings['root'] = dirname(__DIR__);
 $settings['temp'] = $settings['root'] . '/tmp';
 $settings['public'] = $settings['root'] . '/public';
 
+$settings['upload_directory'] = __DIR__ . '/../../public/images';
+
 // Database settings
 $settings['db'] = [
     'driver' => 'mysql',

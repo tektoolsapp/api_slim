@@ -1,5 +1,6 @@
 vendor/
 .idea/
+public/.DS_Store
 public/pdfs/quotes/*
 public/pdfs/completed/*
 public/images/*

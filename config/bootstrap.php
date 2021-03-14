@@ -30,6 +30,9 @@ $containerBuilder->addDefinitions(__DIR__ . '/container.php');
 // Build PHP-DI Container instance
 $container = $containerBuilder->build();
 
+//$container['upload_directory'] = __DIR__ . '/../../public/images';
+//$container->set('upload_directory', __DIR__ . '/../../public/images');
+
 // Create App instance
 $app = $container->get(App::class);
 

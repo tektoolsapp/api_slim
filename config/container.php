@@ -9,7 +9,6 @@ use Slim\Interfaces\RouteParserInterface;
 use Selective\BasePath\BasePathMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
-//use MongoDB\Client as Mongo;
 use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\Formatter\MessageFormatter;
