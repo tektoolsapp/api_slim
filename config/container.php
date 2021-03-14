@@ -25,12 +25,18 @@ use Slim\Flash\Messages as Flash;
 use App\Views\CsrfExtension;
 use Slim\Csrf\Guard;
 
+use Intervention\Image\ImageManager;
+
 return [
 
     'settings' => function () {
         return require __DIR__ . '/settings.php';
     },
 
+    ImageManager::class => function (ContainerInterface $container) {
+        return new ImageManager($container->get('settings')['image_manager']);
+    },
+    
     Flash::class => function (ContainerInterface $container) {
         return new Slim\Flash\Messages;
     },

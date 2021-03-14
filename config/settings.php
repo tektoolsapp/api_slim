@@ -17,6 +17,11 @@ $settings['public'] = $settings['root'] . '/public';
 
 $settings['upload_directory'] = __DIR__ . '/../../public/images';
 
+$settings['image_manager'] = [
+    // configure image driver (gd by default)
+    'driver' => 'gd',
+];
+
 // Database settings
 $settings['db'] = [
     'driver' => 'mysql',
