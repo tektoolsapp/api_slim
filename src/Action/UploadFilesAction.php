@@ -24,16 +24,22 @@ final class UploadFilesAction
     ): ResponseInterface {
         
         $storageDirectory = __DIR__ . '/../../public/images';
-        $uploadedFiles = $request->getUploadedFiles();
+        //$uploadedFiles = $request->getUploadedFiles();
 
         //dump($uploadedFiles);
 
         // handle single input with single file upload
-        $uploadedFile = $uploadedFiles['filename'];
+        //$uploadedFile = $uploadedFiles['filename'];
 
-        dump($uploadedFile);
+        //dump($uploadedFile);
+
+        $data = $request->getParsedBody();
+
+        dump($data);
+
+
         
-        if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+       /*  if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
             $filename = $this->moveUploadedFile($storageDirectory, $uploadedFile);
             $response->getBody()->write('Uploaded: ' . $filename . '<br/>');
         
@@ -44,7 +50,7 @@ final class UploadFilesAction
         
         }
 
-        return $response->withStatus(422);
+        return $response->withStatus(422); */
     }
 
     function moveUploadedFile(string $storageDirectory, UploadedFileInterface $uploadedFile)
