@@ -26,10 +26,10 @@ final class UploadFilesAction
         $storageDirectory = __DIR__ . '/../../public/images';
         $uploadedFiles = $request->getUploadedFiles();
 
-        dump($uploadedFiles);
+        //dump($uploadedFiles);
 
         // handle single input with single file upload
-        $uploadedFile = $uploadedFiles['example1'];
+        $uploadedFile = $uploadedFiles['filename'];
 
         dump($uploadedFile);
         
@@ -40,7 +40,7 @@ final class UploadFilesAction
             //SAVE THE FILE
 
             $insertUploaed = $this->repository->insertUploadedFile($filename);
-            dump($insertUploaed);
+            //dump($insertUploaed);
         
         }
 
