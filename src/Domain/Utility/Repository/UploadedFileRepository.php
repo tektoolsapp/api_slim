@@ -18,7 +18,7 @@ class UploadedFileRepository
         
         $now = new \DateTime();
         $dateFormat = $now->format('Y-m-d H:i:s');    // MySQL datetime format
-        dump($dateFormat);
+        //dump($dateFormat);
         $uploadDate = $now->getTimestamp(); 
         
         $fileUpload = array(
@@ -45,13 +45,11 @@ class UploadedFileRepository
             //die("Oh noes! There's an error in the query!");
         }
 
-        //return (int)$this->connection->lastInsertId();
-
         if($e){
             $result = $e->getMessage();
             $responseCode = 400;
         } else {
-            $result = "ok";
+            $result = "OK";
             $responseCode = 201;
         }
 
@@ -62,7 +60,7 @@ class UploadedFileRepository
             )
         );
 
-        dump($result);
+        //dump($result);
 
         return $result;
 

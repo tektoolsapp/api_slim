@@ -742,6 +742,60 @@ $("body").on('click', '#upload_fileXXX', function (e) {
 
 ///NOTIFICATIONS
 
+$("body").on('click', '#fcm-send', function (e) {
+
+    e.preventDefault();
+
+    alert(" SEND");
+
+    /* $.ajax({
+        url: '/fcm/send',
+        type: "POST",
+        //data: {
+          //  "form": notificationForm
+        //},
+        success: function (response) {
+            console.log(response);
+
+            //alert(successMsg);
+            //viewEmployees();
+        }
+    }); */
+
+    var title = "My Title";
+    var body = "Message body";
+
+    $.ajax({
+        type: 'POST',
+        url: "https://fcm.googleapis.com/fcm/send",
+        headers: {
+            Authorization: 'key=AAAAYvL6Qlo:APA91bFpdngfedK164jvGmhxD9a0oU3yGADshblqNIWkd_OB0VqsYo7-Kf32H5jmG7Td8rEx4ZwfLoY1sULR2GUcclfBEsBM07YBUP1qa1Uonm6s6e3d78HROtSPf_I2XI72Wvse8UMi'
+        },
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({
+            "to": "fM_sOUjDokv_gSN4M2DjQl:APA91bHvUnRMbJpJRGeQQbewQtb2HTRRse6Gz_IdwoQkMQXpQ6csDk-yX7Nvn6dmpnhhhyhW-EoAT3dQbBShvefHHgiYoUknGgdgWMDbteZ_g34KcNPCt5tYLxHbVVzdVcdlrpaWffe3",
+            "priority": "high",
+            "data": {
+                "id" : 1,
+                "status" : "bla"
+            },
+            "notification": {
+                "title": title,
+                "body": body
+            }
+        }),
+        success: function(responseData) {
+            console.log("Success");
+        },
+        error: function(jqXhr, textStatus, errorThrown) {
+            /*alert("Fail");*/   // alerting "Fail" isn't useful in case of an error...
+            console.log("Status: " + textStatus + "\nError: " + errorThrown);
+        }
+    });
+
+});
+
 $("#sidebar-left").on('click', '#send-notification', function (e) {
 
     e.preventDefault();

@@ -9,10 +9,8 @@
 
     <div style="clear:both;"></div>
 
-    <div>Text</div>
-
     {{host}}
-    
+
     {{token}}
 
     
@@ -22,69 +20,28 @@
         <input type="text" id="myText" name="myText">
     </form>
 
-    
+      
 
     -->
 
-    <form method="post" action="api/upload/files" enctype="multipart/form-data">
+    <div id="token"></div>
+    <div id="msg"></div>
+    <div id="notis"></div>
+    <div id="err"></div>  
+
+    <!--<form method="post" action="api/upload/files" enctype="multipart/form-data">
         <label>Select a file:</label>
         <input type="file" name="example1" required />
         <br />
         <input type="submit" value="XUpload" />
-    </form>
+    </form>-->
+
+
+    <div>
+        <a id="fcm-send" href="#" class="w3-button w3-medium w3-darkblue">Send Message</a>
+    </div>
 
     
-
-    {# <div>
-        <a id="fcm-send" href="#" class="w3-button w3-right w3-xlarge">&times;</a>
-    </div> #}
-
-    <body>
-    <div id="token"></div>
-    <div id="msg"></div>
-    <div id="notis"></div>
-    <div id="err"></div>
-    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-messaging.js"></script>
-    <!--
-    <script>
-        MsgElem = document.getElementById("msg");
-        TokenElem = document.getElementById("token");
-        NotisElem = document.getElementById("notis");
-        ErrElem = document.getElementById("err");
-        // Initialize Firebase
-        // TODO: Replace with your project's customized code snippet
-        var config = {
-            'messagingSenderId': '571826693647',
-            'apiKey': 'AIzaSyBBG3zokCXbM1Iq34d2VRGz1klsNyzqSn0',
-            'projectId': 'my-fcm-3cbc5',
-            'appId': '1:571826693647:web:4d97ac04d771fea1d5657a',
-        };
-
-        //firebase.initializeApp(config);
-
-        {# const messaging = firebase.messaging();
-        messaging
-            .requestPermission()
-            .then(function () {
-                MsgElem.innerHTML = "Notification permission granted." 
-                console.log("Notification permission granted.");
-
-                // get the token in the form of promise
-                return messaging.getToken()
-            })
-            .then(function(token) {
-                TokenElem.innerHTML = "token is : " + token
-            })
-            .catch(function (err) {
-                ErrElem.innerHTML =  ErrElem.innerHTML + "; " + err
-                console.log("Unable to get permission to notify.", err);
-            }); #}
-
-    </script>
-
-    -->
-
 {% endblock %}
 
 {% block javascripts %}
@@ -299,26 +256,6 @@
             document.querySelector('.loading').setAttribute('style', 'display: none');
         });
     </script> #}
-
-    <!-- The core Firebase JS SDK is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-app.js"></script>
-
-    <!-- TODO: Add SDKs for Firebase products that you want to use
-        https://firebase.google.com/docs/web/setup#available-libraries -->
-
-    <script>
-    // Your web app's Firebase configuration
-    var firebaseConfig = {
-        apiKey: "AIzaSyBBG3zokCXbM1Iq34d2VRGz1klsNyzqSn0",
-        authDomain: "my-fcm-3cbc5.firebaseapp.com",
-        projectId: "my-fcm-3cbc5",
-        storageBucket: "my-fcm-3cbc5.appspot.com",
-        messagingSenderId: "571826693647",
-        appId: "1:571826693647:web:4d97ac04d771fea1d5657a"
-    };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    </script>
 
    {#  <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
