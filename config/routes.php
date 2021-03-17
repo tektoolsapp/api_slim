@@ -161,6 +161,9 @@ return function (App $app) {
     $app->get('/api/test/{test_id}', \App\Action\ApiTestFetchAction::class)->setName('api-test-fetch');
     $app->post('/api/test/{test_id}', \App\Action\ApiTestUpdateAction::class)->setName('api-test-update');
 
+
+    $app->post('/api/fcm/remove', \App\Action\ApiFcmRemoveAction::class)->setName('api-fcm-remove');
+
     //API FILES
 
     //$app->post('/files/upload', \App\Action\ApiFileUploadAction::class)->setName('api-file-upload');    
@@ -171,6 +174,7 @@ return function (App $app) {
 
     $app->post('/fcm/update/{message_id}', \App\Action\FcmUpdateAction::class)->setName('fcm-update');
 
+    
     $app->post('/fcm/add', \App\Action\FcmAddAction::class)->setName('fcm-add');
 
     $app->get('/fcm/{message_to}', \App\Action\FcmFetchAction::class)->setName('fcm-fetch');
