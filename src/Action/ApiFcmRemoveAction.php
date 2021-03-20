@@ -27,7 +27,7 @@ final class ApiFcmRemoveAction
 
         //extract($data);
         //parse_str($form, $formDetails);
-        dump($data);
+        //dump($data);
 
         $returnData = $this->apiFcmRemove->removeMessage($data);
 

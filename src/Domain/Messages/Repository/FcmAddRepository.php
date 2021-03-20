@@ -19,6 +19,9 @@ class FcmAddRepository
 
     public function insertMessage(array $message)
     {
+        
+        dump($message);
+
         date_default_timezone_set('Australia/West');
 
         $now = new \DateTime();

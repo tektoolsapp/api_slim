@@ -19,7 +19,7 @@ class ApiMessagesFetchRepository
     public function getApiMessages($messageTo)
     {
 
-        $sql = "SELECT * FROM messages WHERE message_to = :message_to";
+        $sql = "SELECT * FROM messages WHERE message_to = :message_to AND message_status <> 'X'";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['message_to' => $messageTo]);
 
