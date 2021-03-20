@@ -24,8 +24,7 @@ return function (App $app) {
         "relaxed" => ["localhost", "rr.ttsite.com.au"],
         "ignore"=> [
             "/api/signin", 
-            "/api/upload/*", 
-            "/api/fcm/remove"
+            "/api/upload/*"
         ],
         /* 'rules'  => [
             new Tuupola\Middleware\JwtAuthentication\RequestPathRule([
