@@ -20,7 +20,8 @@ class FcmAddRepository
     public function insertMessage(array $message)
     {
         
-        dump($message);
+        //dump($message);
+        unset($message['emp_fcm_token']);
 
         date_default_timezone_set('Australia/West');
 

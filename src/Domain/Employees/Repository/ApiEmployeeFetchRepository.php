@@ -44,13 +44,21 @@ class ApiEmployeeFetchRepository
 
         $employee = $statement->fetch();
 
+        //GET NUM OF UNREAD MESSAGES
+        $sql = "SELECT count(*) FROM messages WHERE message_status = 'P' AND message_to = :message_to";
+        $statement = $this->connection->prepare($sql);
+        $statement->execute(['message_to' => $empId]);
+
+        $numMessages = $statement->fetch(PDO::FETCH_NUM);
+
+        $employee['num_messages'] = $numMessages[0]; 
+
         //$employee = 'bla';
 
         /* $returnArray = array(
             "status" => 201,
             "data" => $employee
         ); */
-
 
         $returnArray = array(
             "data" => $employee

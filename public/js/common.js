@@ -742,6 +742,51 @@ $("body").on('click', '#upload_fileXXX', function (e) {
 
 ///NOTIFICATIONS
 
+function sendMessage(fcmPayload){
+
+    console.log("SEND PAYLOAD: ", fcmPayload);
+    
+    //var apiKey = 'key=AAAAYvL6Qlo:APA91bFpdngfedK164jvGmhxD9a0oU3yGADshblqNIWkd_OB0VqsYo7-Kf32H5jmG7Td8rEx4ZwfLoY1sULR2GUcclfBEsBM07YBUP1qa1Uonm6s6e3d78HROtSPf_I2XI72Wvse8UMi';
+    var apiKey = 'key=' + fcmPayload['fcm_api_key'];
+    console.log("API KEY: ", apiKey);
+    //var messageTo = 'fM_sOUjDokv_gSN4M2DjQl:APA91bHvUnRMbJpJRGeQQbewQtb2HTRRse6Gz_IdwoQkMQXpQ6csDk-yX7Nvn6dmpnhhhyhW-EoAT3dQbBShvefHHgiYoUknGgdgWMDbteZ_g34KcNPCt5tYLxHbVVzdVcdlrpaWffe3';
+    var messageTo = fcmPayload['fcm_token']
+    console.log("MSG TO: ", messageTo);
+    var title = fcmPayload['msg_title'];
+    var body = fcmPayload['msg_body'];
+
+    $.ajax({
+        type: 'POST',
+        url: "https://fcm.googleapis.com/fcm/send",
+        headers: {
+            Authorization: apiKey
+        },
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({
+            "to": messageTo,
+            "priority": "high",
+            "data": {
+                "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                "id" : 1,
+                "status" : "bla",
+                "screen" : "new_messages"
+            },
+            "notification": {
+                "title": title,
+                "body": body
+            }
+        }),
+        success: function(responseData) {
+            console.log("SUCCESS", responseData);
+        },
+        error: function(jqXhr, textStatus, errorThrown) {
+            console.log("Status: " + textStatus + "\nError: " + errorThrown);
+        }
+    });
+
+}
+
 $("body").on('click', '#fcm-send', function (e) {
 
     e.preventDefault();
@@ -762,6 +807,8 @@ $("body").on('click', '#fcm-send', function (e) {
         }
     }); */
 
+    var apiKey = 'key=AAAAYvL6Qlo:APA91bFpdngfedK164jvGmhxD9a0oU3yGADshblqNIWkd_OB0VqsYo7-Kf32H5jmG7Td8rEx4ZwfLoY1sULR2GUcclfBEsBM07YBUP1qa1Uonm6s6e3d78HROtSPf_I2XI72Wvse8UMi';
+    var messageTo = 'fM_sOUjDokv_gSN4M2DjQl:APA91bHvUnRMbJpJRGeQQbewQtb2HTRRse6Gz_IdwoQkMQXpQ6csDk-yX7Nvn6dmpnhhhyhW-EoAT3dQbBShvefHHgiYoUknGgdgWMDbteZ_g34KcNPCt5tYLxHbVVzdVcdlrpaWffe3';
     var title = "My Title";
     var body = "Message body";
 
@@ -769,12 +816,12 @@ $("body").on('click', '#fcm-send', function (e) {
         type: 'POST',
         url: "https://fcm.googleapis.com/fcm/send",
         headers: {
-            Authorization: 'key=AAAAYvL6Qlo:APA91bFpdngfedK164jvGmhxD9a0oU3yGADshblqNIWkd_OB0VqsYo7-Kf32H5jmG7Td8rEx4ZwfLoY1sULR2GUcclfBEsBM07YBUP1qa1Uonm6s6e3d78HROtSPf_I2XI72Wvse8UMi'
+            Authorization: apiKey
         },
         contentType: 'application/json',
         dataType: 'json',
         data: JSON.stringify({
-            "to": "fM_sOUjDokv_gSN4M2DjQl:APA91bHvUnRMbJpJRGeQQbewQtb2HTRRse6Gz_IdwoQkMQXpQ6csDk-yX7Nvn6dmpnhhhyhW-EoAT3dQbBShvefHHgiYoUknGgdgWMDbteZ_g34KcNPCt5tYLxHbVVzdVcdlrpaWffe3",
+            "to": messageTo,
             "priority": "high",
             "data": {
                 "id" : 1,
@@ -812,12 +859,25 @@ $("#sidebar-left").on('click', '#send-notification', function (e) {
 
     //console.log("VALUES: ", values);
 
+    //FCM TICK
+
     var values = {};
     $.each($('#notification_form').serializeArray(), function(i, field) {
         values[field.name] = field.value;
     });
 
     console.log("VALUES: ", values);
+
+    //BUILD THE FCM PAYLOAD
+
+    var fcmPayload = {};
+    
+    fcmPayload['fcm_api_key'] = 'AAAAYvL6Qlo:APA91bFpdngfedK164jvGmhxD9a0oU3yGADshblqNIWkd_OB0VqsYo7-Kf32H5jmG7Td8rEx4ZwfLoY1sULR2GUcclfBEsBM07YBUP1qa1Uonm6s6e3d78HROtSPf_I2XI72Wvse8UMi';
+    fcmPayload['fcm_token'] = values['emp_fcm_token'];
+    fcmPayload['msg_title'] = values['message_title'];
+    fcmPayload['msg_body'] = values['message_body'];
+
+    console.log("FCM: ", fcmPayload);
 
     var errCount = 0;
     var errMsgArray = [];
@@ -897,11 +957,46 @@ $("#sidebar-left").on('click', '#send-notification', function (e) {
             success: function (response) {
                 console.log(response);
 
+                sendMessage(fcmPayload);
+
                 //alert(successMsg);
                 //viewEmployees();
             }
         });
     }
+
+});
+
+$("#sidebar-left").on('change', '#message_to', function (e) {
+
+    e.preventDefault();
+
+    var empId = $(this).val();
+
+    console.log("EMP ID: ", empId)
+
+    alert("GET EMP DETS");
+
+    $.ajax({
+        url: '/employee/' + empId,
+        type: "GET",
+        async: false,
+        success: function (response) {
+
+            console.log("EMPLOYEE", response);
+             
+
+
+            var employee = response;
+
+            var fcmToken = employee.employee['emp_fcm_token'];
+            
+            console.log("FCM TOKEN: ", fcmToken);
+
+            $("#emp_fcm_token").val(fcmToken);
+
+        }
+    });
 
 });
 
@@ -936,6 +1031,10 @@ function viewNotifications() {
 
     notificationForm += '<form id="notification_form">';
 
+    notificationForm += '<input type="hidden" id="emp_fcm_token" name="emp_fcm_token" value="">';
+
+    notificationForm += '<input type="hidden" id="message_shift" name="message_shift" value="6">';
+    
     notificationForm += '<div class="w3-row">';
     notificationForm += '<div id="message_to_display" style="padding:10px 10px 10px 10px;">';
     notificationForm += '<label style="font-weight:bold;">To<span class="required-label"<span>*</span></label>';
@@ -973,6 +1072,34 @@ function viewNotifications() {
     $("#sidebar-left").append(notificationForm);
 
     $.ajax({
+        url: '/employees',
+        type: "GET",
+        async: false,
+        success: function (response) {
+
+            console.log("EMPLOYEES", response);
+
+            var users = response;
+
+            $("#message_to").html("");
+
+            var messageToOptions = '<option value="N">Select a Recipient</option>';
+
+            for (var u = 0; u < users.length; u++) {
+
+                var userId = users[u]['emp_id'];
+                var userName = users[u]['first_name'] + " " + users[u]['last_name'];
+
+                messageToOptions += '<option value="' + userId + '">' + userName + '</option>';
+            }
+
+            console.log("TO: ", messageToOptions);
+
+            $("#message_to").append(messageToOptions);
+        }
+    });
+
+    /* $.ajax({
         url: '/users',
         type: "GET",
         async: false,
@@ -998,7 +1125,7 @@ function viewNotifications() {
 
             $("#message_to").append(messageToOptions);
         }
-    });
+    }); */
 }    
 
 function viewEmployees() {

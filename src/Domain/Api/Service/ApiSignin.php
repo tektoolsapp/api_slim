@@ -12,9 +12,9 @@ final class ApiSignin
         $this->repository = $repository;
     }
 
-    public function apiSignin($credentials)
+    public function apiSignin($credentials, $fcmToken)
     {
-        $signin = $this->repository->apiSignin($credentials);
+        $signin = $this->repository->apiSignin($credentials, $fcmToken);
 
         return $signin;
     }
