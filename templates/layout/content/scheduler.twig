@@ -9,9 +9,37 @@
         <button id="remove-scheduler-availability" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;display:none;">Clear Availability</button>
         <button id="filter-scheduler-criteria" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Filter Employees</button>
         <button id="set-scheduler-resources" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">All Employees</button>
+        <button id="update-current-swing" class="w3-bar-item w3-button w3-pink w3-mobile w3-right w3-medium" style="margin:0 10px 10px 0;">Update Swing</button>
+
     </div>
 
     <div style="clear:both;"></div>
+
+    <div id="custom-view-dates" style="display:none"> 
+        
+        <div style="float:left;width:170px;margin:0 0 5px 0;">Number of Shown days:</div>
+        <div style="float:left;width:40px;margin:0 0 5px 0;">
+            <input id="custom-scheduler-days" class="w3-input w3-border input-display" style="width:40px;padding:6px;font-size:12px;">
+
+            {# <select id="days" class="w3-select w3-border" style="padding:6px;font-size:12px;">
+            <option>6</option>
+            <option selected>7</option>
+            <option>8</option>
+            </select> #}
+        </div>
+
+        <div style="float:left;width:50px;margin:0 0 5px 10px;">From:</div>
+        <div style="float:left;width:90px;margin:0 0 5px 0;">
+        <input id="custom-scheduler-start" class="w3-input w3-border input-display datepicker" style="width:90px;padding:6px;font-size:12px;">
+        </div>
+
+        <input type="hidden" id="use-custom-date" value="">    
+
+        <button id="set-custom-scheduler-days" class="w3-button w3-tiny w3-darkblue" style="float:left;width:50px;margin:0 0 5px 10px;">Go</button>
+        
+        <div style="clear:both;"></div>
+    
+    </div>
 
     <div style="font-size:10px;" id="scheduler"></div>
 {% endblock %}

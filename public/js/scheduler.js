@@ -2606,6 +2606,113 @@ function setResources(resources){
 
 }
 
+function viewShifts(reqShifts) {
+
+    document.getElementById("request-swing-details-modal").style.display = "block";
+
+    //GET THE SWING DETAILS
+    var modalSwings = "";
+    
+    modalSwings += '<div id="request-swings-modal-container" style="margin:10px 0 20px 0;">';
+    modalSwings += '<table id="workspace-shifts-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+    modalSwings += '<thead>';
+    modalSwings += '<tr class="w3-darkblue">';
+    modalSwings += '<th>Employee</th>';
+    modalSwings += '<th>Trade Type</th>';
+    modalSwings += '<th>Start</th>';
+    modalSwings += '<th>Finish</th>';
+    modalSwings += '<th>Day/Night</th>';
+    modalSwings += '<th>On/Off</th>';
+    modalSwings += '<th>Action</th>';
+    modalSwings += '</thead>';
+    modalSwings += '<tbody>';
+
+    for (var r = 0; r < reqShifts.length; r++) {
+
+        var shiftId = reqShifts[r]['shift'];
+        var shiftEmp = reqShifts[r]['emp'];
+        var shiftTrades = reqShifts[r]['trades'];
+        var shiftStart = reqShifts[r]['start'];
+        var shiftEnd = reqShifts[r]['end'];
+        var shiftTime = reqShifts[r]['time'];
+        var shiftType = reqShifts[r]['type'];
+
+        modalSwings += '<tr>';
+        modalSwings += '<td>' + shiftEmp + '</td>';
+        modalSwings += '<td>' + shiftTrades + '</td>';
+        modalSwings += '<td>' + shiftStart + '</td>';
+        modalSwings += '<td>' + shiftEnd + '</td>';
+        modalSwings += '<td>' + shiftTime + '</td>';
+        modalSwings += '<td>' + shiftType + '</td>';
+        modalSwings += '<td id="shift_row_'+ shiftId + '"><button class="w3-button w3-small w3-transparent w3-padding-small menu-button"><i class="fas fa-ellipsis-h"></i></button></td>';
+        modalSwings += '</tr>';
+    }
+
+    modalSwings += '</tbody>';
+    modalSwings += '</table>';
+    modalSwings += '</div>';
+
+    $("#request-swings-modal-display").html("");    
+    $("#request-swings-modal-display").append(modalSwings);
+
+}
+
+$("body").on('click','[id^=shift_row_]', function (e) {
+
+    e.preventDefault();
+    var $clicker = $(this);
+    var pos = $clicker.position();
+    var dropdownTop = + pos.top;
+
+    //alert("SHIFT MENU CLICKED");
+
+    if(parseInt(dropdownTop) > 638){
+        var posStyle = 'width:200px;bottom:100%;right:0px;';
+    } else {
+        var posStyle = 'width:200px;top:0;right:100%;';
+    }
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("_");
+    var rowId = splitArray[2];
+
+    $("[id^=shift_row_]").html('<button class="w3-button w3-small w3-transparent w3-padding-small menu-button w3-hover"><i class="fas fa-ellipsis-h"></i>');
+    $(".menu-button").html('<i class="fas fa-ellipsis-h"></i>');
+
+    var shiftActionButton = '<div class="w3-dropdown-hover">';
+    shiftActionButton += '<button class="w3-button w3-small w3-padding-small w3-hover"><i class="fas fa-ellipsis-h"></i></button>';
+    shiftActionButton += '<div class="w3-dropdown-content w3-bar-block w3-border" style="' + posStyle +';">';
+    shiftActionButton += '<a id="workspace-shift-action-edit_' + rowId + '" href="#" class="w3-bar-item w3-button">Edit</a>';
+    shiftActionButton += '<a id="workspace-shift-action-schedule_' + rowId + '" href="#" class="w3-bar-item w3-button">Schedule</a>';    
+    shiftActionButton += '</div>';
+
+    $("#shift_row_" + rowId).html(shiftActionButton);
+
+});
+
+$("body").on('click','#update-current-swing', function (e) {
+
+    e.preventDefault();
+
+    //alert("UPDATE CURRENT SWING");
+
+    var param = 1;
+
+    $.ajax({
+        url: '/shifts/request/' + param,
+        type: "GET"
+    }).done(function (response) {
+
+        console.log("SHIFT DETAILS: ", response);
+        var shifts = response;
+        viewShifts(shifts);
+        
+    }).fail(function (jqXHR, textStatus) {
+        console.log("ERR: ", jqXHR);
+    });
+
+});
+
 $("body").on('click','#set-scheduler-resources', function (e) {
 
     e.preventDefault();
@@ -2712,13 +2819,107 @@ console.log("LSDATE: ", localStorage.getItem('scheduler-date'));
 
 var schedulerDate = localStorage.getItem('scheduler-date');
 
-if(schedulerDate){
-    console.log("DATE SET");
-    //var today = localStorage.getItem('scheduler-date');
-    var today = new Date(localStorage.getItem('scheduler-date'));
-    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+//SET THE CURRENT VIEW
+
+//FORM HERE
+var currentSchedulerView = localStorage.getItem('current-scheduler-view');
+
+if(currentSchedulerView == 'Custom'){
+    var customView = true; 
+    var monthView = false;
+    
+    var customDays = localStorage.getItem('custom-scheduler-days');
+    if(customDays != null){
+        $("#custom-scheduler-days").val(customDays);
+    }
+    
+    var customStart = localStorage.getItem('custom-scheduler-start');
+    if(customStart != null){
+        var customStartDateArray = customStart.split("-");
+        var customStartDate = customStartDateArray[2] + "-" + customStartDateArray[1]+ "-" + customStartDateArray[0];
+        $("#custom-scheduler-start").val(customStartDate);
+    }
+
+    if($("#custom-scheduler-days").val().length > 0 && $("#custom-scheduler-start").val().length){
+        var rebuildView = true;
+    }
+
 } else {
-    console.log("XXXDATE NOT SET");
+    var customView = false; 
+    var monthView = true; 
+}
+
+console.log("CURRENT SCHEDULER VIEW: ", currentSchedulerView);
+
+console.log("USE CUSTOM DATE: ", useCustomDate);
+
+var useCustomDate = false;
+
+$("#set-custom-scheduler-days").on( "click", function() {
+
+    var errorCount = 0;
+    var errorMsg = '';
+    
+    if($("#custom-scheduler-days").val().length < 1){
+        errorCount++;
+        errorMsg += 'NO DAYS';
+    }
+
+    if($("#custom-scheduler-start").val().length < 1){
+        errorCount++;
+        errorMsg += 'NO START';
+    }
+    
+    console.log("ERROR COUNT: ", errorCount);
+    
+    if(errorCount < 1){
+    
+        //alert("TRIGGERED");
+
+        useCustomDate = true;
+        localStorage.setItem('custom-scheduler-use',useCustomDate);
+        
+        var customDays = $("#custom-scheduler-days").val();
+        localStorage.setItem('custom-scheduler-days',customDays);
+        var startDateRaw = $("#custom-scheduler-start").val();
+        var startDateArray = startDateRaw.split("-");
+        var startDate = startDateArray[2]+ "-" + startDateArray[1]+ "-" + startDateArray[0];
+        var date = startDate;
+
+        localStorage.setItem('custom-scheduler-start',date);
+
+        console.log("CUSTOM START DATE: ", date);
+    
+        var scheduler = $("#scheduler").data("kendoScheduler");
+
+        scheduler.date(new Date(date));
+
+        scheduler.setOptions({
+        numberOfDays: parseInt(customDays)
+        });
+        // Reload the view.
+        scheduler.view(scheduler.view().name);
+
+    } else {
+        alert(errorMsg);
+    }
+});
+
+console.log("THE START DATE: ", date);
+
+if(!useCustomDate){
+
+    if(schedulerDate){
+        console.log("DATE SET");
+        //var today = localStorage.getItem('scheduler-date');
+        var today = new Date(localStorage.getItem('scheduler-date'));
+        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    } else {
+        console.log("XXXDATE NOT SET");
+        var today = new Date();
+        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    }
+} else {
     var today = new Date();
     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 }
@@ -2746,8 +2947,44 @@ var defUrl = getCookie('defUrl');
 
 console.log("DEFURL", defUrl);
 
+var useCustomDate = false;
+
+//var MyCustomTimelistView = kendo.ui.TimelineMonthView.extend({
+var Custom = kendo.ui.TimelineMonthView.extend({
+    options: {
+      name: "Timeline Custom",
+      title: "Timeline Custom",
+      selectedDateFormat: "{0:D} - {1:D}",
+      selectedShortDateFormat: "{0:d} - {1:d}",
+      majorTick: 1440,
+      numberOfDays: 30
+    },
+    //name: "MyCustomTimelistView",
+    name: "Timeline Custom",
+    calculateDateRange: function() {
+      // Create the required number of days.
+      var start = this.options.date,
+        // start = kendo.date.dayOfWeek(selectedDate, this.calendarInfo().firstDay, -1),
+        idx, length,
+        dates = [];
+
+      for (idx = 0, length = this.options.numberOfDays; idx < length; idx++) {
+        dates.push(start);
+        start = kendo.date.nextDay(start);
+      }
+
+      this._render(dates);
+    },
+    previousDate: function() {
+      var date = new Date(this.startDate());
+      date.setDate(date.getDate() - this.options.numberOfDays);
+
+      return date
+    }
+  });
+  
 $("#scheduler").kendoScheduler({
-    date: date,
+    //date: date,
     //startTime: new Date("2020/12/21 06:00 AM"),
     eventHeight: 100,
     columnWidth: 60,
@@ -2755,10 +2992,18 @@ $("#scheduler").kendoScheduler({
     views: [
         "timeline",
         "timelineWeek",
-        "timelineWorkWeek",
+        //"timelineWorkWeek",
+        {
+            type: "Custom",
+            title: "Custom",
+            //type: "Timeline Custom",
+            selected: customView,
+            majorTick: 1440,
+            dateHeaderTemplate: "<span class='k-link k-nav-day'>#=kendo.toString(date, 'ddd dd/M')#</span>",
+        },            
         {
             type: "timelineMonth",
-            selected: true,
+            selected: monthView,
             //STARTTIME SET IN EDIT
             majorTick: 1440,
             dateHeaderTemplate: "<span class='k-link k-nav-day'>#=kendo.toString(date, 'ddd dd/M')#</span>",
@@ -2848,7 +3093,7 @@ $("#scheduler").kendoScheduler({
 
     },
     navigate: function(e) {
-       // $(".console").append("<p><strong>Navigated from:</strong></p>");
+    // $(".console").append("<p><strong>Navigated from:</strong></p>");
         schedulerNavigate(e);
     },
     edit: function(e) {
@@ -2892,8 +3137,6 @@ $("#scheduler").kendoScheduler({
 
             $("#dateTimePickerStart").val(startDateTime);
 
-            ///
-
             var startdate = e.event.start;
             console.log("START: ", startdate);
             startdate.setHours(6);
@@ -2921,23 +3164,53 @@ $("#scheduler").kendoScheduler({
 
             $("#dateTimePickerEnd").val(endDateTime);
 
-             var enddate = e.event.end;
-             enddate.setHours(18);
-             enddate.setDate(startDay);
+            var enddate = e.event.end;
+            enddate.setHours(18);
+            enddate.setDate(startDay);
 
             console.log("SET END DATE: ",enddate);
 
 
-             e.event.set("end", enddate);
+            e.event.set("end", enddate);
         }
 
     },
     //timezone: "Etc/UTC",
     dataBinding: function (e) {
         var view = this.view();
-        if (view.title == 'Timeline Month') {
-            //var view = 'timelineMonth',
+
+        console.log("THIS VIEW: ", view.title);
+        
+        //Timeline Custom
+
+        if (view.title == 'Custom') {
+            
+            localStorage.setItem('current-scheduler-view',view.title);
+            
+            document.getElementById("custom-view-dates").style.display = "block";
+            
+            console.log("VIEWING HERE");
+            //var view = 'timelineMonth', 
             console.log("VIEW:", view.title);
+            //view.times.hide();
+            //view.times.hide();
+            view.timesHeader.hide();
+            $(".k-scheduler-header-wrap > table > tbody > tr:eq(1)").hide();
+        }
+        
+        else if (view.title == 'Timeline Month') {
+            
+            localStorage.setItem('current-scheduler-view',view.title);
+            localStorage.removeItem('custom-scheduler-use');
+            localStorage.removeItem('custom-scheduler-days');
+            $("#custom-scheduler-days").val("");
+            localStorage.removeItem('custom-scheduler-start');
+            $("#custom-scheduler-start").val("");
+            
+            document.getElementById("custom-view-dates").style.display = "none";
+            //var view = 'timelineMonth', 
+            console.log("VIEW:", view.title);
+            //view.times.hide();
             //view.times.hide();
             view.timesHeader.hide();
             $(".k-scheduler-header-wrap > table > tbody > tr:eq(1)").hide();
@@ -2947,7 +3220,7 @@ $("#scheduler").kendoScheduler({
     dataSource: {
         batch: true,
         sync: function () {
-          this.read();
+        this.read();
             if(availDisplay == 'Y') {
                 removeSchedulerAvailability();
                 setTimeout(function () {
@@ -3011,6 +3284,7 @@ $("#scheduler").kendoScheduler({
                     startTimezone: {from: "StartTimezone"},
                     endTimezone: {from: "EndTimezone"},
                     description: {from: "Description"},
+                    tradeTypes: {from: "TradeTypes"},
                     recurrenceId: {from: "RecurrenceID"},
                     recurrenceRule: {from: "RecurrenceRule"},
                     recurrenceException: {from: "RecurrenceException"},
@@ -3029,6 +3303,38 @@ $("#scheduler").kendoScheduler({
         schedulerResources
     ]
 });
+
+if(rebuildView){    
+
+    //alert("TRIGGERED BOTTOM");
+
+    useCustomDate = true;
+    localStorage.setItem('custom-scheduler-use',useCustomDate);
+    
+    var customDays = $("#custom-scheduler-days").val();
+    localStorage.setItem('custom-scheduler-days',customDays);
+    var startDateRaw = $("#custom-scheduler-start").val();
+    var startDateArray = startDateRaw.split("-");
+    var startDate = startDateArray[2]+ "-" + startDateArray[1]+ "-" + startDateArray[0];
+    var date = startDate;
+
+    localStorage.setItem('custom-scheduler-start',date);
+
+    console.log("CUSTOM START DATE: ", date);
+ 
+    var scheduler = $("#scheduler").data("kendoScheduler");
+
+    scheduler.date(new Date(date));
+
+    scheduler.setOptions({
+      numberOfDays: parseInt(customDays)
+    });
+    // Reload the view.
+    scheduler.view(scheduler.view().name);
+
+    rebuildView = false;
+}
+
 
 $("#scheduler").kendoTooltip({
     filter: ".k-event:not(.k-event-drag-hint) > div, .k-task",

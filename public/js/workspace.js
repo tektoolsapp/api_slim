@@ -165,7 +165,6 @@ $("body").on('click','[id^=workspace-action]', function (e) {
 
 });
 
-
 $("#workspace").on('click','[id^=workspace-action]', function (e) {
 
     e.preventDefault();
@@ -175,6 +174,195 @@ $("#workspace").on('click','[id^=workspace-action]', function (e) {
     console.log("TID", thisId);
 
     sidebarAction(thisId);
+});
+
+$("body").on('click','[id^=workspace-shift-action]', function (e) {
+
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+
+    console.log("TSID", thisId);
+
+    sidebarAction(thisId);
+});
+
+$("body").on('click','[id^=shift_row_]', function (e) {
+
+    e.preventDefault();
+    var $clicker = $(this);
+    var pos = $clicker.position();
+    var dropdownTop = + pos.top;
+
+    console.log("DROPDOWN TOP: ",dropdownTop); 
+
+    //alert("SHIFT MENU CLICKED");
+
+    if(parseInt(dropdownTop) > 638){
+        var posStyle = 'width:200px;bottom:100%;right:0px;';
+    } else {
+        var posStyle = 'width:200px;top:0;right:100%;';
+    }
+
+    var splitId = $(this).prop("id");
+    var splitArray = splitId.split("_");
+    var rowId = splitArray[2];
+
+    $("[id^=shift_row_]").html('<button class="w3-button w3-small w3-transparent w3-padding-small menu-button w3-hover"><i class="fas fa-ellipsis-h"></i>');
+    $(".menu-button").html('<i class="fas fa-ellipsis-h"></i>');
+
+    var shiftActionButton = '<div class="w3-dropdown-hover">';
+    shiftActionButton += '<button class="w3-button w3-small w3-padding-small w3-hover"><i class="fas fa-ellipsis-h"></i></button>';
+    shiftActionButton += '<div class="w3-dropdown-content w3-bar-block w3-border" style="' + posStyle +';">';
+    shiftActionButton += '<a id="workspace-shift-action-edit_' + rowId + '" href="#" class="w3-bar-item w3-button">Edit</a>';
+    shiftActionButton += '<a id="workspace-shift-action-schedule_' + rowId + '" href="#" class="w3-bar-item w3-button">Schedule</a>'; 
+    shiftActionButton += '<a id="workspace-shift-action-availability_' + rowId + '" href="#" class="w3-bar-item w3-button">Check Availability</a>';    
+    shiftActionButton += '<a id="workspace-shift-action-notify_' + rowId + '" href="#" class="w3-bar-item w3-button">Notify Employee</a>';    
+    shiftActionButton += '</div>';
+
+    $("#shift_row_" + rowId).html(shiftActionButton);
+
+});
+
+function viewShifts(reqShifts) {
+
+    document.getElementById("request-swing-details-modal").style.display = "block";
+
+    //GET THE SWING DETAILS
+    var modalSwings = "";
+    
+    modalSwings += '<div id="request-swings-modal-container" style="margin:10px 0 20px 0;">';
+    modalSwings += '<table id="workspace-shifts-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+    modalSwings += '<thead>';
+    modalSwings += '<tr class="w3-darkblue">';
+    modalSwings += '<th>&nbsp;</th>';
+    modalSwings += '<th>Employee</th>';
+    modalSwings += '<th>Trade Type</th>';
+    modalSwings += '<th>Start</th>';
+    modalSwings += '<th>Finish</th>';
+    modalSwings += '<th>Day/Night</th>';
+    modalSwings += '<th>On/Off</th>';
+    modalSwings += '<th>Action</th>';
+    modalSwings += '</thead>';
+    modalSwings += '<tbody>';
+
+    for (var r = 0; r < reqShifts.length; r++) {
+
+        var shiftId = reqShifts[r]['shift'];
+        var shiftEmp = reqShifts[r]['emp'];
+        var shiftTrades = reqShifts[r]['trades'];
+        var shiftStart = reqShifts[r]['start'];
+        var shiftEnd = reqShifts[r]['end'];
+        var shiftTime = reqShifts[r]['time'];
+        var shiftType = reqShifts[r]['type'];
+
+        modalSwings += '<tr>';
+        modalSwings += '<td><input id="update_shift_' + shiftId + '" type="checkbox" class="w3-check" style="top:2px;"></td>';
+        modalSwings += '<td>' + shiftEmp + '</td>';
+        modalSwings += '<td>' + shiftTrades + '</td>';
+        modalSwings += '<td>' + shiftStart + '</td>';
+        modalSwings += '<td>' + shiftEnd + '</td>';
+        modalSwings += '<td>' + shiftTime + '</td>';
+        modalSwings += '<td>' + shiftType + '</td>';
+        modalSwings += '<td id="shift_row_'+ shiftId + '"><button class="w3-button w3-small w3-transparent w3-padding-small menu-button"><i class="fas fa-ellipsis-h"></i></button></td>';
+        modalSwings += '</tr>';
+    }
+
+    modalSwings += '</tbody>';
+    modalSwings += '</table>';
+    modalSwings += '</div>';
+
+    $("#request-swings-modal-display").html("");    
+    $("#request-swings-modal-display").append(modalSwings);
+
+}
+
+//SET SCHEDULER RESOURCES
+
+function setResources(resources){
+
+    var resourceItem = {};
+    var resourceArray = [];
+
+    for (var r = 0; r < resources.length; r++) {
+
+        var text = resources[r]['first_name'] + " " + resources[r]['last_name'];
+        var value = resources[r]['emp_id'];
+        var color = resources[r]['color'];
+
+        resourceItem.text = text;
+        resourceItem.value = value;
+        resourceItem.color = color;
+
+        resourceArray.push(resourceItem);
+
+        resourceItem = {};
+    }
+
+    var resource = {}, resourcesArray = [];
+    resource.field = 'userId';
+    resource.name = 'UserId';
+    resource.dataSource = resourceArray;
+    resource.multiple = true;
+    resource.title = 'UserId';
+
+    resourcesArray.push(resource);
+
+    console.log("MYARR: ", resourcesArray);
+
+    localStorage.setItem('scheduler-resources', JSON.stringify(resourcesArray[0]));
+
+    window.location.assign('/scheduler');
+
+}
+
+$("body").on('click','#availability-add-schedule', function (e) {
+
+    //var selectedId = $(".shift-selection:checked ").prop("id");
+
+    var selectedId = $('input[name=schedule_shifts]:checked').prop("id");
+
+    var splitArray = selectedId.split("_");
+    var shiftId = splitArray[2];
+    var empId = splitArray[3];
+
+    //alert("SCHEDULE SHIFT: " + selectedId);
+
+    $.ajax({
+        url: '/booking/reschedule',
+        type: "POST",
+        data: {
+            "UserId" : empId,
+            "ShiftId": shiftId,
+        },
+        success: function (response) {
+            
+            console.log(response);
+            
+            //RELOAD REQUEST SWING DETAILS WITH UPDATED SWING CHECKED
+
+            document.getElementById('swing-availability-modal').style.display='none';
+
+            var request = 1;
+            
+            $.ajax({
+                url: '/shifts/request/' + request,
+                type: "GET"
+            }).done(function (response) {
+        
+                console.log("SHIFT DETAILS: ", response);
+                var shifts = response;
+                viewShifts(shifts);
+
+                $("#update_shift_" + shiftId).prop("checked", true);
+                
+            }).fail(function (jqXHR, textStatus) {
+                console.log("ERR: ", jqXHR);
+            });
+
+        }
+    });
+
 });
 
 function sidebarAction(thisId){
@@ -190,9 +378,197 @@ function sidebarAction(thisId){
     if(sideBarCheck == 'swings'){
 
         var param = sidebarCheckArray[1];
-        
-        actionSwings(param);
 
+        console.log("REQUEST PARAM: ", param);
+    
+        $.ajax({
+            url: '/shifts/request/' + param,
+            type: "GET"
+        }).done(function (response) {
+    
+            console.log("SHIFT DETAILS: ", response);
+            var shifts = response;
+            viewShifts(shifts);
+            
+        }).fail(function (jqXHR, textStatus) {
+            console.log("ERR: ", jqXHR);
+        });
+    
+    } else if(sideBarCheck == 'schedule'){    
+        
+        var param = sidebarCheckArray[1];
+        console.log("SCHEDULE! ", param);
+
+        //REDIRECT TO SCHEDULER
+        //location.assign("/scheduler"); 
+
+        //GET THE SHIFT DETAILS
+        //start/finish
+        
+        var trades = [];
+        trades.push(1234567);
+        trades.push(8765432);
+
+        var filterForm = {            
+            'trades': trades 
+        };
+            
+        $.ajax({
+            url: '/workspace/filter',
+            type: "GET",
+            data: filterForm,
+            success: function (response) {
+                console.log(response);
+
+                var resources = response;
+                console.log("WORKSPACE FILTER: ", resources.length);
+
+                if (resources.length > 0) {
+                    setResources(resources);
+                } else {
+                    alert("No Matches Found")
+                }
+            }
+        });
+
+    } else if(sideBarCheck == 'availability'){ 
+    
+        //alert("AVAILABILITY");
+
+        var param = sidebarCheckArray[1];
+        console.log("CHECK PARAM! ", param);
+
+        $.ajax({
+            url: '/bookings/availability',
+            type: "GET",
+            data: {
+                "shift": param
+            },
+            success: function (response) {
+                console.log(response);
+
+                var availability = response;
+                console.log("WORKSPACE AVAILABILITY: ", availability);
+                
+                //BUILD THE DISPLAY
+                
+                $("#swing-availability-modal-display").html("");
+
+                var swingAvailability = "";
+                
+                swingAvailability += '<div id="swing-availability-modal-container" style="margin:10px 0 20px 0;">';
+                swingAvailability += '<table id="workspace-shifts-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+                swingAvailability += '<thead>';
+                swingAvailability += '<tr class="w3-darkblue">';
+                swingAvailability += '<th>&nbsp;</th>';
+                swingAvailability += '<th>Employee</th>';
+                swingAvailability += '<th>Availability</th>';
+                swingAvailability += '<th>Action</th>';
+                swingAvailability += '</thead>';
+                swingAvailability += '<tbody>';
+
+                for (var a = 0; a < availability.length; a++) {
+                
+                        var swingEmployee = availability[a]['emp'];
+                        var swingAvailRatio = availability[a]['ratio'];
+    
+                        swingAvailability += '<tr>';
+                        swingAvailability += '<td><input class="shift-selection" id="schedule_shift_' + param + '_' + swingEmployee + '" style="top:1px;" name="schedule_shifts" class="w3-radio" type="radio" value="Y"></td>';
+                        swingAvailability += '<td>' + swingEmployee + '</td>';
+                        swingAvailability += '<td>' + swingAvailRatio + '</td>';
+                        swingAvailability += '<td>Action</td>';
+                        swingAvailability += '<tr>';
+
+                }
+                
+                swingAvailability += '</tbody>';
+                swingAvailability += '<table>';
+
+                $("#swing-availability-modal-display").append(swingAvailability);
+
+                //SHOW THE MODAL
+                document.getElementById("swing-availability-modal").style.display = "block";
+
+            }
+        });
+    
+    } else if(sideBarCheck == 'notify'){  
+
+        var param = sidebarCheckArray[1];
+        
+        alert("NOTIFY: " + param);
+
+    
+    
+    } else if(sideBarCheck == 'edit'){    
+        
+        var param = sidebarCheckArray[1];
+        console.log("EDIT! ", param)    
+    
+    } else {
+    
+        var currentRightSidebar = localStorage.getItem('right-sidebar-content');
+        var isClose = document.getElementById("sidebar-right").style.width === "500px";
+
+        if (!isClose) {
+
+            $("#sidebar-right").css({"width": "500px"});
+            setSidebarRightContent(sidebarContent)
+
+        } else {
+
+            if (currentRightSidebar != sidebarRightContent) {
+                setSidebarContent(sidebarContent)
+            } else {
+                $("#sidebar-right").css({"width": "0px"});
+                localStorage.removeItem('right-sidebar-content');
+            }
+
+        }
+
+        localStorage.setItem('right-sidebar-content', sidebarContent);
+
+    }
+
+}
+
+function sidebarShiftAction(thisId){
+
+    var sidebarContent = thisId.split('-').pop();
+
+    console.log("SBC", sidebarContent);
+
+    var sidebarCheckArray = sidebarContent.split('_');
+
+    console.log("SBC ARR: ", sidebarCheckArray);
+
+    var sideBarCheck = sidebarCheckArray[0];
+
+    console.log("SBC CHECK: ", sideBarCheck);
+
+    if(sideBarCheck == 'swings'){
+
+        var param = sidebarCheckArray[1];
+
+        console.log("REQUEST PARAM: ", param);
+    
+        $.ajax({
+            url: '/shifts/request/' + param,
+            type: "GET"
+        }).done(function (response) {
+    
+            console.log("SHIFT DETAILS: ", response);
+            var shifts = response;
+            viewShifts(shifts);
+            
+        }).fail(function (jqXHR, textStatus) {
+            console.log("ERR: ", jqXHR);
+        });
+    } else if(sideBarCheck == 'schedule'){    
+        
+        var param = sidebarCheckArray[1];
+        console.log("SCHEDULE! ", param)
+    
     } else {
     
         var currentRightSidebar = localStorage.getItem('right-sidebar-content');
@@ -1989,6 +2365,1724 @@ function actionQuote(param) {
 
 /////////SWINGS ADDED
 
+//SAVE SWING
+$("#sidebar-right").on('click', '#cancel-save-swing-template', function (e) {
+    //CANCEL SWING
+    e.preventDefault();
+
+    $("#sidebar-right").html("");
+    $("#sidebar-right").css({"width": "0px"});
+});    
+
+$("#sidebar-right").on('click', '#save-swing-template', function (e) {
+
+    //alert("SAVING");
+    
+    e.preventDefault();
+
+    $("#scheduler-template-form").find("div.error").removeClass('error').addClass("noerror");
+    $("#scheduler-template-form").find("input.required").removeClass('required');
+    $("#scheduler-template-form").find("select.required").removeClass('required');
+
+    var errCount = 0;
+    var errMsgArray = [];
+
+    if($("#swing_request-1").val() == 'NA') {        
+        errCount++;
+        errMsgArray.push({
+            "id": "swing_request-1",
+            "msg": 'A Request must be selected'
+        });
+    }
+    
+    if($("#swing_emps-1").val() === null) {           
+        errCount++;
+        errMsgArray.push({
+            "id": "swing_emps-1",
+            "msg": 'At least 1 Employee must be selected'
+        });
+    }
+
+    $("#template-actions").find("button").each(function(){
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){    
+            var thisCheckId = $(this).prop('id');
+            checkFields = thisCheckId.split('-').pop();
+        }
+    });
+    
+    checkFields = parseInt(checkFields) + 1;
+    
+    for (var c = 1; c < checkFields; c++) {
+    
+        if($("[id^=swing_type-" + c).val() == 'NA') {                  
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_type-" + c,
+                "msg": 'A Swing Type must be selected'
+            });
+        }
+
+        if($("#swing_start_date-" + c).val().length < 1) {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_start_date-" + c,
+                "msg": 'A Start Day must be selected'
+            });
+        }
+
+        if($("#swing_recurrence-" + c).val().length < 1) {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_recurrence-" + c,
+                "msg": 'A Recurring Number of days must be provided'
+            });
+        }
+    }
+    
+    if(errCount > 0){
+
+        //console.log("ERRORS: ", errMsgArray);
+
+        for (var e = 0; e < errMsgArray.length; e++) {
+
+            var errorId = errMsgArray[e]['id'];
+            var errorMsg = errMsgArray[e]['msg'];
+
+            if(errorId == 'swing_emps-1'){
+                $("#swing_emps_error-1").removeClass('noerror');
+                $("#swing_emps_error-1").addClass('error');
+            } else {    
+                $("#" + errorId).addClass('required');
+                $("#" + errorId + "_error").removeClass('noerror');
+                $("#" + errorId + "_error").addClass('error');
+            }
+            
+            if(errorId == 'swing_emps-1'){
+                $("#swing_emps_error-1").html(errorMsg);    
+            } else {
+                $("#" + errorId + "_error").html(errorMsg);
+            }
+        }
+
+    } else {
+    
+        var requestForm = $("#scheduler-template-form").serialize();
+
+        $.ajax({
+            url: 'scheduler/template',
+            type: "POST",
+            data: {
+                "form": requestForm
+            },
+            success: function (response) {
+                //console.log(response);
+                var status = response.status;
+                var templateArray = response.template_array;
+                console.log("MY TEMPLATE: ", templateArray);
+
+                localStorage.setItem('scheduler-template-last-stored',templateArray);
+
+                var resetEmps = [];
+                localStorage.setItem('scheduler-templates-employees', JSON.stringify(resetEmps));
+
+                window.location.assign('/scheduler');
+            }
+        });
+    }
+});
+
+//REMOVE SWING
+
+$("#sidebar-right").on('click', '[id^=remove_swing-]', function (e) {
+
+    e.preventDefault();
+    
+    //var nextTempVal = $("[id^=next_swing-]").prop("id");;    
+    var thisId = $(this).prop('id');
+    var tempId = thisId.split('-').pop();
+
+    console.log("REMOVE: ", tempId);
+
+    $("#swing-" + tempId).remove();
+    $("#swing_request-" + tempId).remove();
+    $("#swing_reference-" + tempId).remove();
+    $("#swing_emps-" + tempId).remove();
+
+    var selIndex = 2;
+
+    $('#add-next-2').children().each(function() {
+
+        var targetId = $(this).prop("id");
+        var res = targetId.substring(0, 6);
+
+        console.log("SEL INDEX:", selIndex);
+
+        if(res == 'swing-') {    
+
+            console.log("NEW TEMP ID: ", selIndex);
+            
+            var thisSwingTempId = this.id;
+
+            $("#" + this.id).prop("id", "swing-" + selIndex);
+
+            var thisTempIdPrefixArray = thisSwingTempId.split("-");
+            var thisTempId = thisTempIdPrefixArray[1];
+
+            $("#swing_request-" + thisTempId).prop("id", "swing_request-" + selIndex);
+            $("#swing_request-" + selIndex).prop("name", "swing_request-" + selIndex);
+            $("#swing_reference-" + thisTempId).prop("id", "swing_reference-" + selIndex);
+            $("#swing_reference-" + selIndex).prop("name", "swing_reference-" + selIndex);
+            $("#swing_emps-" + thisTempId).prop("id", "swing_emps-" + selIndex);
+            $("#swing_emps-" + selIndex).prop("name", "swing_emps-" + selIndex);
+            
+            $(this).find("h3").each(function(){
+                $(this).html("Swing " + selIndex); 
+            });    
+            
+            $(this).find("input").each(function(){
+                
+                //console.log(this.id); 
+                var thisId = this.id;
+                var thisIdPrefixArray = thisId.split("-");
+                var thisIdPrefix = thisIdPrefixArray[0];
+                var thisIdIndex = thisIdPrefixArray[1];
+                var thisNewPrefix = thisIdPrefix + "-" + selIndex; 
+
+                $(this).prop("id", thisNewPrefix);
+                
+                if(thisIdPrefix == 'day_shift' || thisIdPrefix == 'night_shift'){
+                    var shiftTimePrefix = "shift_time-" + selIndex;
+                    $(this).prop("name", shiftTimePrefix);    
+                } else {
+                    $(this).prop("name", thisNewPrefix);
+                }
+                
+                var thisError = thisIdPrefix + "-" + thisIdIndex + "_error";
+                var thisNewError = thisIdPrefix + "-" + selIndex + "_error";
+                
+                $("#" + thisError).prop("id", thisNewError);
+
+            });
+
+            $(this).find("select").each(function(){
+                
+                //console.log(this.id); 
+                var thisSelectId = this.id;
+                var thisSelectIdPrefixArray = thisSelectId.split("-");
+                var thisSelectIdPrefix = thisSelectIdPrefixArray[0];
+                var thisSelectIdIndex = thisSelectIdPrefixArray[1];
+                var thisNewSelectPrefix = thisSelectIdPrefix + "-" + selIndex; 
+
+                $(this).prop("id", thisNewSelectPrefix);
+                $(this).prop("name", thisNewSelectPrefix);
+
+                var thisSelectError = thisSelectIdPrefix + "-" + thisSelectIdIndex + "_error";
+                var thisSelectNewError = thisSelectIdPrefix + "-" + selIndex + "_error";
+                
+                $("#" + thisSelectError).prop("id", thisSelectNewError);
+            });
+
+            $(this).find("button").each(function(){
+                
+                //console.log(this.id); 
+                $("#" + this.id).prop("id", "remove_swing-" + selIndex);
+            }); 
+
+            selIndex++;
+        }
+        //console.log("FINAL SEL INDEX: ",selIndex);
+    });
+
+    $("#template-actions").find("button").each(function(){
+              
+        //console.log(this.id); 
+        var inputs = $("#add-next-2").find($("input") );  
+        var numInputs = inputs.length;
+        console.log("INPUTS: ",numInputs);
+
+        var adjSelIndex = parseInt(selIndex) - 1;
+
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){    
+            if(numInputs > 0){
+                $("#" + this.id).prop("id", "next_swing-" + adjSelIndex);
+            } else {
+                $("#" + this.id).prop("id", "next_swing-1");
+            }    
+        }
+    }); 
+});
+
+//NEXT SWING
+$("#sidebar-right").on('click', '[id^=next_swing-]', function (e) {
+
+    e.preventDefault(); 
+    
+    var thisId = $(this).prop('id');
+    var tempId = thisId.split('-').pop();
+
+    var nextId = parseInt(tempId) + 1;
+
+    nextSwing(tempId, nextId);
+
+});
+
+function nextSwing(tempId, nextId) {
+
+    var followingId = parseInt(nextId) + 1;
+
+    //console.log("TEMPID: ", tempId);
+    //console.log("NEXTID: ", nextId);
+    //console.log("FOLLID: ", followingId);
+
+    var thisRequestId = $("#swing_request-1").val(); 
+    var thisRequestRef = $("#swing_reference-1").val(); 
+    var thisSwingEmps = $("#swing_emps-1").val();
+
+    console.log("THIS SWING EMPS: " + thisSwingEmps);
+
+    //SHOULD BE THE VALUE OF THE LOCAL STORAGE
+
+    $checkErrors = 0;
+    $checkErrorsMsg = '';
+    
+    if(thisRequestId == 'NA'){
+        $checkErrors++;
+        $checkErrorsMsg += '<p class="error">A request must be selected before adding Another Swing.</p>'
+    }
+
+    if(thisSwingEmps === null){
+        $checkErrors++;
+        $checkErrorsMsg += '<p class="error">At least 1 Employee be selected before adding Another Swing.</p>'
+    }
+
+    if($checkErrors > 0){
+        
+        document.getElementById("add-swing-error-modal").style.display = "block";
+        $("#swing-error-display").html($checkErrorsMsg);
+    
+    } else {
+    
+        var nextTemplate = '<div>';
+
+        var nextTemplate = '<input type="hidden" id="swing_request-' + nextId + '" name="swing_request-' + nextId + '" value="' + thisRequestId + '">';
+        nextTemplate += '<input type="hidden" id="swing_reference-' + nextId + '" name="swing_reference-' + nextId + '" value="' + thisRequestRef + '">';
+        nextTemplate += '<input type="hidden" id="swing_emps-' + nextId + '" name="swing_emps-' + nextId + '" value="' + thisSwingEmps + '">';
+
+        nextTemplate += '<div id="swing-' + nextId + '" style="margin-top:20px;padding:0 10px 10px 10px;border:1px solid #CCC;box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19);">';
+        
+        nextTemplate += '<h3>Swing ' + nextId + ':</h3>';
+        
+        nextTemplate += '<div class="w3-row">';
+
+        nextTemplate += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+        nextTemplate += '<label>Swing Type<span class="required-label">*</span></label>';
+        nextTemplate += '<select name="swing_type-' + nextId + '" id="swing_type-' + nextId + '" class="w3-select w3-border input-display">';
+        nextTemplate += '<option value="NA">Select an Swing Type</option>';
+        nextTemplate += '<option value="On">On</option>';
+        nextTemplate += '<option value="Off">Off</option>';
+        nextTemplate += '</select>';
+        nextTemplate += '<div id="swing_type-' + nextId + '_error" class="noerror" ></div>';
+        nextTemplate += '</div>';
+
+        nextTemplate += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+        nextTemplate += '<label>Start Day<span class="required-label">*</span></label>';
+        nextTemplate += '<input name="swing_start_date-' + nextId + '" id="swing_start_date-' + nextId + '" class="w3-input w3-border datepicker input-display" type="text" readonly="readonly">';
+        nextTemplate += '<div id="swing_start_date-' + nextId + '_error" class="noerror" ></div>';
+        nextTemplate += '</div>';
+
+        nextTemplate += '</div>';
+
+        nextTemplate += '<div class="w3-row">';
+
+        nextTemplate += '<div id="swing_type_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+
+        nextTemplate += '<label style="margin:0;">Swing Time<span class="required-label"<span>*</span></label>';
+        nextTemplate += '<div style="margin:0;">';
+        nextTemplate += '<input id="day_shift-' + nextId + '" name="shift_time-' + nextId + '" class="w3-radio input-display" type="radio" value="D">';
+        nextTemplate += '<label style="margin-left:5px;font-weight:normal;">Day</label>';
+        nextTemplate += '<input id="night_shift-' + nextId + '" name="shift_time-' + nextId + '" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+        nextTemplate += '<label style="margin-left:5px;font-weight:normal;">Night</label>';
+        nextTemplate += '</div>';
+        nextTemplate += '</div>';//ITEM
+
+        nextTemplate += '<div class="w3-quarter" style="padding:0 10px 10px 0;">';
+        nextTemplate += '<label>Recur (Days)<span class="required-label">*</span></label>';
+        nextTemplate += '<input name="swing_recurrence-' + nextId + '" id="swing_recurrence-' + nextId + '" class="w3-input w3-border input-display" type="text">';
+        nextTemplate += '<div id="swing_recurrence-' + nextId + '_error" class="noerror" ></div>';
+        nextTemplate += '</div>';//ITEM
+
+        nextTemplate += '</div>';//ROW
+
+        nextTemplate += '<div class="w3-center" style="margin-top:5px;">';
+        nextTemplate += '<button id="remove_swing-' + nextId + '" class="w3-button w3-padding-medium w3-pink w3-margin-bottom" style="margin-top:15px;">Remove this Swing</button>';
+        nextTemplate += '</div>';
+
+        nextTemplate += '</div>';
+
+        nextTemplate += '</div>';
+
+        $("#add-next-2").append(nextTemplate);
+
+        $("#day_shift-" + nextId).prop('checked',true);
+        $("#night_shift-" + nextId).prop('checked',false);
+
+        //SET NEXT SWING ID PROPERTY
+        $("#next_swing-" + tempId).prop("id", "next_swing-" + nextId);
+
+    }
+}
+
+//LOAD SWINGS TEMPLATE
+
+$("#sidebar-right").on('click', '#load-swing-template', function (e) {
+
+    //GET THE TEMPLATES
+
+    $.ajax({
+        url: 'scheduler/templates',
+        type: "GET",
+        success: function (response) {
+            console.log(response);
+            var templates = response;
+            var displayTemplates = '<ul class="w3-ul w3-card-4 w3-hoverable">';
+            
+            for (var t = 0; t < templates.length; t++) {
+
+                var templateDesc = templates[t]['template_desc'];
+                var templateId = templates[t]['template_id'];
+
+                displayTemplates += '<li class="w3-bar">';
+                displayTemplates += '<div id="loading-swing-template-' + templateId + '" class="w3-button w3-medium w3-darkblue w3-right">Load</div>';
+                displayTemplates += '<div class="w3-left">';
+                displayTemplates += '<span class="w3-large">' + templateDesc + '</span><br>';
+                displayTemplates += '</div>';
+                displayTemplates += '</li>'
+            }
+
+            displayTemplates += '</ul>';
+            displayTemplates += '</div>';  
+
+            $("#scheduler-templates-display").html(displayTemplates);
+        
+        }
+    });
+    
+    //MY LOAD
+    document.getElementById("load-scheduler-template-modal").style.display = "block";
+    
+});
+
+$("body").on('click', '[id^=loading-swing-template]', function (e) {
+    
+    var thisId = $(this).prop('id');
+    var templateId = thisId.split('-').pop();
+    console.log("LOADINGX: ", templateId);
+
+    $.ajax({
+        url: 'scheduler/template/' + templateId,
+        type: "GET",
+        success: function (response) {
+            
+            console.log("RESP TEMP: ", response);
+
+            var template = response[0];
+            console.log("LOAD TEMP: ", template);
+            
+            var lastTemplateStored = template['template_json']; 
+            console.log("LOAD JSON: ", lastTemplateStored);
+                            
+            var lastTemplateStoredArray = JSON.parse(lastTemplateStored);
+            console.log(lastTemplateStoredArray);
+            var setTemplateEmployees = lastTemplateStoredArray[0]['swing_emps'];
+
+            currEmpsArray = setTemplateEmployees;
+
+            console.log(currEmpsArray);
+
+            localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
+
+            $("#add-next-2").html("");
+
+            for (var s = 0; s < lastTemplateStoredArray.length; s++) {
+                
+                if(s == 0){
+                    var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                    $("#swing_request-1").val(swingRequest);
+                    var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                    $("#swing_reference-1").val(swingReference);
+                    var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                    $("#swing_emps-1").val(swingEmps);
+                    swingType = lastTemplateStoredArray[s]['swing_type']; 
+                    $("#swing_type-1").val(swingType);
+                    var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                    $("#swing_start_date-1").val(swingStartDate);
+                    var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                    if(shiftTime == 'D') {
+                        $("#day_shift").prop("checked", true);
+                        $("#night_shift").prop("checked", false);
+                    } else {
+                        $("#day_shift").prop("checked", false);
+                        $("#night_shift").prop("checked", true);
+                    }
+                    var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                    $("#swing_recurrence-1").val(swingRecurrence);
+                
+                    $.ajax({
+                        url: '/employees',
+                        type: "get",
+                    }).done(function (response) {
+                        
+                        console.log("EMPLOYEES X: ", response);
+                        
+                        var employees = response;
+                        var swingEmployees = "";
+                
+                        for (var e = 0; e < employees.length; e++) {
+                            
+                            console.log("LOOP SELECT: ");
+                            
+                            empId = employees[e]['emp_id'];
+
+                            console.log("EMP: ", e);
+                                                    
+                            if(currEmpsArray.includes(empId) == true){
+                                var selected = 'selected';
+                            } else {
+                                var selected = '';
+                            }   
+                                
+                            empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+                            swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
+                        }
+                
+                        $("#swing_emps-1").html("");
+                        $("#swing_emps-1").append(swingEmployees);
+                
+                        $("#swing_emps-1").multiSelect({
+                            afterSelect: function(values){
+                
+                                console.log("AFTER SELECT X");
+                                
+                                var thisSelectedValue = values[0];
+                                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                
+                                if(currSchedTemplateEmps == null){
+                                    var tempEmps = [];
+                                    tempEmps.push(thisSelectedValue);   
+                
+                                } else {
+                                    var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                                    if(tempEmps.includes(thisSelectedValue) == false){
+                                        tempEmps.push(thisSelectedValue);
+                                        tempEmps.sort() 
+                                    }                
+                                }
+                
+                                var storeEmps = JSON.stringify(tempEmps);
+                                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                                //PUSH TO CURRENT SWINGS
+                                $("#template-actions").find("button").each(function(){
+                                    if(this.id != 'save-swing-template' 
+                                        && this.id != 'save-as-swing-template'
+                                        && this.id != 'cancel-save-swing-template' 
+                                        && this.id != 'auto-date-template' 
+                                        && this.id != 'reset-template-swings'
+                                    ){    
+                                        var thisCheckId = $(this).prop('id');
+                                        checkFields = thisCheckId.split('-').pop();
+                                    }
+                                });
+
+                                console.log("CHECKFIELDS X: ", checkFields);
+                
+                                for (var c = 0; c < checkFields; c++) {
+                                    var thisEmpSwing = parseInt(c) + 1;
+                                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                                }    
+                
+                            },
+                            afterDeselect: function(values){
+                
+                                console.log("AFTER DE-SELECT X");
+                                
+                                var thisDeselectedValue = values[0];
+                
+                                function removeTempEmp(array, item){
+                                    for(var i in array){
+                                        if(array[i]==item){
+                                            array.splice(i,1);
+                                            break;
+                                        }
+                                    }
+                                }
+                
+                                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                
+                                removeTempEmp(tempEmps, thisDeselectedValue);
+                                
+                                var storeEmps = JSON.stringify(tempEmps);
+                                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                                //PUSH TO CURRENT SWINGS
+                                $("#template-actions").find("button").each(function(){
+                                    if(this.id != 'save-swing-template' 
+                                        && this.id != 'save-as-swing-template'
+                                        && this.id != 'cancel-save-swing-template' 
+                                        && this.id != 'auto-date-template' 
+                                        && this.id != 'reset-template-swings'
+                                    ){    
+                                        var thisCheckId = $(this).prop('id');
+                                        checkFields = thisCheckId.split('-').pop();
+                                    }
+                                });
+                
+                                for (var c = 0; c < checkFields; c++) {
+                                    var thisEmpSwing = parseInt(c) + 1;
+                                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                                }
+                
+                            }
+                        });
+
+                    });
+
+                } else {
+
+                    var nextId = parseInt(s) + 1;
+
+                    nextSwing(s, nextId);
+
+                    var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                    $("#swing_request-" + nextId).val(swingRequest);
+                    var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                    $("#swing_reference-" + nextId).val(swingReference);
+                    
+                    var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                    $("#swing_emps-" + nextId).val(swingEmps);
+                    
+                    swingType = lastTemplateStoredArray[s]['swing_type']; 
+                    $("#swing_type-" + nextId).val(swingType);
+                    var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                    $("#swing_start_date-" + nextId).val(swingStartDate);
+                    var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                    if(shiftTime == 'D') {
+                        $("#day_shift").prop("checked", true);
+                        $("#night_shift").prop("checked", false);
+                    } else {
+                        $("#day_shift").prop("checked", false);
+                        $("#night_shift").prop("checked", true);
+                    }
+                    var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                    $("#swing_recurrence-" + nextId).val(swingRecurrence);
+                }
+            
+            } 
+
+            document.getElementById("load-scheduler-template-modal").style.display = "none";
+
+        }
+    });
+
+});
+
+//RELOAD LAST
+
+$("#sidebar-right").on('click', '#reload-swing-template', function (e) {
+
+    var lastTemplateStored = localStorage.getItem('scheduler-template-last-stored');
+
+    console.log("LAST SAVED: ");
+    console.log(lastTemplateStored);
+
+    if(lastTemplateStored != null) {
+        
+        var lastTemplateStoredArray = JSON.parse(lastTemplateStored);
+        console.log(lastTemplateStoredArray);
+        var setTemplateEmployees = lastTemplateStoredArray[0]['swing_emps'];
+
+        currEmpsArray = setTemplateEmployees;
+
+        console.log(currEmpsArray);
+
+        localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
+
+        //}
+
+        //var setTemplateEmployees = lastTemplateStored[0]['swing-emps'];
+
+        //if(setTemplateEmployees == null){
+            //var currEmpsArray = JSON.parse(setTemplateEmployees);
+        //} else {
+            //currEmpsArray = [];
+        //}
+
+        //var lastTemplateStored = localStorage.getItem('scheduler-template-last-stored');
+
+        //if(lastTemplateStored != null) {
+        
+        //var lastTemplateStoredArray = JSON.parse(lastTemplateStored);
+        //console.log(lastTemplateStoredArray);
+
+        $("#add-next-2").html("");
+
+        for (var s = 0; s < lastTemplateStoredArray.length; s++) {
+            
+            if(s == 0){
+                var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                $("#swing_request-1").val(swingRequest);
+                var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                $("#swing_reference-1").val(swingReference);
+                var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                $("#swing_emps-1").val(swingEmps);
+                swingType = lastTemplateStoredArray[s]['swing_type']; 
+                $("#swing_type-1").val(swingType);
+                var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                $("#swing_start_date-1").val(swingStartDate);
+                var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                if(shiftTime == 'D') {
+                    $("#day_shift-1").prop("checked", true);
+                    $("#night_shift-1").prop("checked", false);
+                } else {
+                    $("#day_shift-1").prop("checked", false);
+                    $("#night_shift-1").prop("checked", true);
+                }
+                var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                $("#swing_recurrence-1").val(swingRecurrence);
+            
+                $.ajax({
+                    url: '/employees',
+                    type: "get",
+                }).done(function (response) {
+                    
+                    console.log("EMPLOYEES X: ", response);
+                    
+                    var employees = response;
+                    var swingEmployees = "";
+            
+                    for (var e = 0; e < employees.length; e++) {
+                        
+                        console.log("LOOP SELECT: ");
+                        
+                        empId = employees[e]['emp_id'];
+
+                        console.log("EMP: ", e);
+                        
+                        //if(typeof currSchedTemplateEmps != "undefined"){
+                        
+                            if(currEmpsArray.includes(empId) == true){
+                                var selected = 'selected';
+                            } else {
+                                var selected = '';
+                            }   
+                            
+                        
+
+                        empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+                        swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
+                    }
+            
+                    $("#swing_emps-1").html("");
+                    $("#swing_emps-1").append(swingEmployees);
+            
+                    $("#swing_emps-1").multiSelect({
+                        afterSelect: function(values){
+            
+                            console.log("AFTER SELECT X");
+                            
+                            var thisSelectedValue = values[0];
+                            var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+
+                            //var currSchedTemplateEmps = currEmpsArray;
+            
+                            if(currSchedTemplateEmps == null){
+                                var tempEmps = [];
+                                tempEmps.push(thisSelectedValue);   
+            
+                            } else {
+                                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                                if(tempEmps.includes(thisSelectedValue) == false){
+                                    tempEmps.push(thisSelectedValue);
+                                    tempEmps.sort() 
+                                }                
+                            }
+            
+                            var storeEmps = JSON.stringify(tempEmps);
+                            localStorage.setItem('scheduler-templates-employees',storeEmps);
+            
+                            //PUSH TO CURRENT SWINGS
+                            $("#template-actions").find("button").each(function(){
+                                if(this.id != 'save-swing-template' 
+                                    && this.id != 'save-as-swing-template'
+                                    && this.id != 'cancel-save-swing-template' 
+                                    && this.id != 'auto-date-template' 
+                                    && this.id != 'reset-template-swings'
+                                ){    
+                                    var thisCheckId = $(this).prop('id');
+                                    checkFields = thisCheckId.split('-').pop();
+                                }
+                            });
+
+                            console.log("CHECKFIELDS X: ", checkFields);
+            
+                            for (var c = 0; c < checkFields; c++) {
+                                var thisEmpSwing = parseInt(c) + 1;
+                                $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                            }    
+            
+                        },
+                        afterDeselect: function(values){
+            
+                            console.log("AFTER DE-SELECT X");
+                            
+                            var thisDeselectedValue = values[0];
+            
+                            function removeTempEmp(array, item){
+                                for(var i in array){
+                                    if(array[i]==item){
+                                        array.splice(i,1);
+                                        break;
+                                    }
+                                }
+                            }
+            
+                            var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                            var tempEmps = JSON.parse(currSchedTemplateEmps); 
+            
+                            removeTempEmp(tempEmps, thisDeselectedValue);
+                            
+                            var storeEmps = JSON.stringify(tempEmps);
+                            localStorage.setItem('scheduler-templates-employees',storeEmps);
+            
+                            //PUSH TO CURRENT SWINGS
+                            $("#template-actions").find("button").each(function(){
+                                if(this.id != 'save-swing-template' 
+                                    && this.id != 'save-as-swing-template'
+                                    && this.id != 'cancel-save-swing-template'
+                                    && this.id != 'auto-date-template' 
+                                    && this.id != 'reset-template-swings'
+                                ){    
+                                    var thisCheckId = $(this).prop('id');
+                                    checkFields = thisCheckId.split('-').pop();
+                                }
+                            });
+            
+                            for (var c = 0; c < checkFields; c++) {
+                                var thisEmpSwing = parseInt(c) + 1;
+                                $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                            }
+            
+                        }
+                    });
+
+                });
+
+            } else {
+
+                var nextId = parseInt(s) + 1;
+
+                nextSwing(s, nextId);
+
+                var swingRequest = lastTemplateStoredArray[s]['swing_request']; 
+                $("#swing_request-" + nextId).val(swingRequest);
+                var swingReference = lastTemplateStoredArray[s]['swing_reference']; 
+                $("#swing_reference-" + nextId).val(swingReference);
+                
+                var swingEmps = lastTemplateStoredArray[s]['swing_emps']; 
+                $("#swing_emps-" + nextId).val(swingEmps);
+                
+                swingType = lastTemplateStoredArray[s]['swing_type']; 
+                $("#swing_type-" + nextId).val(swingType);
+                var swingStartDate = lastTemplateStoredArray[s]['swing_start_date']; 
+                $("#swing_start_date-" + nextId).val(swingStartDate);
+                var shiftTime = lastTemplateStoredArray[s]['shift_time'];
+                
+                console.log("THIS SHIFT TIME_____", shiftTime);
+                
+                if(shiftTime == 'D') {
+                    $("#day_shift-" + nextId).prop("checked", true);
+                    $("#night_shift-" + + nextId).prop("checked", false);
+                } else {
+                    $("#day_shift-" + nextId).prop("checked", false);
+                    $("#night_shift-" + nextId).prop("checked", true);
+                }
+                var swingRecurrence = lastTemplateStoredArray[s]['swing_recurrence']; 
+                $("#swing_recurrence-" + nextId).val(swingRecurrence);
+            }
+        
+        } 
+
+    } else {
+        alert("nothing to reload"); 
+    }
+
+});
+
+//RESET SWING TEMPLATES
+
+function setTemplates(swingTemplates){
+
+    $("#sidebar-right").html("");
+
+    var tempId = 1;
+    
+    //INITIALISE LOCAL STORAGE OF EMPS
+
+    var setTemplateEmployees = localStorage.getItem('scheduler-templates-employees');
+
+    //if(setTemplateEmployees != null){
+        //var currEmpsArray = JSON.parse(setTemplateEmployees);
+    //} else {
+        currEmpsArray = [];
+    //}
+
+    console.log("SET TEMP EMPS: ", currEmpsArray);
+    
+    localStorage.setItem('scheduler-templates-employees',JSON.stringify(currEmpsArray));
+
+    var swingTemplates = '<div class="w3-bar w3-darkblue" style="width:100%;">';
+    swingTemplates += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Swing Templates</div>';
+    swingTemplates += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div id="outer-templates-container" style="margin:0 15px 0 15px;border:0px solid red;">';
+
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="reload-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin-top:10px;">Reload Last Used Swing Details</button>';
+    swingTemplates += '<button id="load-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:10px 0 0 10px;">Load a Swing Template</button>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div style="margin-top:5px;margin-bottom:10px;font-size:12px;">Required Field<span class="required-label">*</span></div>';
+    
+    swingTemplates += '<form name="scheduler-template-form" id="scheduler-template-form">';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Request<span class="required-label">*</span></label>';
+    swingTemplates += '<select name="swing_request-' + tempId + '" id="swing_request-' + tempId + '" class="w3-select w3-border input-display"></select>';
+    swingTemplates += '<div id="swing_request-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Reference<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_reference-' + tempId + '" id="swing_reference-' + tempId + '" class="w3-input w3-border input-display" type="text" style="background-color:lightgrey" readonly="readonly">';
+    swingTemplates += '<div id="swing_reference-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label style="font-weight:bold;">Employee(s)<span class="required-label"<span>*</span></label>';
+    swingTemplates += '<select id="swing_emps-' + tempId + '" name="swing_emps-' + tempId + '[]" multiple="multiple" style="margin-top:10px;"></select>';
+    swingTemplates += '<div id="swing_emps_error-' + tempId +'" class="noerror" ></div>';
+    swingTemplates += '</div>';//DISPLAY
+    swingTemplates += '</div>';//ROW
+
+    swingTemplates += '<div id="swing-templates-container" style="border:0px solid brown">';
+    
+    swingTemplates += '<div id="swing-' + tempId + '" style="margin-top:10px;padding:0 10px 10px 10px;border:1px solid #CCC; box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19);">';
+    
+    swingTemplates += '<h3>Swing ' + tempId + ':</h3>';
+    
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Swing Type<span class="required-label">*</span></label>';
+    swingTemplates += '<select name="swing_type-' + tempId + '" id="swing_type-' + tempId + '" class="w3-select w3-border input-display">';
+    swingTemplates += '<option value="NA">Select an Swing Type</option>';
+    swingTemplates += '<option value="On">On</option>';
+    swingTemplates += '<option value="Off">Off</option>';
+    swingTemplates += '</select>';
+    swingTemplates += '<div id="swing_type-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-half" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Start Day<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_start_date-' + tempId + '" id="swing_start_date-' + tempId + '" class="w3-input w3-border datepicker input-display" type="text" readonly="readonly">';
+    swingTemplates += '<div id="swing_start_date-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-row">';
+
+    swingTemplates += '<div id="swing_type_display" class="w3-half" style="padding:10px 0 10px 0px;">';
+
+    swingTemplates += '<label style="margin:0;">Swing Time<span class="required-label"<span>*</span></label>';
+    swingTemplates += '<div style="margin:0;">';
+    swingTemplates += '<input id="day_shift-' + tempId + '" name="shift_time-' + tempId + '" class="w3-radio input-display" type="radio" value="D">';
+    swingTemplates += '<label style="margin-left:5px;font-weight:normal;">Day</label>';
+    swingTemplates += '<input id="night_shift-' + tempId + '" name="shift_time-' + tempId + '" class="w3-radio" type="radio" value="N" style="margin-left:10px;">';
+    swingTemplates += '<label style="margin-left:5px;font-weight:normal;">Night</label>';
+    swingTemplates += '</div>';
+    swingTemplates += '</div>';//ITEM
+
+    swingTemplates += '<div class="w3-quarter" style="padding:0 10px 10px 0;">';
+    swingTemplates += '<label>Recur (Days)<span class="required-label">*</span></label>';
+    swingTemplates += '<input name="swing_recurrence-' + tempId + '" id="swing_recurrence-' + tempId + '" class="w3-input w3-border input-display" type="text">';
+    swingTemplates += '<div id="swing_recurrence-' + tempId + '_error" class="noerror" ></div>';
+    swingTemplates += '</div>';//ITEM
+
+    swingTemplates += '</div>';//ROW
+
+    swingTemplates += '</div>';//SWING ID CONTAINER
+
+    swingTemplates += '<div id="add-next-2"></div>';//ADD NEXT HERE
+
+    swingTemplates += '</div>';//SWING TEMPLATES CONTAINER
+
+    swingTemplates += '</form>';
+
+    swingTemplates += '<div id="template-actions">';
+    
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="next_swing-' + tempId + '" class="w3-button w3-padding-medium w3-pink w3-margin-bottom" style="margin-top:10px;">Add Another Swing</button>';
+    swingTemplates += '</div>';
+
+    swingTemplates += '<div class="w3-center" style="margin-top:15px;">';
+    swingTemplates += '<button id="auto-date-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 0;">Auto Date</button>';
+    swingTemplates += '<button id="reset-template-swings" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Reset Shifts</button>';
+    swingTemplates += '<button id="save-as-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Save as Template</button>';
+    swingTemplates += '<button id="cancel-save-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Cancel</button>';
+    swingTemplates += '<button id="save-swing-template" class="w3-button w3-padding-medium w3-darkblue w3-margin-bottom" style="margin:0 0 0 10px;">Create Shifts</button>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';
+
+    swingTemplates += '</div>';//CONTAINER
+
+    $("#sidebar-right").html("");
+
+    $("#sidebar-right").append(swingTemplates);
+
+    $("#day_shift-" + tempId).prop('checked',true);
+    $("#night_shift-" + tempId).prop('checked',false);
+
+    $.ajax({
+        url: '/requests',
+        type: "get",
+    }).done(function (response) {
+        console.log("REQUESTS: ", response);
+        var requests = response.requests;
+        var swingRequests = '<option value="NA">Select a Request</option>';
+
+        for (var r = 0; r < requests.length; r++) {
+            reqId = requests[r]['ws_id'];            
+            swingRequests += '<option value="' + reqId + '">' + reqId + '</option>';
+        }
+
+        $("#swing_request-" + tempId).html("");
+        $("#swing_request-" + tempId).append(swingRequests);
+    });
+
+    $.ajax({
+        url: '/employees',
+        type: "get",
+    }).done(function (response) {
+        console.log("EMPLOYEES: ", response);
+        var employees = response;
+        var swingEmployees = "";
+
+        for (var e = 0; e < employees.length; e++) {
+            empId = employees[e]['emp_id'];
+            
+            if(typeof currSchedTemplateEmps != "undefined"){
+            
+                if(currEmpsArray.includes(empId) == true){
+                    var selected = 'selected';
+                } else {
+                    var selected = '';
+                }    
+            
+            } else {
+                var selected = '';
+            }
+
+            empName = employees[e]['first_name'] + ' ' + employees[e]['last_name'];            
+            swingEmployees += '<option value="' + empId + '" ' + selected + '>' + empName + '</option>';
+        }
+
+        $("#swing_emps-" + tempId).html("");
+        $("#swing_emps-" + tempId).append(swingEmployees);
+
+        $("#swing_emps-1").multiSelect({
+            afterSelect: function(values){
+
+                console.log("AFTER SELECT Y");
+                
+                var thisSelectedValue = values[0];
+                
+                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+
+                console.log("LOCAL STORAGE INIT Y: ", currSchedTemplateEmps);
+
+                //MY HERE    
+
+                if(localStorage.getItem('scheduler-templates-employees') == null){
+                
+                    //if(typeof currSchedTemplateEmps === "undefined" || currSchedTemplateEmps === null){
+
+                    console.log("UNDEFINED NULL");
+                    
+                    //if(currSchedTemplateEmps == null){
+                     var tempEmps = [];
+                     tempEmps.push(thisSelectedValue);
+                     
+                     console.log("NEW TEMP EMPS Y: ", tempEmps);
+
+                } else {
+                    
+                    console.log("DEFINED NOT NULL");
+                    
+                    var tempEmps = JSON.parse(currSchedTemplateEmps); 
+                    if(tempEmps.includes(thisSelectedValue) == false){
+                        tempEmps.push(thisSelectedValue);
+                        tempEmps.sort() 
+                    } 
+                    
+                    console.log("EXIST TEMP EMPS Y: ", tempEmps);
+                }
+
+                var storeEmps = JSON.stringify(tempEmps);
+                console.log("STORE EMPS: ");
+                console.log(storeEmps);
+
+                localStorage.setItem('scheduler-templates-employees',storeEmps);
+                
+                console.log("LOCAL STORAGE: ", localStorage.getItem('scheduler-templates-employees'));
+
+                //PUSH TO CURRENT SWINGS
+                $("#template-actions").find("button").each(function(){
+                    if(this.id != 'save-swing-template' 
+                        && this.id != 'save-as-swing-template'
+                        && this.id != 'cancel-save-swing-template' 
+                        && this.id != 'auto-date-template' 
+                        && this.id != 'reset-template-swings'
+                    ){    
+                        var thisCheckId = $(this).prop('id');
+                        checkFields = thisCheckId.split('-').pop();
+                    }
+                });
+
+                console.log("CHECKFIELDS Y: ", checkFields);
+
+                for (var c = 0; c < checkFields; c++) {
+                    var thisEmpSwing = parseInt(c) + 1;
+                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                }    
+
+            },
+            afterDeselect: function(values){
+
+                console.log("AFTER DE-SELECT Y");
+                
+                var thisDeselectedValue = values[0];
+
+                function removeTempEmp(array, item){
+                    for(var i in array){
+                        if(array[i]==item){
+                            array.splice(i,1);
+                            break;
+                        }
+                    }
+                }
+
+                var currSchedTemplateEmps = localStorage.getItem('scheduler-templates-employees');
+                var tempEmps = JSON.parse(currSchedTemplateEmps); 
+
+                console.log("LOCAL STORAGE REMOVE: ", tempEmps);
+
+                removeTempEmp(tempEmps, thisDeselectedValue);
+                
+                var storeEmps = JSON.stringify(tempEmps);
+                localStorage.setItem('scheduler-templates-employees',storeEmps);
+
+                console.log("LOCAL STORAGE AFTER REMOVE: ", tempEmps);
+
+                //PUSH TO CURRENT SWINGS
+                $("#template-actions").find("button").each(function(){
+                    if(this.id != 'save-swing-template' 
+                        && this.id != 'save-as-swing-template'
+                        && this.id != 'cancel-save-swing-template' 
+                        && this.id != 'auto-date-template' 
+                        && this.id != 'reset-template-swings'
+                    ){    
+                        var thisCheckId = $(this).prop('id');
+                        checkFields = thisCheckId.split('-').pop();
+                    }
+                });
+
+                for (var c = 0; c < checkFields; c++) {
+                    var thisEmpSwing = parseInt(c) + 1;
+                    $("#swing_emps-" + thisEmpSwing).val(tempEmps);        
+                }
+
+            }
+        });
+    });
+}
+
+$("#sidebar-right").on('click', '#reset-template-swings', function (e) {
+    //alert("RESET TEMPLATES"); 
+    setTemplates();
+});
+
+
+//AUTO DATE
+function getSwingDates(tempId){
+
+    console.log("LOOP: ", tempId);
+
+    var shiftDate = $("#swing_start_date-" + tempId).val();
+    console.log("SHIFT DATE: ", shiftDate);
+    var shiftRecur = $("#swing_recurrence-" + tempId).val();
+
+    var errCount = 0;
+    var errMsg = '';
+    
+    if(shiftDate.length < 1){
+        errCount++;
+        errMsg += '<p class="error">No Start Date provided for Swing ' + tempId + '.</p>';
+    }
+
+    if(shiftRecur.length < 1){
+        errCount++;
+        errMsg += '<p class="error">No Recur Days provided for Swing ' + tempId + '.</p>';
+    }
+    
+    if(errCount < 1){
+
+        var shiftDateArray = shiftDate.split("-");
+        var shiftDateFormat = new Date( shiftDateArray[2], shiftDateArray[1] - 1, shiftDateArray[0]);
+        var initShiftdateStr = shiftDateFormat.getTime();
+        var timeAddition = parseInt(shiftRecur) * 24 * 60 * 60 * 1000;
+        var nextSwingDateStr = initShiftdateStr + timeAddition;
+
+        var checkNextDate = new Date(nextSwingDateStr);
+        var curr_date = checkNextDate.getDate();
+        var curr_month = checkNextDate.getMonth() + 1;
+        var curr_year = checkNextDate.getFullYear();
+
+        var swingDateFormat = curr_date + "-" + curr_month + "-" + curr_year;
+
+        //var checkDateFormat = checkNextDate.toLocaleDateString("en-UK");
+        //console.log("CHECK DATE: ", swingDateFormat);
+
+        return swingDateFormat;
+
+    } else {
+        document.getElementById("auto-date-error-modal").style.display = "block";
+        $("#auto-date-display").html(errMsg);
+    }
+}
+
+$("#sidebar-right").on('click', '#auto-date-template', function (e) {
+    
+    $("#template-actions").find("button").each(function(){
+        
+        console.log("RUNNING");
+        
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){
+            var thisCheckId = $(this).prop('id');
+            checkFields = thisCheckId.split('-').pop();
+        }
+    });
+
+    console.log("AUTO CHECKFIELDS: ", checkFields);
+
+    if(checkFields > 1){
+    
+        for (var c = 0; c < checkFields; c++) {
+            var tempId = c + 1;
+            var nextId = tempId + 1;
+            var nextSwingDate = getSwingDates(tempId);
+
+            console.log("SET DATE :", nextId);
+            console.log(nextSwingDate);
+
+            $("#swing_start_date-" + nextId).val(nextSwingDate);
+        }
+    
+    } else {
+        
+        var errCountVoid = 0;
+        var errMsgVoid = '';
+        
+        var thisSwingStartDate = $("#swing_start_date-1").val();
+        var thisSwingRecur = $("#swing_recurrence-1").val();
+        
+        if(thisSwingStartDate.length < 1 || thisSwingRecur.length < 1){
+        
+            if(thisSwingStartDate.length < 1){
+                errCountVoid++;
+                errMsgVoid += '<p class="error">No Start Date provided for Swing 1.</p>';
+            }
+        
+            if(thisSwingRecur.length < 1){                
+                errCountVoid++;
+                errMsgVoid += '<p class="error">No Recur Days provided for Swing 1.</p>';
+            }
+
+            if(errCountVoid > 0){
+                var autoDateErrorsMsg = errMsgVoid;
+                document.getElementById("auto-date-error-modal").style.display = "block";
+                $("#auto-date-display").html(autoDateErrorsMsg);
+
+            }
+
+        } else {
+            var autoDateErrorsMsg = '<p class="error">No Dates to update.</p>';
+            document.getElementById("auto-date-error-modal").style.display = "block";
+            $("#auto-date-display").html(autoDateErrorsMsg);
+        }
+    }
+});
+
+//SET REQUEST DETAILS
+$("#sidebar-right").on('change', '#swing_request-1', function (e) {
+    
+    e.preventDefault();
+
+    var thisId = $(this).prop('id');
+    var tempId = thisId.split('-').pop();
+    var reqId = $(this).val();
+
+    if($("#" + thisId).val() != 'NA') {
+
+        $.ajax({
+            url: '/request/scheduler/' + reqId,
+            type: "get",
+        }).done(function (response) {
+            console.log("REQ: ", response);
+
+            var request = response;
+            reqRef = request['ws_ref'];
+            reqSiteShort = request['ws_site_dept'];
+            reqRefDesc = "RR" + reqRef + "-" + reqSiteShort;
+
+            $("#swing_reference-" + tempId).val(reqRefDesc);
+
+            //PUSH TO CURRENT SWINGS (FROM 2)
+            $("#template-actions").find("button").each(function(){
+                if(this.id != 'save-swing-template' 
+                    && this.id != 'save-as-swing-template'
+                    && this.id != 'cancel-save-swing-template' 
+                    && this.id != 'auto-date-template' 
+                    && this.id != 'reset-template-swings'
+                ){    
+                    console.log("THIS ID: ", $(this).prop('id'));
+                    
+                    var thisCheckId = $(this).prop('id');
+                    checkFields = thisCheckId.split('-').pop();
+                }
+            });
+
+            console.log("CHECKFIELDS: ", checkFields);
+
+            for (var c = 0; c < checkFields; c++) {
+                var thisEmpSwing = parseInt(c) + 1;                
+                $("#swing_request-" + thisEmpSwing).val(reqId); 
+                $("#swing_reference-" + thisEmpSwing).val(reqRefDesc);  
+            }
+        });
+    } else {
+        $("#swing_reference-" + tempId).val("");
+    }
+});
+
+//SAVE SWINGS AS A TEMPLATE
+
+$("body").on('click', '#save-bookings-template', function (e) {
+    
+    var saveErrCount = 0;
+    var saveErrMsg = '';
+
+    var updateExisting = $("#select-template-update").val();
+    console.log("UPEX: ", updateExisting);
+
+    var updateDesc = $("#template_desc").val();
+
+    if(updateExisting == 'NA' && updateDesc.length < 1 ){
+        saveErrCount++;
+        saveErrMsg += '<p>Either Select an Existing Template to Update OR Add a New Template Name.</p>';
+    }
+
+    if(saveErrCount < 1){
+    
+        if(updateExisting != 'NA'){
+            var saveUrl = 'scheduler/booking/template';
+            var updateTemplateDesc = 'NA';
+        } else {
+            var saveUrl = 'scheduler/bookings/template';
+            var updateTemplateDesc = updateDesc;
+        } 
+        
+        console.log("SAVE URL: ",saveUrl);
+        console.log("TEMP ID: ", updateExisting);
+
+        e.preventDefault();
+
+        $("#scheduler-template-form").find("div.error").removeClass('error').addClass("noerror");
+        $("#scheduler-template-form").find("input.required").removeClass('required');
+        $("#scheduler-template-form").find("select.required").removeClass('required');
+
+        var errCount = 0;
+        var errMsgArray = [];
+
+        if($("#swing_request-1").val() == 'NA') {        
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_request-1",
+                "msg": 'A Request must be selected'
+            });
+        }
+        
+        if($("#swing_emps-1").val() === null) {           
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_emps-1",
+                "msg": 'At least 1 Employee must be selected'
+            });
+        }
+
+        $("#template-actions").find("button").each(function(){
+            if(this.id != 'save-swing-template' 
+                && this.id != 'save-as-swing-template'
+                && this.id != 'cancel-save-swing-template' 
+                && this.id != 'auto-date-template' 
+                && this.id != 'reset-template-swings'
+            ){    
+                var thisCheckId = $(this).prop('id');
+                checkFields = thisCheckId.split('-').pop();
+            }
+        });
+        
+        checkFields = parseInt(checkFields) + 1;
+        
+        for (var c = 1; c < checkFields; c++) {
+        
+            if($("[id^=swing_type-" + c).val() == 'NA') {                  
+                errCount++;
+                errMsgArray.push({
+                    "id": "swing_type-" + c,
+                    "msg": 'A Swing Type must be selected'
+                });
+            }
+
+            if($("#swing_start_date-" + c).val().length < 1) {
+                errCount++;
+                errMsgArray.push({
+                    "id": "swing_start_date-" + c,
+                    "msg": 'A Start Day must be selected'
+                });
+            }
+
+            if($("#swing_recurrence-" + c).val().length < 1) {
+                errCount++;
+                errMsgArray.push({
+                    "id": "swing_recurrence-" + c,
+                    "msg": 'A Recurring Number of days must be provided'
+                });
+            }
+        }
+        
+        if(errCount > 0){
+
+            console.log("ERRORS: ", errMsgArray);
+
+            for (var e = 0; e < errMsgArray.length; e++) {
+
+                var errorId = errMsgArray[e]['id'];
+                var errorMsg = errMsgArray[e]['msg'];
+
+                if(errorId == 'swing_emps-1'){
+                    $("#swing_emps_error-1").removeClass('noerror');
+                    $("#swing_emps_error-1").addClass('error');
+                } else {    
+                    $("#" + errorId).addClass('required');
+                    $("#" + errorId + "_error").removeClass('noerror');
+                    $("#" + errorId + "_error").addClass('error');
+                }
+                
+                if(errorId == 'swing_emps-1'){
+                    $("#swing_emps_error-1").html(errorMsg);    
+                } else {
+                    $("#" + errorId + "_error").html(errorMsg);
+                }
+            }
+
+        } else {
+                
+            var requestForm = $("#scheduler-template-form").serialize();
+
+            $.ajax({
+                url: saveUrl,
+                type: "POST",
+                data: {
+                    "template_id": updateExisting,
+                    "template_name": updateTemplateDesc, 
+                    "form": requestForm
+                },
+                success: function (response) {
+                    //console.log(response);
+                    var status = response.status;
+                    var templateArray = response.template_array;
+                    console.log("MY TEMPLATE: ", templateArray);
+
+                    document.getElementById("save-scheduler-template-modal").style.display = "none";
+
+                }
+            });
+        }
+
+    } else {
+        $("#save-template-errors").html(saveErrMsg);
+        $("#save-template-errors").removeClass("noerror");
+        $("#save-template-errors").addClass("error");
+    }
+});
+
+//DELETE BOOKING TEMPLATE
+$("body").on('click', '#delete-bookings-template', function (e) {
+
+    var deleteExisting = $("#select-template-update").val();
+
+    var deleteErrCount = 0;
+    var deleteErrMsg = '';
+
+    if(deleteExisting == 'NA'){
+        deleteErrCount++;
+        deleteErrMsg += '<p>No Existing Template was Selected for Deletion.</p>';
+    }
+
+    if(deleteErrCount < 1){
+
+        var r = confirm("Are you sure you want to delete the Selected Template?");
+        if (r == true) {
+        
+            $.ajax({
+                url: 'scheduler/booking/template/delete',
+                type: "POST",
+                data: {
+                    "template_id": deleteExisting,
+                },
+                success: function (response) {
+                    //console.log(response);
+                    var status = response.status;
+                    var templateArray = response.template_array;
+                    console.log("MY TEMPLATE: ", templateArray);
+
+                    document.getElementById("save-scheduler-template-modal").style.display = "none";
+
+                }
+            });
+        }
+
+    } else {
+        $("#save-template-errors").html(deleteErrMsg);
+        $("#save-template-errors").removeClass("noerror");
+        $("#save-template-errors").addClass("error");
+    }    
+});
+
+$("#sidebar-right").on('click', '#save-as-swing-template', function (e) {
+
+    $("#save-template-errors").html("");
+    $("#save-template-errors").removeClass("error");
+    $("#save-template-errors").addClass("noerror");
+    
+    $.ajax({
+        url: 'scheduler/templates',
+        type: "GET",
+        success: function (response) {
+            console.log(response);
+            var templates = response;
+            
+            var displayTemplates = '<form id="save-template-form">';
+            
+            displayTemplates += '<select id="select-template-update" name="select-template-update" style="margin-top:15px;" class="w3-select w3-border input-display">';
+
+            displayTemplates += '<option value="NA">Update an Existing Template</option>';
+        
+            for (var t = 0; t < templates.length; t++) {
+                var templateDesc = templates[t]['template_desc'];
+                var templateId = templates[t]['template_id'];
+
+                displayTemplates += '<option value="' + templateId + '">' + templateDesc + '</option>';
+            }
+
+            displayTemplates += '<h5>Update an Existing Template:</h5>';
+            displayTemplates += '</select>';
+
+            displayTemplates += '<div id="template-desc" style="padding:15px 10px 10px 0;">';
+            displayTemplates += '<label style="font-weight:bold;">Or Create a New Template:</label>';
+            displayTemplates += '<input name="template_desc" id="template_desc" class="w3-input w3-border input-display" type="text" placeholder="Add a New Temnplate Name...">';
+            displayTemplates += '</div>';
+
+            displayTemplates += '</form>';
+
+            $("#scheduler-templates-select-display").html(displayTemplates);
+        
+        }
+    });
+    
+    document.getElementById("save-scheduler-template-modal").style.display = "block";
+
+});
+
+$("#sidebar-right").on('click', '#cancel-save-swing-template', function (e) {
+    //CANCEL SWING
+    e.preventDefault();
+
+    $("#sidebar-right").html("");
+    $("#sidebar-right").css({"width": "0px"});
+});    
+
+$("#sidebar-right").on('click', '#save-swing-template', function (e) {
+
+    //alert("SAVING");
+    
+    e.preventDefault();
+
+    $("#scheduler-template-form").find("div.error").removeClass('error').addClass("noerror");
+    $("#scheduler-template-form").find("input.required").removeClass('required');
+    $("#scheduler-template-form").find("select.required").removeClass('required');
+
+    var errCount = 0;
+    var errMsgArray = [];
+
+    if($("#swing_request-1").val() == 'NA') {        
+        errCount++;
+        errMsgArray.push({
+            "id": "swing_request-1",
+            "msg": 'A Request must be selected'
+        });
+    }
+    
+    if($("#swing_emps-1").val() === null) {           
+        errCount++;
+        errMsgArray.push({
+            "id": "swing_emps-1",
+            "msg": 'At least 1 Employee must be selected'
+        });
+    }
+
+    $("#template-actions").find("button").each(function(){
+        if(this.id != 'save-swing-template' 
+            && this.id != 'save-as-swing-template'
+            && this.id != 'cancel-save-swing-template' 
+            && this.id != 'auto-date-template' 
+            && this.id != 'reset-template-swings'
+        ){    
+            var thisCheckId = $(this).prop('id');
+            checkFields = thisCheckId.split('-').pop();
+        }
+    });
+    
+    checkFields = parseInt(checkFields) + 1;
+    
+    for (var c = 1; c < checkFields; c++) {
+    
+        if($("[id^=swing_type-" + c).val() == 'NA') {                  
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_type-" + c,
+                "msg": 'A Swing Type must be selected'
+            });
+        }
+
+        if($("#swing_start_date-" + c).val().length < 1) {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_start_date-" + c,
+                "msg": 'A Start Day must be selected'
+            });
+        }
+
+        if($("#swing_recurrence-" + c).val().length < 1) {
+            errCount++;
+            errMsgArray.push({
+                "id": "swing_recurrence-" + c,
+                "msg": 'A Recurring Number of days must be provided'
+            });
+        }
+    }
+    
+    if(errCount > 0){
+
+        //console.log("ERRORS: ", errMsgArray);
+
+        for (var e = 0; e < errMsgArray.length; e++) {
+
+            var errorId = errMsgArray[e]['id'];
+            var errorMsg = errMsgArray[e]['msg'];
+
+            if(errorId == 'swing_emps-1'){
+                $("#swing_emps_error-1").removeClass('noerror');
+                $("#swing_emps_error-1").addClass('error');
+            } else {    
+                $("#" + errorId).addClass('required');
+                $("#" + errorId + "_error").removeClass('noerror');
+                $("#" + errorId + "_error").addClass('error');
+            }
+            
+            if(errorId == 'swing_emps-1'){
+                $("#swing_emps_error-1").html(errorMsg);    
+            } else {
+                $("#" + errorId + "_error").html(errorMsg);
+            }
+        }
+
+    } else {
+    
+        var requestForm = $("#scheduler-template-form").serialize();
+
+        $.ajax({
+            url: 'scheduler/template',
+            type: "POST",
+            data: {
+                "form": requestForm
+            },
+            success: function (response) {
+                //console.log(response);
+                var status = response.status;
+                var templateArray = response.template_array;
+                console.log("MY TEMPLATE: ", templateArray);
+
+                localStorage.setItem('scheduler-template-last-stored',templateArray);
+
+                var resetEmps = [];
+                localStorage.setItem('scheduler-templates-employees', JSON.stringify(resetEmps));
+
+                window.location.assign('/scheduler');
+            }
+        });
+    }
+}); 
+
+///
+
 function setTemplates(swingTemplates){
 
     $("#sidebar-right").html("");
@@ -2350,9 +4444,38 @@ function actionSwings(param) {
     //actionSwings += '</div>';
     
     var actionSwings = '<div style="clear:both;"></div>';
-    actionSwings += '<div class="w3-center" style="margin-top:10px;">SWINGS HERE';
+    //actionSwings += '<div class="w3-center" style="margin-top:10px;">SWINGS HERE';
+    //actionSwings += '</div>';
 
-    //GET SOME SWINGS
+    //console.log("ACTION SWINGS");
+
+    actionSwings += '<div id="work-order-table-container" style="margin:0 0 20px 0;">';
+    actionSwings += '<table id="workspace-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+    actionSwings += '<thead>';
+    actionSwings += '<tr class="w3-darkblue">';
+    actionSwings += '<th>Site Requester</th>';
+    actionSwings += '<th>Requester Phone</th>';
+    actionSwings += '<th>Shift Type</th>';
+    actionSwings += '<th>Firstname</th>';
+    actionSwings += '<th>Surname</th>';
+    actionSwings += '<th>Position</th>';
+    actionSwings += '<th>Arrival</th>';
+    actionSwings += '<th>Departure</th>';
+    actionSwings += '<th>Notified Employee</th>';
+    actionSwings += '<th>Dates on Quote</th>';
+    actionSwings += '<th>Quote #</th>';
+    actionSwings += '<th>D&A</th>';
+    actionSwings += '<th>Rio Inductions</th>';
+    actionSwings += '<th>RITM Logged Ticket</th>';
+    actionSwings += '<th>RITM Confirmation</th>';
+    actionSwings += '<th>Action</th>';
+    actionSwings += '</tr>';
+    actionSwings += '</thead>';
+    //actionSwings += '<tbody>';
+    actionSwings += '</table>';
+
+
+    /* //GET SOME SWINGS
 
     var empId = 1;
 
@@ -2392,7 +4515,7 @@ function actionSwings(param) {
     empDetails = JSON.parse(empDetails);
     console.log("GET EMP DETS: ", empDetails);
 
-    actionSwings += '</div>';
+    actionSwings += '</div>'; */
 
     $("#workspace").append(actionSwings);
 }

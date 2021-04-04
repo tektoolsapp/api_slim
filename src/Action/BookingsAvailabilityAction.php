@@ -26,7 +26,12 @@ final class BookingsAvailabilityAction
 
         $params = $request->getQueryParams();
 
+        //dump($params);
+        
         extract($params);
+
+
+        /*
         parse_str($form, $formDetails);
 
         extract($formDetails);
@@ -50,11 +55,11 @@ final class BookingsAvailabilityAction
             $thisDate = $date->format("d-m-Y");
             array_push($daterangeArray, $thisDate);
 
-        }
+        } */
 
-        //$bookingsData = $this->bookingsAvailabilityList->getBookings();
+        $bookingsData = $this->bookingsAvailabilityList->getBookings($shift);
 
-        $response->getBody()->write((string)json_encode($daterangeArray));
+        $response->getBody()->write((string)json_encode($bookingsData));
 
         return $response
             ->withHeader('Content-Type', 'application/json')

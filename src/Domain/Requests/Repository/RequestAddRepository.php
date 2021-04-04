@@ -17,8 +17,11 @@ class RequestAddRepository
 
     public function insertRequest(array $request)
     {
+        
+        dump($request);
+        
         unset($request['ws_id']);
-        unset($request['ws_customer_name']);
+        //unset($request['ws_customer_name']);
 
         $request['ws_quote_pdfs'] = '';
         $request['ws_pdf_chf_fields'] = '';

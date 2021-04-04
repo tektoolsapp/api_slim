@@ -59,6 +59,10 @@ return function (App $app) {
         ->add(RedirectIfGuest::class)
         ->add(Guard::class);
     $app->get('/scheduler/filter', \App\Action\SchedulerFilterAction::class)->setName('scheduler-filter');
+
+    $app->get('/workspace/filter', \App\Action\SchedulerWorkspaceFilterAction::class)->setName('scheduler-workspace-filter');
+    
+
     $app->post('/scheduler/template', \App\Action\SchedulerTemplateAction::class)->setName('scheduler-template');
     $app->get('/scheduler/template/{template_id}', \App\Action\SchedulerFetchTemplateAction::class)->setName('scheduler-fetch-template');
     $app->get('/scheduler/templates', \App\Action\SchedulerTemplatesAction::class)->setName('scheduler-templates');
@@ -66,6 +70,8 @@ return function (App $app) {
     $app->post('/scheduler/booking/template', \App\Action\SchedulerBookingTemplateAction::class)->setName('scheduler-booking-template');
     $app->post('/scheduler/booking/template/delete', \App\Action\SchedulerBookingDeleteTemplateAction::class)->setName('scheduler-booking-template-delete');
 
+    
+    
     //EMPLOYEES
     $app->get('/employees', \App\Action\EmployeesAction::class)->setName('employees');
     $app->get('/employee/{emp_id}', \App\Action\EmployeeFetchAction::class)->setName('employee-fetch');
@@ -85,6 +91,8 @@ return function (App $app) {
     $app->get('/bookings', \App\Action\BookingsAction::class)->setName('bookings');
     $app->get('/bookings/availability', \App\Action\BookingsAvailabilityAction::class)->setName('bookings-availability');
     $app->get('/bookings/request/{req_id}', \App\Action\BookingsRequestFetchAction::class)->setName('bookings-request-fetch');
+
+    $app->get('/shifts/request/{req_id}', \App\Action\BookingsShiftsRequestFetchAction::class)->setName('bookings-shifts-request-fetch');
     
     $app->get('/bookings/{req_id}/{emp_id}', \App\Action\BookingsReqEmpFetchAction::class)->setName('bookings-req-emp-fetch');
     
@@ -103,6 +111,8 @@ return function (App $app) {
     $app->post('/booking/delete', \App\Action\BookingDeleteAction::class)->setName('booking-delete');
     $app->post('/bookings/delete', \App\Action\BookingsDeleteAction::class)->setName('bookings-delete');
     $app->get('/bookings/conflict', \App\Action\BookingsConflictAction::class)->setName('bookings-conflict');
+
+    $app->post('/booking/reschedule', \App\Action\BookingRescheduleAction::class)->setName('booking-reschedule');
 
     //CUSTOMERS
     $app->get('/customers', \App\Action\CustomersAction::class)->setName('customers');

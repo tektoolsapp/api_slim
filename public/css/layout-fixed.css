@@ -761,6 +761,11 @@ table#workspace-table td {
 }
 */
 
+table#workspace-shifts-table th {
+    text-align:left;
+    /*border:1px solid #27447E;*/
+}
+
 .ui-widget {
     font-family: Arial, Helvetica,sans-serif;
     font-size: 14px;
@@ -840,4 +845,9 @@ table#workspace-table td {
 
 #order-update-success {
     z-index: 99999;
+}
+
+.w3-dropdown-content {
+    z-index: 5;
+    overflow: visible !important;;
 }
