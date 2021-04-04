@@ -31,12 +31,11 @@ final class ApiSigninAction
 
 
         $empPin = $data['emp_pin'];
-
-
+        $fcmToken = $data['fcm_token'];
 
         //dump($empPin);
 
-        $signinData = $this->apiSignin->apiSignin($empPin);
+        $signinData = $this->apiSignin->apiSignin($empPin, $fcmToken);
 
         $status = $signinData['status'];
         $payload = $signinData['payload'];

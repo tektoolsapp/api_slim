@@ -17,7 +17,7 @@ class ApiSigninRepository
 
     }
 
-    public function apiSignin($credentials)
+    public function apiSignin($credentials, $fcmToken)
     {
         //SIGNIN
 
@@ -51,6 +51,37 @@ class ApiSigninRepository
                     "token" => $token
                 )
             );
+
+            //UPDATE THE EMP RECORD WITH FMC TOKEN
+            if(strlen($fcmToken) > 0 && !empty($id)){
+                //
+                
+                $updateEmpArray = array(
+                    "emp_fcm_token" => $fcmToken,
+                    "emp_id" => $id
+                );
+
+                //$empId = $testData['test_id'];
+                //unset($testData['test_id']);
+                
+                //$testData['test_id'] = $testId;
+                $columnsArray = array_keys($updateEmpArray);
+                $columnString = '';
+
+                for ($c=0; $c < sizeof($columnsArray)-1; $c++) {
+                    $columnString .= $columnsArray[$c]." = ?,";
+                }
+
+                $columnString = rtrim($columnString, ',');
+                $valuesArray = array_values($updateEmpArray);
+
+                try {
+                    $query = "UPDATE employees SET $columnString WHERE emp_id = ?";
+                    $this->connection->prepare($query)->execute($valuesArray);
+                } catch(\PDOException $e) {
+                    //die("Oh noes! There's an error in the query!");
+                }
+            }
 
         } else {
             $signinData = array(
