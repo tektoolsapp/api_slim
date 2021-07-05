@@ -6,3 +6,4 @@ public/pdfs/completed/*
 public/images/*
 composer.json
 composer.lock
+public/mobile/*
