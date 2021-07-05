@@ -48,8 +48,10 @@ final class UserReadAction
 
         // Transform the result into the JSON representation
         $result = [
-            'user_id' => $userData->id,
+            'id' => $userData->id,
             'username' => $userData->username,
+            'password' => $userData->password,
+            'fcm_token' => $userData->fcm_token,
             'first_name' => $userData->firstName,
             'last_name' => $userData->lastName,
             'email' => $userData->email,

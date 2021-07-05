@@ -14,7 +14,8 @@ final class FilePondProcessAction
     private $tempDirectory = __DIR__ . '/../../tmp/upload';
 
     //private $storageDirectory = __DIR__ . '/../../storage';
-    private $storageDirectory = __DIR__ . '/../../public/images';
+    //private $storageDirectory = __DIR__ . '/../../public/images';
+    private $storageDirectory = __DIR__ . '/../../public/travel_docs';
 
     /**
      * Process upload.
@@ -31,19 +32,26 @@ final class FilePondProcessAction
         ResponseInterface $response
     ): ResponseInterface {
         
-        //$files = $request->getUploadedFiles();
+        $data = $request->getParsedBody();
 
-        //dump($files);
+        //dump($data);
 
-        //dump($request);
+        $swingId = $data['swing_id'];
+
+        //$file = $request->files->get('file');
+        //$file_name = $file->getClientOriginalName();
+
+        //dump($file_name);
+
+        //dump($swingId);
         
         /** @var UploadedFile[] $uploadedFiles */
         $uploadedFiles = (array)($request->getUploadedFiles()['filepond'] ?? []);
 
-        dump($uploadedFiles);
+        //dump($uploadedFiles[0]->name);
 
         if ($uploadedFiles) {
-            return $this->moveTemporaryUploadedFile($uploadedFiles, $response);
+            return $this->moveTemporaryUploadedFile($uploadedFiles, $response, $swingId);
         }
 
         $submittedIds = (array)($request->getParsedBody()['filepond'] ?? []);
@@ -64,7 +72,8 @@ final class FilePondProcessAction
      */
     private function moveTemporaryUploadedFile(
         array $uploadedFiles,
-        ResponseInterface $response
+        ResponseInterface $response,
+        $swingId
     ): ResponseInterface {
         $fileIdentifier = '';
 
@@ -81,7 +90,7 @@ final class FilePondProcessAction
             //dump($uploadedFile);
             //dump($this->tempDirectory);
 
-            $fileIdentifier = $this->moveUploadedFile($this->tempDirectory, $uploadedFile);
+            $fileIdentifier = $this->moveUploadedFile($this->tempDirectory, $uploadedFile, $swingId);
         }
 
         // Server returns unique location id in text/plain response
@@ -144,7 +153,8 @@ final class FilePondProcessAction
      */
     private function moveUploadedFile(
         string $directory,
-        UploadedFileInterface $uploadedFile
+        UploadedFileInterface $uploadedFile,
+        $swingId
     ): string {
 
         $extension = (string)pathinfo(
@@ -152,15 +162,25 @@ final class FilePondProcessAction
             PATHINFO_EXTENSION
         );
 
+        //$myFilename = $uploadedFile->name;
+
+        $uploadFileName = $uploadedFile->getClientFilename();
+
+        //dump($uploadFileName);
+
         // Create unique id for this file
         $filename = FilenameFilter::createSafeFilename(
             sprintf('%s.%s', (string)uuid_create(), $extension)
         );
 
+        //$filename = "travel_doc_".$swingId."_".$filename;
+
+        $filename  = $uploadFileName;
+
         // Save the file into the storage
         $targetPath = sprintf('%s/%s', $this->storageDirectory, $filename);
 
-        dump($targetPath);
+        //dump($targetPath);
 
         $uploadedFile->moveTo($targetPath);
 

@@ -3,7 +3,6 @@
 namespace App\Domain\Bookings\Repository;
 
 use PDO;
-//use MongoDB\Client as Mongo;
 use App\Domain\Employees\Repository\EmployeesRepository;
 use App\Domain\Employees\Repository\TradesRepository;
 use App\Domain\Utility\Service\CommonFunctions;
@@ -11,21 +10,18 @@ use App\Domain\Utility\Service\CommonFunctions;
 class BookingsShiftsRequestFetchRepository
 {
     private $connection;
-    //private $mongo;
     private $employees;
     private $trades;
     private $common;
 
     public function __construct(
         PDO $connection,
-        //Mongo $mongo,
         EmployeesRepository $employees,
         TradesRepository $trades,
         CommonFunctions $common
     )
     {
         $this->connection = $connection;
-        //$this->mongo = $mongo;
         $this->employees = $employees;
         $this->trades = $trades;
         $this->common = $common;
@@ -41,6 +37,7 @@ class BookingsShiftsRequestFetchRepository
         $statement->execute(['RequestId' => $reqId]);
 
         $bookingsRequestShifts = $statement->fetchAll(PDO::FETCH_ASSOC);
+        
         usort($bookingsRequestShifts,array($this,'compareShifts'));
 
         //dump($bookingsRequestShifts);
@@ -59,7 +56,21 @@ class BookingsShiftsRequestFetchRepository
             $employeeLookup = $this->common->searchArray($employees, 'emp_id', $thisShiftEmployee);
             $empFirstName = $employeeLookup[0]['first_name'];
             $empLastName = $employeeLookup[0]['last_name'];
-            $empName = $empFirstName." ".$empLastName;   
+            $empName = $empFirstName." ".$empLastName; 
+            $empTradeType = $employeeLookup[0]['trade_type']; 
+
+            $swingTradeType = $bookingsRequestShifts[$b]['SwingTradeType'];
+            if($swingTradeType != null){
+                //dump("SWING TRADE TYPE: ", $swingTradeType);
+                $swingTradeLookup = $this->common->searchArray($trades, 'trade_code', $swingTradeType);
+                $swingTradeDesc = $swingTradeLookup[0]['trade_desc']; 
+            } else {
+                $swingTradeDesc = 'NA';
+            }
+            
+            $empNotified = $bookingsRequestShifts[$b]['EmployeeNotified'];
+            $messageDelivered = $bookingsRequestShifts[$b]['MessageDelivered'];
+            $employeeConfirmed = $bookingsRequestShifts[$b]['EmployeeConfirmed'];
             
             date_default_timezone_set('Australia/West');
 
@@ -80,9 +91,14 @@ class BookingsShiftsRequestFetchRepository
 
             $thisBookingType = $bookingsRequestShifts[$b]['BookingType'];
         
-            $thisTradeTypes = $bookingsRequestShifts[$b]['TradeTypes'];
-            $thisTradeTypesArray = json_decode($thisTradeTypes);
-            $thisTradeTypeStr = $thisTradeTypesArray[0];
+            $thisTradeTypesArray = explode(",",$bookingsRequestShifts[$b]['TradeTypes']);
+            //$thisTradeTypesArray = json_decode($thisTradeTypes);
+            //LOOP THROUGH TRADES ARRAY AND BUILD TRADES DESC
+
+            //if(in_array())
+            
+            //$thisTradeTypeStr = $thisTradeTypesArray[0];
+            $thisTradeTypeStr = $empTradeType;
             $tradeLookup = $this->common->searchArray($trades, 'trade_code', $thisTradeTypeStr);
             $tradeDesc = $tradeLookup[0]['trade_desc'];
 
@@ -95,12 +111,17 @@ class BookingsShiftsRequestFetchRepository
                 
                 $shiftsDetailsArray = array(
                     "shift" => $thisShift,
+                    "emp_id" => $thisShiftEmployee,
                     "emp" => $empName,
                     "trades" => $tradeDesc,
+                    "trade_type" => $swingTradeDesc,
                     "start" => $startDateFormat,
                     "end" => $endDateFormat,
                     "time" => $thisAmPm,
                     "type" => $thisBookingType,
+                    "notified" => $empNotified,
+                    "delivered" => $messageDelivered,
+                    "confirmed" => $employeeConfirmed,
                 );
                 
                 array_push($shiftsArray, $shiftsDetailsArray);  
@@ -115,9 +136,13 @@ class BookingsShiftsRequestFetchRepository
     }
 
     private function compareShifts($a, $b){
-        $retval = strnatcmp($a['shiftId'], $b['shiftId']);
+        $retval = strnatcmp($a['UserId'], $b['UserId']);
         if(!$retval) $retval = strnatcmp($a['StartDay'], $b['StartDay']);
         return $retval;
+        /* $retval = strnatcmp($a['ShiftId'], $b['ShiftId']);
+        if(!$retval) $retval = strnatcmp($a['StartDay'], $b['StartDay']);
+        return $retval; */
+
     }
 
 }

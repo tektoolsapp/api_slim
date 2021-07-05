@@ -5,6 +5,7 @@ namespace App\Domain\Bookings\Repository;
 use PDO;
 use App\Domain\Employees\Repository\EmployeesRepository;
 use App\Domain\Employees\Repository\TradesRepository;
+use App\Domain\Customers\Repository\CustomerSiteFetchRepository;
 use App\Domain\Requests\Repository\RequestFetchRepository;
 use App\Domain\Requests\Repository\RequestUpdateChfRepository;
 use App\Domain\Utility\Service\CommonFunctions;
@@ -14,6 +15,7 @@ class BookingsNewQuoteFetchRepository
     private $connection;
     private $employees;
     private $trades;
+    private $site;
     private $reqDets;
     private $chfArray;
 
@@ -23,6 +25,7 @@ class BookingsNewQuoteFetchRepository
         PDO $connection,
         EmployeesRepository $employees,
         TradesRepository $trades,
+        CustomerSiteFetchRepository $site,
         RequestFetchRepository $reqDets,
         RequestUpdateChfRepository $chfArray,
         CommonFunctions $common
@@ -31,6 +34,7 @@ class BookingsNewQuoteFetchRepository
         $this->connection = $connection;
         $this->employees = $employees;
         $this->trades = $trades;
+        $this->site = $site;
         $this->reqDets = $reqDets;
         $this->chfArray = $chfArray;
         $this->common = $common;
@@ -41,6 +45,14 @@ class BookingsNewQuoteFetchRepository
         $employees = $this->employees->getEmployees();
         $request = $this->reqDets->getRequest($reqId);
         $trades = $this->trades->getTrades();
+        //$sites = $this->sites->getSites();
+
+        $siteLocation = $request['ws_site_dept'];
+        //dump("SITE");
+        //dump($siteLocation);
+        $siteDetscArray = $this->site->getCustomerSite($siteLocation);
+        $siteDesc = $siteDetscArray['site_desc'];
+        //dump($siteDesc);
 
         //UNSET EXISTING RIO PDFS
         $rioPdfsArray = json_decode($request['ws_quote_pdfs'],true);
@@ -99,6 +111,9 @@ class BookingsNewQuoteFetchRepository
 
         if($tradeType2 != 'N'){
             
+            //dump("TRADE TYPE 2");
+            //dump($tradeType2)   ;
+            
             $tradeTypeRateType2 = $request['ws_trade_rate_2'];
             
             $tradesLookup = $this->common->searchArray($trades, 'trade_code', $tradeType2);
@@ -132,11 +147,13 @@ class BookingsNewQuoteFetchRepository
 
         //dump($tradeRatesArray);
 
-        $sql = "SELECT * FROM bookings WHERE RequestId = :RequestId AND BookingStatus <> 'X';";
+        $sql = "SELECT * FROM bookings WHERE RequestId = :RequestId AND BookingType = 'On' AND BookingStatus <> 'X';";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['RequestId' => $reqId]);
 
         $bookingsQuote = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        
 
         //dump($bookingsQuote);
 
@@ -146,9 +163,9 @@ class BookingsNewQuoteFetchRepository
             //EMPLOYEE LOOKUP
             $employee = $bookingsQuote[$b]['UserId'];
             $employeeLookup = $this->common->searchArray($employees, 'emp_id', $employee);
-            
+
             //TRADE TYPE
-            $tradeType = $employeeLookup[0]['trade_type'];
+            //$tradeType = $employeeLookup[0]['trade_type'];
 
             //REF TRADE TYPE TO GET RATE
 
@@ -171,10 +188,20 @@ class BookingsNewQuoteFetchRepository
             $bookingsQuote[$b]['emp_gender'] = $empGender;
             $empBirthDate = $employeeLookup[0]['birth_date'];
             $bookingsQuote[$b]['birth_date'] = $empBirthDate;
+
+            $empEmail = $employeeLookup[0]['emp_email'];
+            $bookingsQuote[$b]['emp_email'] = $empEmail;
+
+            $empMobile = $employeeLookup[0]['emp_mobile'];
+            $bookingsQuote[$b]['emp_mobile'] = $empMobile;
+
             $empSap = $employeeLookup[0]['emp_sap'];
             $bookingsQuote[$b]['emp_sap'] = $empSap;
             $bookingsQuote[$b]['emp_name'] = $empName;
             //TRADE TYPE LOOKUP
+            
+            $tradeType = $bookingsQuote[$b]['SwingTradeType'];
+            
             $tradeLookup = $this->common->searchArray($trades, 'trade_code', $tradeType);
             $tradeDesc = $tradeLookup[0]['trade_desc'];
             
@@ -247,11 +274,136 @@ class BookingsNewQuoteFetchRepository
         $AiportDestinationRow = 41;
         $DepartureDateRow = 45;
 
+        //NEW SECTION - SITE ENTRY
+        /* $SiteRow = 49;
+        $VillageRow = 53;
+        $ArrivalDateRow = 57;
+        $DepartureDate2Row = 61;
+        $SiteContactRow = 65;
+        $ShiftTypeRow = 69;
+        $PDARow = 73;
+        $CostCentreRow = 77; */
+
+        $SiteRow = 53;
+        $VillageRow = 57;
+        $ArrivalDateRow = 61;
+        $DepartureDate2Row = 65;
+        $SiteContactRow = 69;
+        $ShiftTypeRow = 73;
+        $PDARow = 77;
+        $CostCentreRow = 81;
+
+        //SITE ROW EMPTY
+
+        $siteRowEmptyDefault = array(
+            array(
+                "field_id" => 55,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 56,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 59,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 60,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 63,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 64,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 67,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 68,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 71,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 72,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 75,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 76,
+                "field_value" => " ",
+            ), 
+            array(
+                "field_id" => 79,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 80,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => 83,
+                "field_value" => " ",
+            ), 
+            array(
+                "field_id" => 84,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $ShiftTypeRow + 1,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $ShiftTypeRow + 2,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $PDARow,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $PDARow + 1,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $PDARow + 2,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $CostCentreRow,
+                "field_value" => " ",
+            ), 
+            array(
+                "field_id" => $CostCentreRow + 1,
+                "field_value" => " ",
+            ),
+            array(
+                "field_id" => $CostCentreRow + 2,
+                "field_value" => " ",
+            )   
+        );
+
+        //dump("DEFAULT SITES:");
+        //dump($siteRowEmptyDefault);
+
         $sefFieldsMaster = array();
 
         $sefShiftCounter = 1;
         $sefShiftAllCounter = 1;
         $sefPdfCounter = 0;
+
+        //$numSwings = 2;
 
         for ($q=0; $q < sizeof($bookingsQuote); $q++) {
 
@@ -266,6 +418,10 @@ class BookingsNewQuoteFetchRepository
             $empTitle = $bookingsQuote[$q]['emp_title'];
             $empGender = $bookingsQuote[$q]['emp_gender'];
             $empBirthDate = $bookingsQuote[$q]['birth_date'];
+            
+            $empEmail = $bookingsQuote[$q]['emp_email'];
+            $empMobile = $bookingsQuote[$q]['emp_mobile'];
+            
             $empSap = $bookingsQuote[$q]['emp_sap'];
             $requestMobiliser = $bookingsQuote[$q]['request_mobiliser'];
 
@@ -295,12 +451,17 @@ class BookingsNewQuoteFetchRepository
                 $dayMarker = 'DAY: '.$employee." - ".$bookingsQuote[$q]['start_time'];
                 //dump($dayMarker);
                 $flightNum = 'AM';
+                $flightNum2 = 'PM';
+                $shiftType = 'DS';
                 //$shiftTypeMarker = $marker. " - ".$q." - ".$tradeType." - ".$empName;
                 $dayShiftCount++;
             } else {
                 $dayMarker = 'NIGHT: '.$employee." - ".$bookingsQuote[$q]['start_time'];
                 //dump($dayMarker);
                 $flightNum = 'PM';
+                $flightNum2 = 'AM';
+                $shiftType = 'NS';
+
                 //$shiftTypeMarker = $marker. " - ".$q." - ".$tradeType." - ".$empName;
                 $nightShiftCount++;
             }
@@ -329,6 +490,9 @@ class BookingsNewQuoteFetchRepository
                 //dump($empChfSubArray);
 
                 $empShiftDetsArray = array(
+                    "shift_rate_code" => $bookingRateCode,
+                    "shift_rate" => $bookingRate,
+                    "shift_hours" => $shiftHours,
                     "day_shifts" => $dayShiftCount,
                     "night_shifts" => $nightShiftCount,
                     "start_day" => $startDay,
@@ -341,6 +505,7 @@ class BookingsNewQuoteFetchRepository
 
                 $dayShiftCount = 0;
                 $nightShiftCount = 0;
+                $shiftHours = 0;
                 //$empCounter = 0;
 
                 //BUILD THE SEF FIELDS HERE
@@ -359,27 +524,104 @@ class BookingsNewQuoteFetchRepository
                 //dump("SEF COUNT ALL: ".$sefShiftAllCounter);
 
                 //dump("EMP: ".$employee. " - ".$startDay ." - SHIFT COUNT: ".$sefShiftCounter);
+                
+                //!(value % 2)
+                
+                if($sefShiftCounter == 1 || $sefShiftCounter % 2 != 0){
+                //if($sefShiftCounter == 1 || ($sefShiftAllCounter) % 3 == 0){
+                    $sefEmp = $empFirstName . " " . $empLastName;    
+                    $sefEmpSap = $empSap;
+                    $sefEmpEmail = $empEmail;
+                    $sefEmpMobile = $empMobile;
+                    $sefRequestMobiliser = $requestMobiliser;
+                } else {
+                    $sefEmp = ' ';
+                    $sefEmpSap = ' ';
+                    $sefEmpEmail = ' ';
+                    $sefEmpMobile = ' ';
+                    $sefRequestMobiliser = ' ';
+                }
 
                 ${"sefFieldValuesArray".$sefShiftCounter} = array(
                     array(
                         "field_id" => $TravellerRow,
-                        "field_value" => $empFirstName . " " . $empLastName,
+                        "field_value" => $sefEmp,
+                    ),
+                    array(
+                        "field_id" => $TravellerRow + 1,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $TravellerRow + 2,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $TravellerRow + 3,
+                        "field_value" => " ",
                     ),
                     array(
                         "field_id" => $SAP_Row,
-                        "field_value" => $empSap,
+                        "field_value" => $sefEmpSap,
+                    ),
+                    array(
+                        "field_id" => $SAP_Row + 1,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $SAP_Row + 2,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $SAP_Row + 3,
+                        "field_value" => " ",
                     ),
                     array(
                         "field_id" => $EmailRow,
-                        "field_value" => 'allan.hyde@livepages.com.au',
+                        "field_value" => $sefEmpEmail,
                     ),
                     array(
+                        "field_id" => $EmailRow + 1,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $EmailRow + 2,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $EmailRow + 3,
+                        "field_value" => " ",
+                    ),    
+                    array(
                         "field_id" => $MobileRow,
-                        "field_value" => '0408702047',
+                        "field_value" => $sefEmpMobile,
+                    ),
+                    array(
+                        "field_id" => $MobileRow + 1,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $MobileRow + 2,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $MobileRow + 3,
+                        "field_value" => " ",
                     ),
                     array(
                         "field_id" => $LeaderRow,
-                        "field_value" => $requestMobiliser,
+                        "field_value" => $sefRequestMobiliser,
+                    ),
+                    array(
+                        "field_id" => $LeaderRow + 1,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $LeaderRow + 2,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $LeaderRow + 3,
+                        "field_value" => " ",
                     ),
                     array(
                         "field_id" => $FlightRow,
@@ -391,13 +633,83 @@ class BookingsNewQuoteFetchRepository
                     ),
                     array(
                         "field_id" => $AiportDestinationRow,
-                        "field_value" => 'Brockman 2',
+                        "field_value" => $siteDesc,
                     ),
                     array(
                         "field_id" => $DepartureDateRow,
                         "field_value" => $startDay,
-                    )
+                    ),
+
+                    //ADDED 12/04
+                    
+                    array(
+                        "field_id" => $FlightRow + 1,
+                        "field_value" => $flightNum2,
+                    ),
+                    array(
+                        "field_id" => $AiportOriginRow + 1,
+                        "field_value" => $siteDesc,
+                    ),
+                    array(
+                        "field_id" => $AiportDestinationRow + 1,
+                        "field_value" => 'Perth',
+                    ),
+                    array(
+                        "field_id" => $DepartureDateRow + 1 ,
+                        "field_value" => $endDay,
+                    ),
+
+                    //ADDED 6/05
+                    array(
+                        "field_id" => $SiteRow,
+                        "field_value" => $siteDesc,
+                    ),
+                    array(
+                        "field_id" => $VillageRow,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $ArrivalDateRow,
+                        "field_value" => $startDay,
+                    ),
+                    array(
+                        "field_id" => $DepartureDate2Row,
+                        "field_value" => $endDay,
+                    ), 
+                    array(
+                        "field_id" => $SiteContactRow,
+                        "field_value" => " ",
+                    ), 
+                    array(
+                        "field_id" => $ShiftTypeRow,
+                        "field_value" => $shiftType,
+                    ),
+                    array(
+                        "field_id" => $PDARow,
+                        "field_value" => " ",
+                    ),
+                    array(
+                        "field_id" => $CostCentreRow,
+                        "field_value" => " ",
+                    ), 
+
+                    /*
+                    $SiteRow = 49;
+                    $VillageRow = 53;
+                    $ArrivalDateRow = 57;
+                    $DepartureDate2Row = 61;
+                    $SiteContactRow = 65;
+                    $ShiftTypeRow = 69;
+                    $PDARow = 73;
+                    $CostCentreRow = 77;
+                    */
+
                 );
+                
+                //IF SITE ROW = 52 THE NEXT 2 ROWS ARE BLANK
+                //APPRN THE BLANK ROWS
+
+                
 
                 if ($sefShiftCounter == 1) {
                     //dump("MERGE FIRST: ".$sefShiftCounter);
@@ -416,17 +728,65 @@ class BookingsNewQuoteFetchRepository
                 $EmailRow = $EmailRow + 1;
                 $MobileRow = $MobileRow + 1;
                 $LeaderRow = $LeaderRow + 1;
-                $FlightRow = $FlightRow + 1;
-                $AiportOriginRow = $AiportOriginRow + 1;
-                $AiportDestinationRow = $AiportDestinationRow + 1;
-                $DepartureDateRow = $DepartureDateRow + 1;
-
+                $FlightRow = $FlightRow + 2;
+                $AiportOriginRow = $AiportOriginRow + 2;
+                $AiportDestinationRow = $AiportDestinationRow + 2;
+                $DepartureDateRow = $DepartureDateRow + 2;
+                //ADDED 6/5
+                $SiteRow = $SiteRow + 1;
+                $VillageRow = $VillageRow + 1;  
+                $ArrivalDateRow = $ArrivalDateRow + 1;
+                $DepartureDate2Row = $DepartureDate2Row + 1;
+                $SiteContactRow = $SiteContactRow + 1;
+                $ShiftTypeRow = $ShiftTypeRow + 1;
+                $PDARow = $PDARow + 1;
+                $CostCentreRow = $CostCentreRow + 1;
+                
                 $sefShiftCounter++;
                 $sefShiftAllCounter++;
 
-                if(($sefShiftAllCounter -1) % 4 == 0) {
+                //dump("SHIFT COUNTER: ", $sefShiftCounter);
+                //dump("NUM SWINGS: ", $numSwings);
 
+                //if(($sefShiftAllCounter -1) % 4 == 0) {
+                if(($sefShiftAllCounter -1) % 2 == 0) {
+
+                    //dump("CHECKING HERE");
+
+                    //COUNT THE NUMBER OF SHIFTS
+                        //UPDATE THE SWINGS
+                        $sql = "SELECT COUNT(DISTINCT ShiftId) AS NumSwings FROM bookings WHERE 
+                        RequestID = :RequestID AND
+                        UserId = :UserId AND
+                        BookingStatus <> 'X'";
+                    $statement = $this->connection->prepare($sql);
+                    $statement->execute(['RequestID' => $reqId,'UserId' => $employee]);
+
+                    $numSwingsArray = $statement->fetch();
+
+                    //dump("NUM EMP SWINGS: ",$numSwings);
+
+                    $numSwings = $numSwingsArray['NumSwings'];
+                    //dump("NUM EMP SWINGS: ",$numSwings);
+
+                    //dump("SHIFT COUNTER:", $sefShiftCounter);
+
+                    //dump("SITEROW CHECK: ",$SiteRow);
+
+                    if($numSwings > 1 && $sefShiftCounter > 2){ 
+                        //dump("MERGE SITE EMPTY");
+                        //$sefFieldsMaster = array_merge($sefFieldsMaster, $siteRowEmptyDefault);  
+                        $sefFieldsMaster = array_merge($sefFieldsMaster, $siteRowEmptyDefault);  
+                    }
+                    
                     //END CURRENT ARRAY
+
+                    //FILL THE EMPTY FIELDS
+                    /* if($sefShiftCounter > 1) {
+                        ${"sefFieldValuesArray" . $sefShiftCounter}['14'] = " ";
+                        ${"sefFieldValuesArray" . $sefShiftCounter}['15'] = " ";
+                        ${"sefFieldValuesArray" . $sefShiftCounter}['16'] = " ";
+                    } */
 
                     //dump("END CURRENT ARRAY: ".$sefShiftCounter);
 
@@ -477,6 +837,25 @@ class BookingsNewQuoteFetchRepository
                         $AiportDestinationRow = 41;
                         $DepartureDateRow = 45;
 
+                        //NEW SECTION - SITE ENTRY
+                        /* $SiteRow = 49;
+                        $VillageRow = 53;
+                        $ArrivalDateRow = 57;
+                        $DepartureDate2Row = 61;
+                        $SiteContactRow = 65;
+                        $ShiftTypeRow = 69;
+                        $PDARow = 73;
+                        $CostCentreRow = 77; */
+
+                        $SiteRow = 53;
+                        $VillageRow = 57;
+                        $ArrivalDateRow = 61;
+                        $DepartureDate2Row = 65;
+                        $SiteContactRow = 69;
+                        $ShiftTypeRow = 73;
+                        $PDARow = 77;
+                        $CostCentreRow = 81;
+
                     }
 
                 }
@@ -487,11 +866,15 @@ class BookingsNewQuoteFetchRepository
 
             if ($bookingsQuote[$q]['emp_name'] != $bookingsQuote[$q + 1]['emp_name']) {
 
+                //dump("NUM SHIFTS: ", $numSwingss);
+                
                 //SEFS FILL EMPTY ROWS
 
                 //dump("EMPTY COUNT: ".$sefShiftCounter);
 
-                $checkEmptyRows = $sefShiftCounter - 1;
+                $checkEmptyRows = ($sefShiftCounter - 1) * 3;
+
+                //2 -1 = 1
 
                 $emptySefRows = 4 - $checkEmptyRows % 4;
 
@@ -500,6 +883,11 @@ class BookingsNewQuoteFetchRepository
                 if($emptySefRows < 4) {
 
                     //dump("FILLING EMPTY ROWS: ".$emptySefRows);
+
+                    //dump("EMP:");
+                    //dump($bookingsQuote[$q]['emp_name']);
+                    //dump("XX SITEROW:");
+                    //dump($SiteRow);
 
                     for ($e = 0; $e < $emptySefRows; $e++) {
 
@@ -539,9 +927,266 @@ class BookingsNewQuoteFetchRepository
                             array(
                                 "field_id" => $DepartureDateRow,
                                 "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $FlightRow + 1,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $AiportOriginRow + 1,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $AiportDestinationRow + 1,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $DepartureDateRow + 1,
+                                "field_value" => " ",
                             )
+
+                            //ADDED 6/5
+                            /* array(
+                                "field_id" => $SiteRow,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $VillageRow,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $ArrivalDateRow,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $DepartureDate2Row,
+                                "field_value" => " ",
+                            ), 
+                            array(
+                                "field_id" => $SiteContactRow,
+                                "field_value" => " ",
+                            ), 
+                            array(
+                                "field_id" => $ShiftTypeRow,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $PDARow,
+                                "field_value" => " ",
+                            ),
+                            array(
+                                "field_id" => $CostCentreRow,
+                                "field_value" => " ",
+                            )  */
                         );
 
+                        if($e == ($emptySefRows - 1)){
+                        
+                            if($SiteRow == 54){
+
+                                //dump("APPENDING: 54");
+                                //dump("EMP:");
+                                //dump($bookingsQuote[$q]['emp_name']);
+                                //dump("SITEROW:");
+                                //dump($SiteRow); 
+                                
+                                $siteRowEmpty = array(
+                                    array(
+                                        "field_id" => $SiteRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $SiteRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $SiteRow + 2  ,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $VillageRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $VillageRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $VillageRow + 2,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ArrivalDateRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ArrivalDateRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ArrivalDateRow + 2,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $DepartureDate2Row,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $DepartureDate2Row + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $DepartureDate2Row + 2,
+                                        "field_value" => " ",
+                                    ), 
+                                    array(
+                                        "field_id" => $SiteContactRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $SiteContactRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $SiteContactRow + 2,
+                                        "field_value" => " ",
+                                    ), 
+                                    array(
+                                        "field_id" => $ShiftTypeRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ShiftTypeRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ShiftTypeRow + 2,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $PDARow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $PDARow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $PDARow + 2,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $CostCentreRow,
+                                        "field_value" => " ",
+                                    ), 
+                                    array(
+                                        "field_id" => $CostCentreRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $CostCentreRow + 2,
+                                        "field_value" => " ",
+                                    )   
+                                );
+
+                                //dump($siteRowEmpty);
+
+                                ${"sefFieldValuesArray" . $sefShiftCounter} = array_merge(${"sefFieldValuesArray" . $sefShiftCounter}, $siteRowEmpty);
+
+                                //dump("AFTER APPEND");
+                                //dump(${"sefFieldValuesArray" . $sefShiftCounter});
+
+                            } elseif($SiteRow == 55){
+
+                                //dump("APPENDING: 55");
+
+                                //dump("EMP:");
+                                //dump($bookingsQuote[$q]['emp_name']);
+                                //dump("SITEROW:");
+                                //dump($SiteRow);    
+                                     
+                                $siteRowEmpty = array(
+                                    array(
+                                        "field_id" => $SiteRow,
+                                        "field_value" => " ",
+                                    ),  
+                                    array(
+                                        "field_id" => $SiteRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $VillageRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $VillageRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ArrivalDateRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ArrivalDateRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $DepartureDate2Row,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $DepartureDate2Row + 1,
+                                        "field_value" => " ",
+                                    ), 
+                                    array(
+                                        "field_id" => $SiteContactRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $SiteContactRow + 1,
+                                        "field_value" => " ",
+                                    ), 
+                                    array(
+                                        "field_id" => $ShiftTypeRow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $ShiftTypeRow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $PDARow,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $PDARow + 1,
+                                        "field_value" => " ",
+                                    ),
+                                    array(
+                                        "field_id" => $CostCentreRow,
+                                        "field_value" => " ",
+                                    ), 
+                                    array(
+                                        "field_id" => $CostCentreRow + 1,
+                                        "field_value" => " ",
+                                    )   
+                                );
+        
+                                //dump($siteRowEmpty); 
+                                
+                                //dump("BEFORE APPEND");
+                                //dump(${"sefFieldValuesArray" . $sefShiftCounter});
+                                        
+                                ${"sefFieldValuesArray" . $sefShiftCounter} = array_merge(${"sefFieldValuesArray" . $sefShiftCounter}, $siteRowEmpty);
+        
+                                //dump("AFTER APPEND");
+                                //dump(${"sefFieldValuesArray" . $sefShiftCounter});
+                                
+                            }
+                        }
+
+                        //${"sefFieldValuesArray" . $sefShiftCounter} = array_merge(${"sefFieldValuesArray" . $sefShiftCounter}, $siteRowEmpty);
+                
                         //dump("MERGE EMPTY: ".$sefShiftCounter);
                         $sefFieldsMaster = array_merge($sefFieldsMaster, ${"sefFieldValuesArray" . $sefShiftCounter});
                         //dump(${"sefFieldValuesArray".$sefShiftCounter}[0]);
@@ -551,26 +1196,61 @@ class BookingsNewQuoteFetchRepository
                         $EmailRow = $EmailRow + 1;
                         $MobileRow = $MobileRow + 1;
                         $LeaderRow = $LeaderRow + 1;
-                        $FlightRow = $FlightRow + 1;
-                        $AiportOriginRow = $AiportOriginRow + 1;
-                        $AiportDestinationRow = $AiportDestinationRow + 1;
-                        $DepartureDateRow = $DepartureDateRow + 1;
+                        $FlightRow = $FlightRow + 2;
+                        $AiportOriginRow = $AiportOriginRow + 2;
+                        $AiportDestinationRow = $AiportDestinationRow + 2;
+                        $DepartureDateRow = $DepartureDateRow + 2;
+
+                        //ADDED 6/5
+                        /* $SiteRow = $SiteRow + 1;
+                        $VillageRow = $VillageRow + 1;
+                        $ArrivalDateRow = $ArrivalDateRow + 1;
+                        $DepartureDate2Row = $DepartureDate2Row + 1;
+                        $SiteContactRow = $SiteContactRow + 1;
+                        $ShiftTypeRow = $ShiftTypeRow + 1;
+                        $PDARow = $PDARow + 1;
+                        $CostCentreRow = $CostCentreRow + 1; */
 
                     }
-
                 }
 
+                //dump("FIN SITEROW:", $SiteRow);
+                
                 //dump("FINAL SHIFT COUNTER: ".$sefShiftCounter);
 
-                if(($sefShiftCounter -1) % 4 != 0) {
+                //dump($sefFieldsMaster);
 
+                //dump("NUMSWINGS: ", $numSwings);
+
+                $checkStage = ($sefShiftCounter -1) % 2;
+
+                //dump("CHECK STAGE: ", $checkStage);
+
+                //if(($sefShiftCounter -1) % 4 != 0) {
+                if(($sefShiftCounter -1) % 2 != 0) {
+
+                    if($numSwings > 1){
+                        //dump("MERGE SITE EMPTY");
+                        //$sefFieldsMaster = array_merge($sefFieldsMaster, $siteRowEmptyDefault);  
+                        $sefFieldsMaster = array_merge($sefFieldsMaster, $siteRowEmptyDefault);  
+                    }
+                    
+                    
+                    //dump("APPENDING LATEST");
+                    
                     $sefFieldValuesArray = array(
                         "emp_id" => $employee,
                         "fields" => array()
                     );
 
+                    //dump("SET FIELD MASTER");
+                    //dump($sefFieldsMaster);
+
                     //SET MERGED FIELDS ARRAY
                     $sefFieldValuesArray['fields'] = $sefFieldsMaster;
+
+                    //dump("FIELDS:");
+                    //dump($sefFieldValuesArray['fields']);
 
                     //UNSET FIELDS MASTER
                     $sefFieldsMaster = array();
@@ -580,6 +1260,8 @@ class BookingsNewQuoteFetchRepository
                     array_push($sefFieldsArray, $sefFieldsSubArray);
 
                     $sefPdfCounter++;
+
+                    //  dump("COUNTER", $sefPdfCounter);
 
                 }
 
@@ -603,6 +1285,25 @@ class BookingsNewQuoteFetchRepository
                 $AiportOriginRow = 37;
                 $AiportDestinationRow = 41;
                 $DepartureDateRow = 45;
+
+                //NEW SECTION - SITE ENTRY
+                /* $SiteRow = 49;
+                $VillageRow = 53;
+                $ArrivalDateRow = 57;
+                $DepartureDate2Row = 61;
+                $SiteContactRow = 65;
+                $ShiftTypeRow = 69;
+                $PDARow = 73;
+                $CostCentreRow = 77; */
+
+                $SiteRow = 53;
+                $VillageRow = 57;
+                $ArrivalDateRow = 61;
+                $DepartureDate2Row = 65;
+                $SiteContactRow = 69;
+                $ShiftTypeRow = 73;
+                $PDARow = 77;
+                $CostCentreRow = 81;
 
                 ////
 

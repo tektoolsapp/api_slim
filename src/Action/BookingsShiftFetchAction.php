@@ -24,11 +24,11 @@ final class BookingsshiftFetchAction
         array $args = []
     ): ResponseInterface {
 
-        //dump($args);
+        dump($args);
 
         $ShiftId = (int)$args['shift_id'];
 
-        //dump($ShiftId);
+        dump($ShiftId);
 
         $bookingsShiftData = $this->bookingsShiftFetch->getBookingsShift($ShiftId);
 

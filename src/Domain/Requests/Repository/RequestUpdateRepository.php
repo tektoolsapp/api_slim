@@ -18,7 +18,13 @@ class RequestUpdateRepository
 
     public function updateRequest(array $request)
     {
+        //dump($request);
+        
         unset($request['ws_customer_name']);
+
+        //WHEN UPDATING QUOTE EXTRAS
+        unset($request['extra_description']);
+        unset($request['extra_value']);
 
         //PLACE ID AT END OF ARRAY
         $wsId = $request['ws_id'];

@@ -17,7 +17,7 @@ final class ApiBookingUpdate
     {
         $update = $this->repository->updateBooking($shiftData);
 
-        return $skill;
+        return $update;
     }
 
 }

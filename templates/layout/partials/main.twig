@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <base href="{{ base_path() }}/"/>
+    <link rel="shortcut icon" href="assets/favicon.ico">
+    <title>{{ title|default('SLIM 4 APP') }}</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.0/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v493">
+    <link rel="stylesheet" href="{{ base_path() }}/css/pdf-export.css?v3">
+    <link rel="stylesheet" href="{{ base_path() }}/js/lou-multi-select-57fb8d3/css/multi-select.css?v9" media="screen" type="text/css">
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+    <style>form { max-width:24em; }</style>
+
+</head>
+
+<body>
+
+<div id="order-update-success" class="w3-modal">
+    <div class="w3-modal-content" style="width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:10px 0 10px 15px;font-size:18px;">Generating Rio PDFs, please Wait...</div>
+        </div>
+        <div class="w3-container">
+            <div class="w3-center" style="margin:25px 0 25px 0;">
+                <div id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="show-spinner-modal" class="w3-modal" style="z-index:1000;">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="width:150px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:10px 0 10px 15px;font-size:18px;">Please Wait...</div>
+        </div>
+        <div id="show-spinner-modal-display" class="w3-container"></div>
+    </div>
+</div>
+
+<div id="add-swing-error-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Notice!</div>
+            <span onclick="document.getElementById('add-swing-error-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="swing-error-display" class="w3-container"></div>
+    </div>
+</div>
+
+<div id="auto-date-error-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Notice!</div>
+            <span onclick="document.getElementById('auto-date-error-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="auto-date-display" class="w3-container"></div>
+    </div>
+</div>
+
+<div id="save-scheduler-template-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Save Swing Template</div>
+            <span onclick="document.getElementById('save-scheduler-template-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="scheduler-templates-select-display" class="w3-container"></div>
+
+        <div id="save-template-errors" class="noerror" style="margin:10px 15px 15px 15px;"></div>
+
+        <div class="ws-container">
+            <div class="w3-center" style="display:block;padding:10px 0 15px 0;">
+                <button class="w3-button w3-darkblue" type="button" id="save-bookings-template">Save Template</button>
+                <button class="w3-button w3-darkblue" type="button" id="delete-bookings-template" style="margin-left:10px;" >Delete Selected Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="load-scheduler-template-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Swing Templates</div>
+            <span onclick="document.getElementById('load-scheduler-template-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div id="scheduler-templates-display" class="w3-container" style="padding:15px;"></div>
+    </div>
+</div>
+
+<div id="request-swing-details-modal" class="w3-modal">
+    <div class="w3-modal-content" style="width:1200px;">
+      <header class="w3-container w3-pink"> 
+        <span onclick="document.getElementById('request-swing-details-modal').style.display='none'" 
+        class="w3-button w3-xlarge w3-display-topright">&times;</span>
+        <div id="request-swing-details-title" style="padding:12px 0 13px 0;font-size:18px;">Request Swing Details</div>
+      </header>
+      <div id="request-swings-modal-display" class="w3-container"></div>
+      <footer class="w3-container w3-dark-grey">
+       <div class="w3-right " style="padding:8px 0 8px 0;">
+           <button class="w3-button w3-darkblue" type="button" id="cancel-swings-display">Cancel</button>
+       </div>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<!--
+<div id="request-swing-details-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="width:1200px;height:700px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div id="request-swing-details-title" class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Request Swing Details</div>
+            <span onclick="document.getElementById('request-swing-details-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        
+        <div id="request-swings-modal-display" class="w3-container" style="border:1px solid teal;"></div>
+
+        <footer class="w3-container w3-teal">
+            <p>Modal Footer</p>
+        </footer>
+        
+        {# <div class="ws-container">
+            <div class="w3-center" style="display:block;padding:15px 0 15px 0;border-top:1px solid #CCC;">
+                <button style="margin-right:10px;" class="w3-button w3-darkblue" type="button" id="cancel-swing-delete">Cancel</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-request">Continue</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-batch">Continue</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-shift">Continue</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-emp">Continue</button>
+            </div>
+        </div> #}
+    </div> 
+</div>
+
+-->
+
+<div id="swing-availability-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:1500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Swing Availability</div>
+            <span onclick="document.getElementById('swing-availability-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        
+        <div id="swing-availability-modal-display" class="w3-container" style="z-index:1;padding-bottom:50px;min-height:100px;max-height:800px;overflow-y:auto;word-wrap:break-word;"></div>
+        
+        <div class="ws-container">
+            <div class="w3-center" style="display:block;padding:15px 0 15px 0;border-top:1px solid #CCC;">
+                <button style="display:inline-block" class="w3-button w3-darkblue" type="button" id="availability-add-schedule">Schedule Selected</button>
+                <button style="margin-right:10px;" class="w3-button w3-darkblue" type="button" id="cancel-swing-availability">Cancel</button>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<div id="delete-swing-batch-modal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:700px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div id="booking-deletion-title" class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Deletion Details</div>
+            <span onclick="document.getElementById('delete-swing-batch-modal').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        
+        <div id="batch-deletion-details" class="w3-container" style="max-height:450px;overflow-y:auto;word-wrap:break-word;"></div>
+
+        <div class="ws-container">
+            <div class="w3-center" style="display:block;padding:15px 0 15px 0;border-top:1px solid #CCC;">
+                <button style="margin-right:10px;" class="w3-button w3-darkblue" type="button" id="cancel-swing-delete">Cancel</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-request">Continue</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-batch">Continue</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-shift">Continue</button>
+                <button style="display:none" class="w3-button w3-darkblue" type="button" id="continue-delete-emp">Continue</button>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<div id="scheduler-error" class="w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:500px;">
+        <div class="w3-bar w3-pink" style="width:100%;">
+            <div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Booking Conflicts</div>
+            <span onclick="document.getElementById('scheduler-error').style.display='none'"
+                  class="w3-button w3-right w3-xlarge">&times;</span>
+        </div>
+        <div class="w3-container">
+            DISPLAY CONFLICTS HERE
+        </div>
+    </div>
+</div>
+
+{% include 'layout/partials/navigation.twig' %}
+
+<div class="my-container">
+
+    <div id="my-left-column">
+        <h4>W3 60</h4>
+    </div>
+
+    <div id="my-middle-column">
+        
+        <div><input type="hidden" id="current-user" value="{{ user.id }}"></div>
+        
+        <!--<div id="token" style="display:none;"></div>
+        <div id="msg" style="display:none;"></div>
+        <div id="notis" style="display:none;"></div>
+        <div id="err" style="display:none;"></div>--> 
+        
+{% block middle_col %}{% endblock %}
+    </div>
+
+    <div id="my-right-column">
+        <h4>W3 20</h4>
+    </div>
+
+</div>
+
+{% include 'layout/partials/footer.twig' %}
+
+{% block javascripts %}{% endblock %}
+
+</body>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-messaging.js"></script>
+    <!-- For an optimal experience using Cloud Messaging, also add the Firebase SDK for Analytics. -->
+    <!--<script src="https://www.gstatic.com/firebasejs/7.2.1/firebase-analytics.js"></script>-->
+    <script>
+        if (window.location.protocol == "https:") {
+        
+            function updateUserToken(token){
+                
+                var currentUser = $("#current-user").val();
+
+                console.log("UPDATE USER TOKEN", currentUser);  
+
+                 $.ajax({
+                    url: '/user/dets',
+                    type: "POST",
+                    data: {
+                        "id" : currentUser,
+                        "user_fcm_token": token
+                    },
+                    success: function (response) { 
+                        console.log("USER UPDATE: ", response);
+                    }
+                 });   
+            }
+            
+            //MsgElem = document.getElementById("msg");
+            //TokenElem = document.getElementById("token");
+            //NotisElem = document.getElementById("notis");
+            //ErrElem = document.getElementById("err");
+            
+            // Initialize Firebase
+            
+            // TODO: Replace with your project's customized code snippet
+            
+            var firebaseConfig = {
+                apiKey: "AIzaSyB5fs7MSY8DlLyvRKP1ySdI392-nkfqp4Q",
+                authDomain: "ready-app-36c26.firebaseapp.com",
+                //databaseURL: 'https://ready-app-36c26.firebaseio.com',
+                projectId: "ready-app-36c26",
+                storageBucket: "ready-app-36c26.appspot.com",
+                messagingSenderId: "424983282266",
+                appId: "1:424983282266:web:00dafe30499e6e97290e63"
+            };
+
+            //if (window.location.protocol == "https:") {
+                firebase.initializeApp(firebaseConfig);       
+            //}
+            
+            //firebase.initializeApp(firebaseConfig);
+
+            const messaging = firebase.messaging();
+
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker
+                .register("/firebase-messaging-sw.js")
+                .then(function(registration) {
+                    console.log("Registration successful, scope is:", registration.scope);
+                    messaging.getToken()
+                    .then((currentToken) => {
+                        if (currentToken) {
+                        console.log('FFFcurrent token for client: ', currentToken);
+
+                        //UPDATE LOGGED IN USER TOKEN
+
+                        updateUserToken(currentToken);
+
+                        // Track the token -> client mapping, by sending to backend server
+                        // show on the UI that permission is secured
+                        } else {
+                        console.log('No registration token available. Request permission to generate one.');
+
+                        // shows on the UI that permission is required 
+                        }
+                    }).catch((err) => {
+                        console.log('An error occurred while retrieving token. ', err);
+                        // catch error while creating client token
+                    });  
+                    })
+                    .catch(function(err) {
+                    console.log("XXService worker registration failed, error:"  , err );
+                }); 
+            
+            }
+            
+            /*
+            messaging.getToken({ vapidKey: 'BHgPD2C1H8xMT8zw-DDV_yf6R3ZlEPL-JcxI0A-am8vUOZg9L_08aIGIYGlMT0vbWMLv5ZKhyIzt2QXZ_3XV9rY' }).then((currentToken) => {
+            if (currentToken) {
+                // Send the token to your server and update the UI if necessary
+                // ...
+            } else {
+                // Show permission request UI
+                console.log('No registration token available. Request permission to generate one.');
+                // ...
+            }
+            }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+            // ...
+            });
+            */
+            
+            /*
+            messaging
+                .requestPermission()
+                .then(function () {
+                    //MsgElem.innerHTML = "Notification permission granted." 
+                    console.log("TTTNotification permission granted.");
+                    
+                    // get the token in the form of promise
+                    return messaging.getToken({ vapidKey: 'BHgPD2C1H8xMT8zw-DDV_yf6R3ZlEPL-JcxI0A-am8vUOZg9L_08aIGIYGlMT0vbWMLv5ZKhyIzt2QXZ_3XV9rY' });
+                })
+                .then(function(token) {
+                    //TokenElem.innerHTML = "token is : " + token
+                    console.log("TOKEN: ", token);
+                })
+                .catch(function (err) {
+                    //ErrElem.innerHTML =  ErrElem.innerHTML + "; " + err
+                    console.log("Unable to get permission to notify.", err);
+                });
+
+            //});
+
+            */
+
+            /*
+            messaging.onMessage((payload) => {
+                console.log('Message received. ', payload);
+                // ...
+            });
+            */
+
+            messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            // ...
+            });
+
+            /*
+            messaging.onMessage(function(payload) {
+                console.log("Message received. ", payload);
+                
+                //NotisElem.innerHTML = NotisElem.innerHTML + JSON.stringify(payload);
+                //kenng - foreground notifications
+                const {title, ...options} = payload.notification;
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification(title, options);
+                });
+                
+
+            });
+
+            */
+            
+            
+            
+            
+            /*
+            if ('serviceWorker' in navigator) {             
+                navigator.serviceWorker.register('firebase-messaging-sw.js')    
+            .then((registration) => { 
+                messaging.useServiceWorker(registration); 
+                // request notification permission and get token     
+                console.log('Registration successful, scope is:',  
+                registration.scope); 
+                //TODO: ask For Permission To Receive Notifications   
+            }).catch(function(err) { 
+                console.log('Service worker registration failed, error:', err); }); 
+}
+            */
+        }
+        
+
+    </script>
+    
+
+    
+
+    
+</script>
+
+</html>

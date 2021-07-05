@@ -24,6 +24,10 @@ final class BookingsBatchFetchAction
         array $args = []
     ): ResponseInterface {
 
+        //DUMP("HERE");
+
+        //die();
+        
         //dump($args);
 
         $batchId = (int)$args['batch_id'];
@@ -33,6 +37,8 @@ final class BookingsBatchFetchAction
         $bookingsBatchData = $this->bookingsBatchFetch->getBookingsBatch($batchId);
 
         $response->getBody()->write((string)json_encode($bookingsBatchData));
+
+        //$response = "RESP: ".$batchId;
 
         return $response
             ->withHeader('Content-Type', 'application/json')

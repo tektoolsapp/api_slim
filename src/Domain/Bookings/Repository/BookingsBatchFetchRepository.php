@@ -3,38 +3,34 @@
 namespace App\Domain\Bookings\Repository;
 
 use PDO;
-//use MongoDB\Client as Mongo;
-//use App\Domain\Employees\Repository\EmployeesRepository;
-//use App\Domain\Employees\Repository\TradesRepository;
-//use App\Domain\Utility\Service\CommonFunctions;
+use App\Domain\Employees\Repository\EmployeesRepository;
+use App\Domain\Employees\Repository\TradesRepository;
+use App\Domain\Utility\Service\CommonFunctions;
 
 class BookingsBatchFetchRepository
 {
     private $connection;
-    //private $mongo;
-    //private $employees;
-    //private $trades;
-    //private $common;
+    private $employees;
+    private $trades;
+    private $common;
 
     public function __construct(
-        PDO $connection
-        //Mongo $mongo,
-        //EmployeesRepository $employees,
-        //TradesRepository $trades,
-        //CommonFunctions $common
+        PDO $connection,
+        EmployeesRepository $employees,
+        TradesRepository $trades,
+        CommonFunctions $common
     )
     {
         $this->connection = $connection;
-        //$this->mongo = $mongo;
-        //$this->employees = $employees;
-        //$this->trades = $trades;
-        //$this->common = $common;
+        $this->employees = $employees;
+        $this->trades = $trades;
+        $this->common = $common;
     }
 
     public function getBookingsBatch($batchId)
     {
-        //$employees = $this->employees->getEmployees();
-        //$trades = $this->trades->getTrades();
+        $employees = $this->employees->getEmployees();
+        $trades = $this->trades->getTrades();
 
         //dump("BATCH ID");
         //dump($batchId);
@@ -45,44 +41,44 @@ class BookingsBatchFetchRepository
 
         $bookingsBatch = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        /* //ADD/UPDATE EMPLOYEE FIELDS AS REQUIRED
-        for ($b=0; $b < sizeof($bookingsRequest); $b++) {
+        //ADD/UPDATE EMPLOYEE FIELDS AS REQUIRED
+        for ($b=0; $b < sizeof($bookingsBatch); $b++) {
 
             //EMPLOYEE LOOKUP
-            $employee = $bookingsRequest[$b]['UserId'];
+            $employee = $bookingsBatch[$b]['UserId'];
             $employeeLookup = $this->common->searchArray($employees, 'emp_id', $employee);
             $tradeType = $employeeLookup[0]['trade_type'];
             $empFirstName = $employeeLookup[0]['first_name'];
             $empLastName = $employeeLookup[0]['last_name'];
             $empName = $empFirstName." ".$empLastName;
-            $bookingsRequest[$b]['emp_name'] = $empName;
+            $bookingsBatch[$b]['emp_name'] = $empName;
             //TRADE TYPE LOOKUP
             $tradeLookup = $this->common->searchArray($trades, 'trade_code', $tradeType);
             $tradeDesc = $tradeLookup[0]['trade_desc'];
-            $bookingsRequest[$b]['trade_type'] = $tradeDesc;
+            $bookingsBatch[$b]['trade_type'] = $tradeDesc;
 
             date_default_timezone_set('Australia/West');
 
-            $startDateTime = $bookingsRequest[$b]['Start'];
+            $startDateTime = $bookingsBatch[$b]['Start'];
             $startDateTimeStr = strtotime($startDateTime);
             $startDateFormat = date("d-m-Y", $startDateTimeStr);
             $startTimeFormat = date("h:m A", $startDateTimeStr);
 
-            $bookingsRequest[$b]['start_date'] = $startDateFormat;
-            $bookingsRequest[$b]['start_time'] = $startTimeFormat;
+            $bookingsBatch[$b]['start_date'] = $startDateFormat;
+            $bookingsBatch[$b]['start_time'] = $startTimeFormat;
 
-            $endDateTime = $bookingsRequest[$b]['End'];
+            $endDateTime = $bookingsBatch[$b]['End'];
             $endDateTimeStr = strtotime($endDateTime);
             $endDateFormat = date("d-m-Y", $endDateTimeStr);
             $endTimeFormat = date("h:m A", $endDateTimeStr);
 
-            $bookingsRequest[$b]['end_date'] = $endDateFormat;
-            $bookingsRequest[$b]['end_time'] = $endTimeFormat;
+            $bookingsBatch[$b]['end_date'] = $endDateFormat;
+            $bookingsBatch[$b]['end_time'] = $endTimeFormat;
 
         }
         
         //ORDER THE ARRAY
-        usort($bookingsRequest,array($this,'compareBookings')); */
+        usort($bookingsBatch,array($this,'compareBookings'));
 
         return $bookingsBatch;
     }

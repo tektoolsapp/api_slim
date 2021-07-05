@@ -37,6 +37,7 @@ class RequestFetchRepository
 
         $customers = $this->customers->getCustomers();
         $sites = $this->sites->getAllCustomerSites();
+        $trades = $this->trades->getTrades();
 
         //dump($sites);
 
@@ -45,6 +46,47 @@ class RequestFetchRepository
         $statement->execute(['ws_id' => $wsId]);
 
         $request = $statement->fetch();
+
+        //GET THE TRADE TYPES
+        
+        $tradeTypesArray = array();
+        $subTradeType = array();
+
+        foreach ($request as $key => $value){      
+            if(substr($key,0,14) == 'ws_trade_type_'){
+                
+                $keyArray = explode("_",$key); 
+                $keyId = end($keyArray);
+                $tradeNumKey = 'ws_trade_num_' .$keyId;
+                $tradeNums = $request[$tradeNumKey];
+                
+                if($value != 'N'){
+                    $subTradeType = array(
+                        "type" => $value,
+                        "num" => $tradeNums
+                    );
+
+                    array_push($tradeTypesArray,$subTradeType);
+                    $subTradeType = array();
+                }
+
+            }
+
+        }
+
+        $tradeDescStr = '';
+
+        for($t = 0; $t < sizeof($tradeTypesArray); $t++) {
+            $thisTrade = $tradeTypesArray[$t]['type'];
+            $thisTradeNum = $tradeTypesArray[$t]['num'];
+            $tradesLookup = $this->common->searchArray($trades, 'trade_code', $thisTrade);
+            $tradeDesc = $tradesLookup[0]['trade_desc'];
+            $tradeDescStr .= $tradeDesc."(".$thisTradeNum.") / ";
+        }
+
+        $tradeDescStr = rtrim($tradeDescStr, ' / ');
+        $request['ws_trades_desc'] = $tradeDescStr;
+        $request['ws_trades_array'] = $tradeTypesArray;
 
         //GET THE CUSTOMER DETS
         $customerCode = $request['ws_customer'];

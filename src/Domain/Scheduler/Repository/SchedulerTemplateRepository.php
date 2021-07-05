@@ -1,7 +1,11 @@
 <?php
 
 namespace App\Domain\Scheduler\Repository;
+use App\Domain\Requests\Repository\RequestUpdateShiftsRepository;
+use App\Domain\Requests\Repository\RequestFetchRepository;
+use App\Domain\Employees\Repository\EmployeesRepository;
 use App\Domain\Utility\Repository\BookingShiftMaxRepository;
+use App\Domain\Utility\Service\CommonFunctions;
 
 use DomainException;
 use PDO;
@@ -9,14 +13,26 @@ use PDO;
 class SchedulerTemplateRepository
 {
     private $connection;
+    private $updateShifts;
+    private $reqDets;
+    private $employees;
+    private $common;
     private $maxShifts;
 
     public function __construct(
             PDO $connection,
+            RequestUpdateShiftsRepository $updateShifts,
+            RequestFetchRepository $reqDets,
+            EmployeesRepository $employees,
+            CommonFunctions $common,
             BookingShiftMaxRepository $maxShifts
         )
     {
         $this->connection = $connection;
+        $this->updateShifts = $updateShifts;
+        $this->reqDets = $reqDets;
+        $this->employees = $employees;
+        $this->common = $common;
         $this->maxShifts = $maxShifts;
     }
 
@@ -24,6 +40,8 @@ class SchedulerTemplateRepository
     {
         
         //dump($template);
+        
+        $employeesLookup = $this->employees->getEmployees(); 
         
         //BUILD TEMPLATES ARRAY FROM FORM DATA
         $templatesArray = array();
@@ -47,7 +65,16 @@ class SchedulerTemplateRepository
             }
         }
         
-        //dump($templatesArray);
+        dump($templatesArray);
+
+        $reqId = $templatesArray[0]['swing_request'];
+        //dump($reqId);
+        
+        $reqDets = $this->reqDets->getRequest($reqId);
+        //dump($reqDets);
+
+        $rioRequester = $reqDets['ws_cust_contact'];
+        $rioRequesterPhone = $reqDets['ws_cust_contact_phone'];
 
         $maxShift = $this->maxShifts->getMaxShift();
         $maxShift = $maxShift[0];
@@ -59,10 +86,12 @@ class SchedulerTemplateRepository
             $requestId = $templatesArray[$t]['swing_request'];
             $swingType = $templatesArray[$t]['swing_type'];
             $swingReference = $templatesArray[$t]['swing_reference'];
+            $swingTrades = $templatesArray[$t]['swing_trades'];
             $swingShiftTime = $templatesArray[$t]['shift_time'];
             $startDate = $templatesArray[$t]['swing_start_date'];
             $swingEmps = $templatesArray[$t]['swing_emps'];
-            $swingRecurrence = (int)$templatesArray[$t]['swing_recurrence'];     
+            $swingRecurrence = (int)$templatesArray[$t]['swing_recurrence'];
+            $swingTradeType = $templatesArray[$t]['swing_trade_type'];     
             
             //dump($request);
 
@@ -131,7 +160,9 @@ class SchedulerTemplateRepository
 
             for ($e = 0; $e < sizeof($swingEmps); $e++) {
 
-                $employee = $swingEmps[$e];  
+                $employee = $swingEmps[$e]; 
+                $employeeDetails = $this->common->searchArray($employeesLookup, 'emp_id', $employee);
+                $empType = $employeeDetails[0]['emp_type']; 
 
                 $shiftId = (int)$maxShift + 1;
                 $maxShift++;
@@ -176,10 +207,15 @@ class SchedulerTemplateRepository
                         "StartTimezone" => "",
                         "EndTimezone" => "",
                         "Description" => "",
+                        "TradeTypes" => $swingTrades,
+                        "SwingTradeType" => $swingTradeType,
                         "RecurrenceID" => "",
                         "RecurrenceRule" => "",
                         "RecurrenceException" => "",
                         "UserId" => $employee,
+                        "UserType" => $empType,
+                        "RioRequester" => $rioRequester,
+                        "RioRequesterPhone" => $rioRequesterPhone,
                         "IsAllDay" => 0,
                         "BookingStatus" => ""
                     );
@@ -190,6 +226,36 @@ class SchedulerTemplateRepository
                 }
             }
         }
+
+        //GET ALL THE SHIFT IDS FOR THE REQUEST
+
+        $sql = "SELECT COUNT(DISTINCT ShiftId) AS NumSwings FROM bookings WHERE 
+            RequestID = :RequestID AND
+            BookingStatus <> 'X'";
+        $statement = $this->connection->prepare($sql);
+        $statement->execute(['RequestID' => $requestId]);
+
+        $numSwings = $statement->fetch();
+
+        dump($numSwings);
+
+        $sql = "SELECT COUNT(DISTINCT ShiftId) AS NumSwingsScheduled FROM bookings WHERE 
+            UserType <> 'T' AND
+            RequestID = :RequestID AND
+            BookingStatus <> 'X'";
+        $statement = $this->connection->prepare($sql);
+        $statement->execute(['RequestID' => $requestId]);
+
+        $numSwingsScheduled = $statement->fetch();
+
+        dump($numSwingsScheduled);
+
+        $shiftsArray = array(
+            "ws_num_swings" => $numSwings['NumSwings'],
+            "ws_num_scheduled" => $numSwingsScheduled['NumSwingsScheduled']
+        );
+
+        $shiftUpdate = $this->updateShifts->updateRequest($requestId, $shiftsArray);
 
         $returnArray = array(
             "template_array" => json_encode($templatesArray),

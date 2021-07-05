@@ -26,13 +26,23 @@ class EmployeeUpdateRepository
     public function updateEmployee(array $employee)
     {
 
-        dump($employee);
+        //dump($employee);
+
+        $tradesArray = json_decode($employee['emp_trades'], true);
+
+        //dump($tradesArray);
 
         //GET/SET TRADE COLOR
-        $trades = $this->trades->getTrades();
-        $tradeLookup = $this->common->searchArray($trades, 'trade_code', $employee['trade_type']);
-        $tradeColor = $tradeLookup[0]['trade_color'];
-        $employee['color'] = $tradeColor;
+        if($employee['emp_type'] != 'T'){
+        
+            $trades = $this->trades->getTrades();
+            $tradeLookup = $this->common->searchArray($trades, 'trade_code', $tradesArray[0]);
+            $tradeColor = $tradeLookup[0]['trade_color'];
+            $employee['color'] = $tradeColor;
+
+        } else {
+            $employee['color'] = '#B0B0B0'; 
+        }
 
         $empId = $employee['emp_id'];
         unset($employee['emp_id']);

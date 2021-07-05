@@ -19,9 +19,10 @@ class SchedulerWorkspaceFilterRepository
     public function getResources($filter)
     {
 
+        //dump("DATA");
         //dump($filter['trades']);
 
-        $tradeArray = array();
+        /* $tradeArray = array();
         $tradeFilterArray = array();
 
         $tradesFilter = $filter['trades'];
@@ -35,22 +36,52 @@ class SchedulerWorkspaceFilterRepository
 
             array_push($tradeFilterArray,$tradeArray);
             $tradeArray = array();
-        }    
+        }     */
 
+        //dump("FILTER TRADES");
         //dump($tradeFilterArray);
 
         $employees = array();
 
-        $sql = "SELECT * FROM employees WHERE trade_type = ?";
+        $sql = "SELECT * FROM employees";
         $statement = $this->connection->prepare($sql);
-        foreach($tradeFilterArray as $result) {
-            $statement->execute(array($result['trade_type']));
-            $row = $statement->fetchAll(PDO::FETCH_ASSOC);
-            foreach($row as $empsWithTrade){
-                $employees[] = $empsWithTrade;
+        $statement->execute();
+
+        $allEmployees = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        //dump("EMPLOYEES");
+        //dump($allEmployees);
+
+        //$tradesArray = explode(",",$tradeTypes);
+        $tradesArray = $filter['trades'];
+
+        //dump("TRADES ARRAY");
+        ///dump($tradesArray);
+
+        for ($e = 0; $e < sizeof($allEmployees); $e++) {
+
+            $empTradesArray = json_decode($allEmployees[$e]['emp_trades'], true);
+
+            //dump("EMP TRADES ARRAY");
+            //dump($empTradesArray);
+
+            $tradeCount = 0;
+
+            for ($t = 0; $t < sizeof($empTradesArray); $t++) {
+                $thisTrade = $empTradesArray[$t];
+                //dump("THIS TRADE");
+                //dump($thisTrade);
+                if (in_array($thisTrade, $tradesArray)) {
+                    //dump("COUNTING A TRADE");
+                    $tradeCount++;
+                }
+            }
+
+            if($tradeCount > 0){
+                array_push($employees, $allEmployees[$e]);
             }
         }
-
+       
         $resources = array();
 
         for ($e = 0; $e < sizeof($employees); $e++) {

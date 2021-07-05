@@ -132,6 +132,8 @@ return [
 
         $twig->getEnvironment()->addGlobal('host', $host);
 
+        $twig->getEnvironment()->addGlobal('messages', $_SESSION['num_messages']);
+
         $twig->getEnvironment()->addGlobal('token', $_SESSION['my_token']);
 
         $twig->getEnvironment()->addGlobal('user', Sentinel::check());

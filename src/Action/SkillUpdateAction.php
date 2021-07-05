@@ -25,7 +25,7 @@ final class SkillUpdateAction
         extract($data);
         parse_str($form, $formDetails);
 
-        dump($formDetails);
+        //dump($formDetails);
 
         $returnData = $this->skillUpdate->updateSkill($formDetails);
 

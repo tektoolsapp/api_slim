@@ -2,22 +2,39 @@
 
 namespace App\Domain\Bookings\Repository;
 
+use App\Domain\Employees\Repository\EmployeesRepository;
+use App\Domain\Employees\Repository\TradesRepository;
+use App\Domain\Utility\Service\CommonFunctions;
 use PDO;
 
 class BookingsAvailabilityRepository
 {
+    
+    private $employees;
+    private $trades;
+    private $common;
     private $connection;
 
-    public function __construct(PDO $connection)
+    public function __construct(
+            EmployeesRepository $employees,  
+            TradesRepository $trades,    
+            CommonFunctions $common,
+            PDO $connection
+        )
     {
+        $this->employees = $employees;
+        $this->trades = $trades;
+        $this->common = $common;
         $this->connection = $connection;
-
     }
 
     public function getBookings($shift)
     {
         ///GET ALL THE BOOKINGS FOR THE SHIFT
 
+        $employees = $this->employees->getEmployees();
+        $trades = $this->trades->getTrades();
+        
         date_default_timezone_set('Australia/West');
         
         $sql = "SELECT BookingId, RequestId, StartDay, EndDay FROM bookings WHERE ShiftId = :ShiftId;";
@@ -84,7 +101,9 @@ class BookingsAvailabilityRepository
                 //dump("K");
                 //dump($key);
                 //dump($value);
-                $tradeTypesArray[] = $value;
+                if(!empty($value)){
+                    $tradeTypesArray[] = $value;
+                }
             }
 
         }
@@ -92,14 +111,14 @@ class BookingsAvailabilityRepository
         //dump("TT ARRAY");
         //dump($tradeTypesArray);
 
-        $sql = "SELECT emp_id, trade_type FROM employees WHERE emp_status <> 'X'";
+        $sql = "SELECT emp_id, emp_trades FROM employees WHERE emp_status <> 'X'";
         $statement = $this->connection->prepare($sql);
         $statement->execute();
 
-        $employees = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $allEmployees = $statement->fetchAll(PDO::FETCH_ASSOC);
 
         //dump("EMPLOYEES");
-        //dump($employees);
+        //dump($allEmployees);
 
         $checkEmpExists = array();
 
@@ -107,38 +126,34 @@ class BookingsAvailabilityRepository
         $empAvailArray = array();
         $empAvail = array();
         $countAvailDays = 0;
+
+        //DAYS SUB ARRAY
+        $availDaysArray = array();
+        $checkAvailDaysArray = array();
         
-        for($e = 0; $e < sizeof($employees); $e++) {
+        for($e = 0; $e < sizeof($allEmployees); $e++) {
             
-            $thisEmployee = $employees[$e]['emp_id'];
-            $thisTradeType = $employees[$e]['trade_type'];
+            $thisEmployee = $allEmployees[$e]['emp_id'];
+            //dump("EMP");
+            //dump($thisEmployee);
 
-            //dump("TRADE TYPE");
-            //dump($thisTradeType);
+            $employeeTradeTypeArray = json_decode($allEmployees[$e]['emp_trades'], true);
+            //dump("EMP TRADE TYPE");
+            //dump($employeeTradeTypeArray);
 
-            if(in_array($thisTradeType, $tradeTypesArray)){
-                
-                //dump("IN ARRAY");
-                
-                //dump($thisEmployee);
+            //LOOP THROUGH TRADE TYPES FOR EACH EMPLOYEE
+            for($t = 0; $t < sizeof($employeeTradeTypeArray); $t++) {
 
-                $empAvail['emp'] = $thisEmployee;
-                
-                //LOOP EMPLOYEES BUILD AVAILABILITY
+                //IF A TRADE MATCH
+                $thisTradeType = $employeeTradeTypeArray[$t];
 
-                //if(!in_array($checkEmpExists, $thisEmployee)){
-                
-                    //dump("SELECTING");
+                if(in_array($thisTradeType, $tradeTypesArray)){
 
+                    // LOOP THROUGH THE PERIOD DAYS AND CHECK AVAILABILITY
                     for($d = 0; $d < sizeof($period); $d++) {
-                   
+                
                         $checkDay = $period[$d];
-
-                        //dump($checkDay);
-
                         $checkDayFormat = date("d-m-Y", $checkDay);
-
-                        //dump($checkDayFormat);
 
                         $sql = "SELECT UserId, BookingId, StartDay, Title FROM bookings WHERE
                             UserId = :UserId AND BookingStatus <> 'X' AND
@@ -151,76 +166,86 @@ class BookingsAvailabilityRepository
 
                         $availability = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-                        //dump($availability);
+                        //IF NOT ALREADY IN THE DAYS AVAILABLE ARRAY
+                        
+                            //COUNT THE AVAILABLE DAY
 
-                        if(empty($availability)){
-                            //dump("AVAILABLE");
-                            $empAvail['days'][] = $checkDayFormat;
-                            $countAvailDays++;
-                        } else {
-                            //dump("NOT AVAILABLE");
-                            $empAvail['days'][] = "NOT AVAILABLE";
+                            //ADD THE AVAILABLE DAY TO THE DAYS SUB-ARRAY
+                            
+                        if(!in_array($checkDay, $checkAvailDaysArray)){
+                        
+                            //IF AVAIILABLE
+                            if(empty($availability)){
+                                $checkAvailDaysArray[] = $checkDay;
+                                //dump("AVAILABLE");
+                                $availDaysArray[] = $checkDayFormat;
+                                $countAvailDays++;
+                            } else {
+                                //dump("NOT AVAILABLE");
+                                $checkAvailDaysArray[] = $checkDay;
+                                $availDaysArray[] = $checkDayFormat." - NOT AVAILABLE";
+                            }
+
                         }
-                        
-                        $availability = array();
-                        
-                    }
-
-                    $checkEmpExists[] = $thisEmployee;
-
-                //}
-
-                if($thisEmployee != $employees[$e + 1]['emp_id']){
-                    //dump("END EMP");
-                    $periodAvailRatio = $countAvailDays / $daysInPeriod;
-                    $periodAvailRatio = sprintf('%0.5f', $periodAvailRatio);
-                    $empAvail['ratio'] = $periodAvailRatio;
-                    $countAvailDays = 0;
                     
-                    array_push($availabilityArray, $empAvail);
-                    $empAvail = array();
-            
-                }
-            
+                    }//CHECK AVAILABILITY LOOP
+                
+                }//IF EMP HAS TRADE TYPE
+
             }
 
-        }
+            //BEFORE NEXT EMPLOYEE
+
+            //BUILD THE AVAILABILITY SUB ARRAY
+                //EMP
+                //RATIO
+                //DAYS - ADD THE DAYS ARRAY
+
+            if($thisEmployee != $allEmployees[$e + 1]['emp_id']){
+                //dump("END EMP");
+                
+                $employeeLookup = $this->common->searchArray($employees, 'emp_id', $thisEmployee);
+                $empFirstName = $employeeLookup[0]['first_name'];
+                $empLastName = $employeeLookup[0]['last_name'];
+                $empName = $empFirstName." ".$empLastName; 
+                $empTradeTypeArray = json_decode($employeeLookup[0]['emp_trades'],true);
+
+                $tradesDescStr = '';
+                
+                for($t = 0; $t < sizeof($empTradeTypeArray); $t++) {
+                    $thisTrade = $empTradeTypeArray[$t];
+                    $tradesLookup = $this->common->searchArray($trades, 'trade_code', $thisTrade);
+                    $tradeDesc = $tradesLookup[0]['trade_desc'];
+                    $tradesDescStr .= $tradeDesc."/";  
+                }
+
+                $tradesDescStr = rtrim($tradesDescStr, '/');
+                
+                $empAvail['emp'] = $thisEmployee;
+                $empAvail['name'] = $empName;
+                $empAvail['trades'] = $tradesDescStr;
+                $empAvail['days'] = $availDaysArray;
+                $availDaysArray = array();
+                $checkAvailDaysArray = array();
+                
+                $periodAvailRatio = $countAvailDays / $daysInPeriod;
+                $periodAvailRatio = sprintf('%0.5f', $periodAvailRatio);
+                $empAvail['ratio'] = 1 - $periodAvailRatio;
+                $empAvail['available'] = sprintf('%0.1f', $periodAvailRatio * 100);
+                $countAvailDays = 0;
+                
+                array_push($availabilityArray, $empAvail);
+                $empAvail = array();
+        
+            }
+            
+        } //EMPLOYEE LOOP   
 
         //dump($availabilityArray);
 
-        /* try {
-            $qgj = "SELECT
-              last_name
-            FROM employees WHERE
-              trade_type = ? AND
-              emp_status <> 'X'
-            ";
-            $gjd = $dbh->prepare($qgj, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
-            foreach($jobSelection as $result) {
-                $gjd->execute(array(
-                    $result['trade_type'],
-                ));
-                $row = $gjd->fetchAll(PDO::FETCH_ASSOC);
-                $jobDetails[] = $row[0];
-                if($gjd->errorCode() != 0 ) {
-                    $log->error($gjd->errorCode());
-                }
-            }
-        }
-        catch(PDOException $e) {
-            $log->error($e->getMessage());
-        } */
+        usort($availabilityArray,array($this,'compareAvailability'));
 
-
-        /* $sql = "SELECT * FROM bookings WHERE BookingStatus <> 'X'";
-        $statement = $this->connection->prepare($sql);
-        $statement->execute();
-
-        $bookings = $statement->fetchAll(PDO::FETCH_ASSOC); */
-
-        
-
-        //dump($bookings);
+        //sleep("10");
 
         return $availabilityArray;
     }
@@ -257,5 +282,16 @@ class BookingsAvailabilityRepository
         }
     
         return $dates;
+    }
+
+    private function compareAvailability($a, $b){
+        /* $retval = strnatcmp($a['shiftId'], $b['shiftId']);
+        if(!$retval) $retval = strnatcmp($a['StartDay'], $b['StartDay']);
+        return $retval; */
+        $retval = strnatcmp($a['ratio'], $b['ratio']);
+        if(!$retval) $retval = strnatcmp($a['emp'], $b['emp']);
+        return $retval;
+
+
     }
 }

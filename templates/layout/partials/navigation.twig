@@ -7,15 +7,17 @@
     <a href="{{ url_for('dashboard')}}" class="w3-bar-item w3-button fa fa-home w3-xlarge"></a>
     <a id="calendar" href="{{ url_for('scheduler')}}" class="w3-bar-item w3-button fas fa-calendar-alt w3-xlarge"></a>
     <a id="requests" href="{{ url_for('workspace')}}" class="w3-bar-item w3-button fas fa-layer-group w3-xlarge"></a>
-    <!--<a href="{{ url_for('user-post')}}" class="w3-bar-item w3-button">Post User</a>
-    <a href="{{ url_for('pdf-test')}}" class="w3-bar-item w3-button">PDF</a>-->
+    
+    {% if user %}
 
-    <!--<a href="{{ url_for('user-register')}}" class="w3-bar-item w3-button">Register User</a>-->
-
-    {%  if user %}
-
+    <div style="position:fixed;top:2px;right:85px;">
+        <a href="#" class="notification">
+            <span><i class="p3 fas fa-bell fa-stack-1x xfa-inverse w3-xlarge"></i></span>
+            <span id="messages-badge" class="badge">{{ messages }}</span>
+        </a>
+    </div> 
+    
     <div class="w3-dropdown-hover w3-right" style="position:fixed;top:0;right:10px;">
-        <!--<button class="w3-button">Account</button>-->
         <div data-initials="{{ user.initials }}"></div>
         <div class="w3-dropdown-content w3-bar-block w3-card-4" style="right:0">
             <a href="" class="w3-bar-item w3-button" onclick="document.getElementById('signout').submit(); return false;">Log Out</a>
@@ -24,7 +26,7 @@
         </div>
     </div>
 
-    {%  else %}
+    {% else %}
 
     <a href="{{ url_for('user-register')}}" class="w3-bar-item w3-button w3-right">Register</a>
     <a href="{{ url_for('user-signin')}}" class="w3-bar-item w3-button w3-right">Login</a>
@@ -40,7 +42,7 @@
 <div class="w3-bar w3-light-grey w3-border navbar-2">
     <!--<a href="#" class="w3-bar-item w3-button w3-mobile">Link 1</a>
     <a href="#" class="w3-bar-item w3-button w3-mobile">Link 2</a>-->
-    <input type="text" style="margin-left:15px;" class="w3-bar-item w3-input w3-white w3-mobile" placeholder="Search..">
+    <input type="text" style="margin-left:15px;" class="w3-bar-item w3-input w3-white w3-mobile" placeholder="Search App..">
     <!--<button id="nav-2-button" class="w3-bar-item w3-button w3-darkblue w3-mobile w3-right w3-medium">Right Panel</button>-->
 </div>
 
@@ -52,6 +54,10 @@
 
 <!-- Sidebar Fixed Left -->
 <div id="fixed-sidebar-left" class="w3-sidebar w3-bar-block fixed-sidebar-left">
+    <div id="toggle-sidebar-left-4" class="tooltip my-link">
+        <i class="fas fa-cog w3-xlarge"></i>
+        <span class="tooltiptext">Settings</span>
+    </div>
     <div id="toggle-sidebar-left-1" class="tooltip my-link">
         <i class="fas fa-bell w3-xlarge"></i>
         <span class="tooltiptext">Notifications</span>

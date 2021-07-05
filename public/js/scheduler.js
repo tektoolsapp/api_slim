@@ -61,7 +61,136 @@ $(document).on('focus',"#check_from_date", function(){
 
 });
 
-$(document).on('focus',".datepicker", function(){
+function calculateCustomDays(date1, date2){
+    
+    console.log("DATE 1: ", date1);
+    console.log("DATE 2: ", date2);
+    
+    if(date2.length < 1) {
+        alert("No To Date was selected.");
+    } else {   
+        date1 = date1.split('-');
+        date2 = date2.split('-');
+
+        date1 = new Date(date1[2], date1[1], date1[0]);
+        date2 = new Date(date2[2], date2[1], date2[0]);
+
+        date1_unixtime = parseInt(date1.getTime() / 1000);
+        date2_unixtime = parseInt(date2.getTime() / 1000);
+
+        var timeDifference = date2_unixtime - date1_unixtime;
+        var timeDifferenceInHours = timeDifference / 60 / 60;
+        var timeDifferenceInDays = timeDifferenceInHours  / 24;
+
+        timeDifferenceInDays = parseInt(timeDifferenceInDays) + 1;
+
+        //alert(timeDifferenceInDays);
+        $("#custom-scheduler-days").val(timeDifferenceInDays);
+        localStorage.setItem('custom-scheduler-days',timeDifferenceInDays);
+    }
+
+}
+
+function treatAsUTC(date) {
+    var result = new Date(date);
+    result.setMinutes(result.getMinutes() - result.getTimezoneOffset());
+    return result;
+}
+
+function daysBetween(startDate, endDate) {
+    var millisecondsPerDay = 24 * 60 * 60 * 1000;
+    return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay;
+}
+
+//alert(daysBetween("2021-05-01", "2021-05-31"));
+
+$(document).on('change', '#custom-scheduler-start', function (e) {
+
+    e.preventDefault();
+
+    var fromDateSet = $("#custom-scheduler-start").val();
+    var toDateSet = $("#custom-scheduler-end").val();
+
+    console.log("CHANGED START: ", toDateSet);
+
+    if(toDateSet.length > 0) {
+
+        calculateCustomDays(fromDateSet,toDateSet);
+    }
+
+});
+
+$(document).on('change', '#custom-scheduler-end', function (e) {
+
+    e.preventDefault();
+
+    var fromDateSet = $("#custom-scheduler-start").val();
+    var toDateSet = $("#custom-scheduler-end").val();
+
+    localStorage.setItem('custom-scheduler-end',toDateSet);
+
+    if(fromDateSet.length > 0) {
+
+        calculateCustomDays(fromDateSet,toDateSet);
+    }
+
+});
+
+$(document).on('focus',"#custom-scheduler-start", function() {
+
+    $(this).datepicker({
+        dateFormat: 'dd-mm-yy',
+        closeText: "X",
+        showButtonPanel: true,
+        beforeShowDay: function (date) {
+            return [(date <= ($("#custom-scheduler-end").datepicker("getDate")
+            || new Date()))];
+        }
+    });
+
+    /* $(this).datepicker({
+        dateFormat: 'dd-mm-yy',
+        autoclose: true,
+        showButtonPanel: true,
+        closeText: "x", */
+        /* onSelect: function(dateText, inst) {
+            var this_id = $(this).prop("id");
+            $(this).prop("readonly", false);
+            $(this).prop('value', dateText);
+        }, */
+        /* onClose: function(dateText, inst) {
+            $(this).prop("readonly", true);
+        },
+        beforeShow: function(input, inst) {
+            $(this).prop("readonly", true);
+        } */
+    //});
+
+});
+
+$(document).on('focus',"#custom-scheduler-end", function() {
+
+    $(this).datepicker({
+
+        dateFormat: 'dd-mm-yy',
+        closeText: "X",
+        showButtonPanel: true,
+        /* onSelect: function(dateText, inst) {
+            var this_id = $(this).prop("id");
+            $(this).prop("readonly", false);
+            $(this).prop('value', dateText);
+        },
+        beforeShow: function(input, inst) {
+            $(this).prop("readonly", true);
+        }, */
+        beforeShowDay: function(date) {
+            return [(date >= ($("#custom-scheduler-start").datepicker("getDate")
+            || new Date()))];
+        }
+    });
+});
+
+/* $(document).on('focus',".datepicker", function(){
     $(this).datepicker({
         dateFormat: 'dd-mm-yy',
         autoclose: true,
@@ -79,7 +208,7 @@ $(document).on('focus',".datepicker", function(){
             $(this).prop("readonly", true);
         }
     });
-});
+}); */
 
 $("#sidebar-right").on('click', '#cancel-check-availability', function (e) {
 
@@ -2095,35 +2224,154 @@ $("#sidebar-right").on('click', '[id^=delete-shifts-action-]', function (e) {
         var url = '/bookings/request/' + deleteTypeId;
         var continueBtn = 'continue-delete-request';
     } else if(deleteType == 'batch'){
+        console.log("SETTING BATCH:");
         var deleteTypeId = $("#delete_batch_id").val();
         var deleteTypeDesc = 'Batch ID#';
-        var url = '/bookings/batch/' + deleteTypeId;
+        var url = '/fetch/batch/' + deleteTypeId;
         var continueBtn = 'continue-delete-batch';
     } else if(deleteType == 'shift'){
+        console.log("SETTING SWING");
         var deleteTypeId = $("#delete_shift_id").val();
-        var deleteTypeDesc = 'Shift ID#';
-        var url = '/bookings/shift/' + deleteTypeId;
+        var deleteTypeDesc = 'Swing ID#';
+        var url = '/bkgs/shift/' + deleteTypeId;
         var continueBtn = 'continue-delete-shift';
     }
 
     if(deleteTypeId.length < 1){
+        
         alert("No " + deleteTypeDesc + " was selected for deletion.")
+    
     } else {
 
+        console.log("URL: ", url);
+        
         $.ajax({
             url: url,
             async: false,
             type: "GET",
             success: function (response) {
-                console.log("DELETE TYPE: ", response);
+                
+                console.log("DELETE: ", response);
 
-                if(response.length > 0){
+                console.log("CHECK DEL TYPE: ", deleteType);
+                
+                $("#batch-deletion-details").html("");
+
+                if(deleteType == 'shift'){
+
+                    console.log("CHECK REQ: ", response.req);
+                    
+                    if(response.req !== null){
+                        deleteArray = Object.keys(response);
+                    } else {
+                        deleteArray = response;
+                    }
+
+                } else {
+
+                    deleteArray = response;
+                } 
+                
+                console.log("LENGTH: ",deleteArray.length);
+
+                if(deleteArray.length > 0){
                 
                     if(deleteType == 'req'){
-                        var deleteDetails = JSON.stringify(response);    
+                        
+                        $("#booking-deletion-title").html("Request Deletion Details");
+                        
+                        //DELETE REQ
 
-                    } else {
                         var deleteDetails = response;
+                        var deleteDetailsDisplay = '<div style="margin:15px 0 15px 0;">';
+
+                        deleteDetailsDisplay += '<div style="width:80px;float:left;font-weight:bold;">Batch Id</div>';
+                        deleteDetailsDisplay += '<div style="width:70px;float:left;font-weight:bold;">Swing Id</div>';
+                        deleteDetailsDisplay += '<div style="width:130px;float:left;margin:0 0 0 5px;font-weight:bold;">Employee</div>';
+                        deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px;font-weight:bold;">Start</div>';
+                        deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px;font-weight:bold;">End</div>';
+                        deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px;font-weight:bold;">Type</div>';
+                        deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px;font-weight:bold;">Time</div>';
+                        deleteDetailsDisplay += '<div style="clear:both;"></div>';
+
+                        for (var d = 0; d < deleteDetails.length; d++) {
+                            var batchId = deleteDetails[d]['BatchId'];
+                            var shiftId = deleteDetails[d]['ShiftId']; 
+                            var empName = deleteDetails[d]['emp_name']; 
+                            var startDay = deleteDetails[d]['start_date'];
+                            var endDay = deleteDetails[d]['end_date'];
+                            var bkgType = deleteDetails[d]['BookingType'];
+                            var amPm = deleteDetails[d]['AmPm'];
+                            if(amPm == 'AM'){
+                                var shiftType = 'Day';
+                            } else {
+                                var shiftType = 'Night';
+                            }
+
+                            deleteDetailsDisplay += '<div style="width:80px;float:left;">' + batchId + '</div>';
+                            deleteDetailsDisplay += '<div style="width:70px;float:left;">' + shiftId + '</div>';
+                            deleteDetailsDisplay += '<div style="width:130px;float:left;margin:0 0 0 5px">' + empName + '</div>';
+                            deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px">' + startDay + '</div>';
+                            deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px">' + endDay + '</div>';
+                            deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px">' + bkgType + '</div>';
+                            deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px">' + shiftType + '</div>';
+                            deleteDetailsDisplay += '<div style="clear:both;"></div>';
+
+                        }
+
+                        deleteDetailsDisplay += '</div>';
+
+                    } else if (deleteType == 'batch'){
+                        //var deleteDetails = response;
+                        console.log("SHOW BATCH DELETION DETAILS");
+
+                        $("#booking-deletion-title").html("Batch Deletion Details");
+
+                        var deleteDetails = response;
+                        var deleteDetailsDisplay = '<div style="margin:15px 0 15px 0;">';
+
+                        deleteDetailsDisplay += '<div style="width:80px;float:left;font-weight:bold;">Batch Id</div>';
+                        deleteDetailsDisplay += '<div style="width:70px;float:left;font-weight:bold;">Swing Id</div>';
+                        deleteDetailsDisplay += '<div style="width:130px;float:left;margin:0 0 0 5px;font-weight:bold;">Employee</div>';
+                        deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px;font-weight:bold;">Start</div>';
+                        deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px;font-weight:bold;">End</div>';
+                        deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px;font-weight:bold;">Type</div>';
+                        deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px;font-weight:bold;">Time</div>';
+                        deleteDetailsDisplay += '<div style="clear:both;"></div>';
+
+                        for (var d = 0; d < deleteDetails.length; d++) {
+                            var batchId = deleteDetails[d]['BatchId'];
+                            var shiftId = deleteDetails[d]['ShiftId']; 
+                            var empName = deleteDetails[d]['emp_name']; 
+                            var startDay = deleteDetails[d]['start_date'];
+                            var endDay = deleteDetails[d]['end_date'];
+                            var bkgType = deleteDetails[d]['BookingType'];
+                            var amPm = deleteDetails[d]['AmPm'];
+                            if(amPm == 'AM'){
+                                var shiftType = 'Day';
+                            } else {
+                                var shiftType = 'Night';
+                            }
+
+                            deleteDetailsDisplay += '<div style="width:80px;float:left;">' + batchId + '</div>';
+                            deleteDetailsDisplay += '<div style="width:70px;float:left;">' + shiftId + '</div>';
+                            deleteDetailsDisplay += '<div style="width:130px;float:left;margin:0 0 0 5px">' + empName + '</div>';
+                            deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px">' + startDay + '</div>';
+                            deleteDetailsDisplay += '<div style="width:90px;float:left;margin:0 0 0 5px">' + endDay + '</div>';
+                            deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px">' + bkgType + '</div>';
+                            deleteDetailsDisplay += '<div style="width:40px;float:left;margin:0 0 0 5px">' + shiftType + '</div>';
+                            deleteDetailsDisplay += '<div style="clear:both;"></div>';
+
+                        }
+
+                        deleteDetailsDisplay += '</div>';
+
+                    } else if (deleteType == 'shift'){
+                        //var deleteDetails = response;
+                        console.log("SHOW SWING DELETION DETAILS");
+
+                        $("#booking-deletion-title").html("Swing Deletion Details");
+
                     }
 
                     $('[id^=continue-delete-]').css({"display" : "none"});
@@ -2133,10 +2381,10 @@ $("#sidebar-right").on('click', '[id^=delete-shifts-action-]', function (e) {
                     }
 
                 } else {
-                    var deleteDetails = '<p class="error">Nothing to Delete</p>';
+                    var deleteDetailsDisplay = '<p class="error">Nothing to Delete</p>';
                 }
 
-                $("#batch-deletion-details").html(deleteDetails);
+                $("#batch-deletion-details").html(deleteDetailsDisplay);
 
                 
             }
@@ -2199,7 +2447,7 @@ function deleteShifts(){
     $("#sidebar-right").html("");
 
     var deleteShiftsForm = '<div class="w3-bar w3-darkblue" style="width:100%;">';
-    deleteShiftsForm += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Delete Shifts</div>';
+    deleteShiftsForm += '<div class="w3-left" style="padding:12px 0 0 15px;font-size:18px;">Delete Bookings</div>';
     deleteShiftsForm += '<a id="sidebar-right-close" href="#" class="w3-button w3-right w3-xlarge">&times;</a>';
     deleteShiftsForm += '</div>';
 
@@ -2213,7 +2461,7 @@ function deleteShifts(){
     deleteShiftsForm += '<input id="delete_type_batch" name="delete_type" class="w3-radio" type="radio" value="batch" style="margin-left:10px;">';
     deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Batch</label>';
     deleteShiftsForm += '<input id="delete_type_shift" name="delete_type" class="w3-radio" type="radio" value="shift" style="margin-left:10px;">';
-    deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Shift</label>';
+    deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Swing</label>';
     deleteShiftsForm += '<input id="delete_type_emp" name="delete_type" class="w3-radio" type="radio" value="emp" style="margin-left:10px;">';
     deleteShiftsForm += '<label style="margin-left:5px;font-weight:normal;">Employee</label>';
 
@@ -2244,7 +2492,7 @@ function deleteShifts(){
     deleteShiftsForm += '<form id="delete-form-shift" style="display:none">';
     deleteShiftsForm += '<div class="w3-row">';
     deleteShiftsForm += '<div class="w3-half" style="padding:5px 10px 10px 0;">';
-    deleteShiftsForm += '<label style="font-weight:bold;">Shift ID#<span class="required-label">*</span></label>';
+    deleteShiftsForm += '<label style="font-weight:bold;">Swing ID#<span class="required-label">*</span></label>';
     deleteShiftsForm += '<input name="delete_shift_id" id="delete_shift_id" class="w3-input w3-border input-display" type="text">';
     deleteShiftsForm += '</div>';
     deleteShiftsForm += '</div>';
@@ -2261,10 +2509,10 @@ function deleteShifts(){
 
     deleteShiftsForm += '<div class="w3-center" style="margin-top:10px;">';
     deleteShiftsForm += '<button id="cancel-delete-shifts" class="w3-button w3-darkblue w3-mobile w3-medium" style="margin-right:10px;">Cancel</button>';
-    deleteShiftsForm += '<button id="delete-shifts-action-req" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
-    deleteShiftsForm += '<button id="delete-shifts-action-batch" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
-    deleteShiftsForm += '<button id="delete-shifts-action-shift" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
-    deleteShiftsForm += '<button id="delete-shifts-action-emp" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Shifts</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-req" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Request Bookings</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-batch" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Batch Bookings</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-shift" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Swing Bookings</button>';
+    deleteShiftsForm += '<button id="delete-shifts-action-emp" style="display:none;" class="w3-button w3-darkblue w3-mobile w3-medium">Delete Employee Bookings</button>';
     deleteShiftsForm += '</div>';
 
     deleteShiftsForm += '</div>';//close container
@@ -2571,6 +2819,9 @@ function doFilter(){
 
 function setResources(resources){
 
+    console.log("SETTING");
+    console.log(resources);
+
     var resourceItem = {};
     var resourceArray = [];
 
@@ -2733,9 +2984,9 @@ $("body").on('click','#set-scheduler-resources', function (e) {
         }
     });
 
-    var schedulerResources = JSON.parse(localStorage.getItem('scheduler-resources'));
+    //var schedulerResources = JSON.parse(localStorage.getItem('scheduler-resources'));
 
-    console.log("SREC: ", schedulerResources);
+    //console.log("SREC: ", schedulerResources);
 
 });
 
@@ -2838,6 +3089,13 @@ if(currentSchedulerView == 'Custom'){
         var customStartDateArray = customStart.split("-");
         var customStartDate = customStartDateArray[2] + "-" + customStartDateArray[1]+ "-" + customStartDateArray[0];
         $("#custom-scheduler-start").val(customStartDate);
+    }
+
+    var customEnd = localStorage.getItem('custom-scheduler-end');
+    if(customEnd != null){
+        //var customEndDateArray = customEnd.split("-");
+        //var customEndDate = customEndDateArray[2] + "-" + customEndDateArray[1]+ "-" + customEndDateArray[0];
+        $("#custom-scheduler-end").val(customEnd);
     }
 
     if($("#custom-scheduler-days").val().length > 0 && $("#custom-scheduler-start").val().length){
@@ -2967,8 +3225,17 @@ var Custom = kendo.ui.TimelineMonthView.extend({
         // start = kendo.date.dayOfWeek(selectedDate, this.calendarInfo().firstDay, -1),
         idx, length,
         dates = [];
+        
+        
+        if (localStorage.getItem("custom-scheduler-days") === null) {
+            var numDays = 30;
+        } else {
+            var numDays = localStorage.getItem('custom-scheduler-days');
+        }
 
-      for (idx = 0, length = this.options.numberOfDays; idx < length; idx++) {
+        //this.options.numberOfDays
+
+      for (idx = 0, length = numDays; idx < length; idx++) {
         dates.push(start);
         start = kendo.date.nextDay(start);
       }
@@ -3085,6 +3352,35 @@ $("#scheduler").kendoScheduler({
             $("#req_desc_errors").html("");
         }
 
+        var startCheck = e.event.start;
+        var thisStart = new Date(startCheck);
+        var unixS = Math.round(thisStart/1000);
+        
+        var endCheck = e.event.end;
+        var thisEnd = new Date(endCheck);
+        var unixE = Math.round(thisEnd/1000);
+
+        console.log("START CHECK: ", unixS);
+        console.log("END CHECK: ", unixE);
+
+        if(startCheck > endCheck ){
+            error_count ++;
+            $("#check_dates_errors").css({"display" : "block", "color" : "red", "font-weight" : "bold"});
+            $("#check_dates_errors").html("Start Date must be before End Date.");
+        } else {
+            $("#check_dates_errors").css({"display" : "none"});
+            $("#check_dates_errors").html("");
+        }
+
+        if(userId === undefined){
+            error_count ++;
+            $("#check_users").css({"display" : "block", "color" : "red", "font-weight" : "bold"});
+            $("#check_users").html("At least One Employee must be selected.");
+        } else {
+            $("#check_users").css({"display" : "none"});
+            $("#check_users").html("");
+        }
+
         console.log("ERRORS: " + error_count);
 
         if(error_count > 0) {
@@ -3098,6 +3394,8 @@ $("#scheduler").kendoScheduler({
     },
     edit: function(e) {
 
+        //var validator = e.container.data("kendoValidator")
+        
         var tran = e.event.tranId;
 
         if(tran < 1) {
@@ -3129,9 +3427,15 @@ $("#scheduler").kendoScheduler({
                 var startHoursStr = "0" + startHours;
             }
 
+            if(startHours > 12){
+                var startAmPm = "PM";
+            } else {
+                var startAmPm = "AM";
+            }
+
             var startYear = startdate.getFullYear();
 
-            var startDateTime = startDay + "/" + startMonthStr + "/" + startYear + ' ' + startHoursStr + ":00";
+            var startDateTime = startDay + "/" + startMonthStr + "/" + startYear + ' ' + startHoursStr + ":00 ";
 
             console.log("START DATETIME: ", startDateTime);
 
@@ -3169,7 +3473,6 @@ $("#scheduler").kendoScheduler({
             enddate.setDate(startDay);
 
             console.log("SET END DATE: ",enddate);
-
 
             e.event.set("end", enddate);
         }
@@ -3285,10 +3588,19 @@ $("#scheduler").kendoScheduler({
                     endTimezone: {from: "EndTimezone"},
                     description: {from: "Description"},
                     tradeTypes: {from: "TradeTypes"},
+                    swingTradeType: {from: "SwingTradeType"},
                     recurrenceId: {from: "RecurrenceID"},
                     recurrenceRule: {from: "RecurrenceRule"},
                     recurrenceException: {from: "RecurrenceException"},
                     userId: { from: "UserId"},
+                    userType: { from: "UserType"},
+                    employeeNotified: { from: "EmployeeNotified"},
+                    messageDelivered: { from: "MessageDelivered"},
+                    employeeNotifiedDate: { from: "EmployeeNotifiedDate"},
+                    employeeConfirmed: { from: "EmployeeConfirmed"},
+                    employeeConfirmedDate: { from: "EmployeeConfirmedDate"},
+                    rioRequester: { from: "RioRequester"},
+                    rioRequesterPhone: { from: "RioRequesterPhone"},
                     isAllDay: { type: "boolean", from: "IsAllDay" },
                     bookingStatus: { from: "BookingStatus"}
                 }

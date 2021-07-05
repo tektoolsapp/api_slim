@@ -34,6 +34,8 @@ class PdfSave
         $paddedReq = str_pad($req, 6, "0", STR_PAD_LEFT);
         $type = strtolower($pdfContent['type']);
         $emp = $pdfContent['emp'];
+        $dateOfFirstSwingDep = $pdfContent['first_dep'];
+        $siteCode = $pdfContent['site_code'];
 
         //GET EMPLOYEE DETAILS
         $employees = $this->employees->getEmployees();
@@ -51,9 +53,28 @@ class PdfSave
         $extension = 'pdf';
         //$file = uniqid() .'.'. $extension; // rename file as a unique name
 
-        $rand = mt_rand(100000, 999999);
+        //BUILD REQ REF
 
-        $file = $employeeLastName."_".$employeeFirstName."_".strtoupper($type)."_".$rehireTxt." ".$rand;
+        $reqRaw = ltrim($req, "0");
+        $paddedFileReq = str_pad($reqRaw, 4, "0", STR_PAD_LEFT);
+        $reqRef = "RR".$paddedFileReq;
+
+        //$rand = mt_rand(100000, 999999);
+
+        if($type == 'sef'){
+
+            //$dateOfFirstSwingDep = '12-04-2021';
+            //$siteCode = 'BR2';
+
+            $file = $employeeLastName."_".$employeeFirstName."_".strtoupper($type)."_".$dateOfFirstSwingDep."_".$siteCode."_".$reqRef;
+        
+        } else {
+            $file = $employeeLastName."_".$employeeFirstName."_".strtoupper($type)."_".$rehireTxt." ".$reqRef;
+        }
+
+        //FOR SEF
+
+        //Person Name (SURNAME, First name)_SEF_Departure DATE OF First SWING_ SITE (B2, B4, WA, MAR etc…)
 
         //$file = $paddedReq."_".$type."_".$emp."_".$rand;
         $file_dir = $target_dir . $file .'.'. $extension;

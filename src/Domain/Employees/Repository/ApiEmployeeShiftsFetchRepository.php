@@ -38,7 +38,7 @@ class ApiEmployeeShiftsFetchRepository
         //$empId = 1;
         //dump($empId);
 
-        $sql = "SELECT * FROM bookings WHERE UserId = :UserId;";
+        $sql = "SELECT * FROM bookings WHERE UserId = :UserId AND BookingStatus <> 'X'";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['UserId' => $empId]);
 
@@ -46,19 +46,35 @@ class ApiEmployeeShiftsFetchRepository
 
         usort($bookings,array($this,'compareBookings'));
 
+        //dump($bookings);
+
         //LOOP THROUGH AT GET THE REQUEST
         //ADD THE REQUIRED FIELDS FROM THE REQUEST
         
+        date_default_timezone_set('Australia/West');
+        
         $shiftArray = array();
         $shiftSubArray = array();
+        $start = true;
          
         for ($b=0; $b < sizeof($bookings); $b++) {
              
             $shiftId = $bookings[$b]['ShiftId'];
-            $startDay = $bookings[$b]['StartDay'];
+            if($start) {
+                $startDay = $bookings[$b]['StartDay'];
+                $startDayFormat = date("D, M j Y", $startDay);
+                //dump("START");
+                //dump($startDayFormat);
+                $start = false;
+            }
 
             if($shiftId != $bookings[$b + 1]['ShiftId']){
 
+                //dump("START:");
+                //dump(date("D, M j Y", $startDay));
+                
+                $shiftEmp = $bookings[$b]['UserId'];
+                $confirmStatus = $bookings[$b]['EmployeeConfirmed'];
                 $thisReq = $bookings[$b]['RequestId'];
                 $reqDets = $this->reqDets->getRequest($thisReq);
                 $siteDesc = $reqDets['ws_site_desc'];
@@ -74,12 +90,17 @@ class ApiEmployeeShiftsFetchRepository
                     $shiftStartTime = "8:00 PM";
                     $shiftEndTime = "6:00 AM";    
                 }
-                $startDayFormat = date("D, M j Y", $startDay);
+                //$startDayFormat = date("D, M j Y", $startDay);
                 $endDayFormat = date("D, M j Y", $endDay);
+
+                //dump("END:");
+                //dump($endDayFormat);
+
                 $shiftStatus = $bookings[$b]['BookingStatus'];
                 
                 $shiftSubArray = array(
                     'shift_id' => $shiftId,
+                    'shift_emp' => $shiftEmp,
                     'shift_ref' => $shiftRef, 
                     'shift_start' => $startDayFormat,
                     'shift_type' => $shiftType,
@@ -87,24 +108,31 @@ class ApiEmployeeShiftsFetchRepository
                     'shift_end' => $endDayFormat,
                     'shift_end_time' => $shiftEndTime,
                     'shift_site' => $siteDesc,
-                    'shift_status' => $shiftStatus
+                    'shift_status' => $shiftStatus,
+                    'shift_confirm' => $confirmStatus
                 );
 
                 array_push($shiftArray,$shiftSubArray);
                 $shiftSubArray = array();
+                $start = true;
             }
         }
 
         $returnArray = array(
+            "status" => 201,
             "data" => $shiftArray
-        ); 
+        );
+        
+        /* $returnArray = array(
+            "data" => $shiftArray
+        );  */
 
         return $returnArray;
     }
 
     private function compareBookings($a, $b){
         $retval = strnatcmp($a['trade_type'], $b['trade_type']);
-        if(!$retval) $retval = strnatcmp($a['emp_name'], $b['emp_name']);
+        //if(!$retval) $retval = strnatcmp($a['emp_name'], $b['emp_name']);
         if(!$retval) $retval = strnatcmp($a['ShiftId'], $b['ShiftId']);
         if(!$retval) $retval = strnatcmp($a['StartDay'], $b['StartDay']);
         return $retval;

@@ -31,12 +31,31 @@ final class EmailSend
         $this->common = $common;
     }
 
-    public function sendEmail($reqId)
+    public function sendEmail($data)
     {
 
-        dump($reqId);
+        //dump($data);
+
+        $reqId = $data['quote_email_req'];
+        $emailTo = $data['quote_email_to'];
+        $emailCc = $data['quote_email_cc'];
+        //$emailContent = $data['confirm_email_content'];
 
         $request = $this->req->getRequest($reqId);
+
+        $empsQuoted = $request['ws_pdf_chf'];
+        $empsQuotedArray = json_decode($empsQuoted, true);
+
+        $empsDlArray = array();
+        
+        //dump($empsQuotedArray);
+
+        for ($a=0; $a < sizeof($empsQuotedArray); $a++) {
+            $empId = $empsQuotedArray[$a][0];
+            $empsDlArray[] = $empId;
+        }
+
+        //dump($empsDlArray);
 
         $sitesLookup = $this->sites->getAllCustomerSites();
 
@@ -73,10 +92,28 @@ final class EmailSend
 
         //dump($quotePdf);
 
+        $quoteName = "quote_".$quoteRef.".pdf";
+
         $quoteAttachment = PostmarkAttachment::fromFile
-            ($quotePdf, $quotePdf, 'application/pdf', 'application/pdf');
+            ($quotePdf, $quoteName, 'application/pdf', 'application/pdf');
 
         array_push($attachmentArray, $quoteAttachment);
+
+        //BUILD/ADD QUOTE DRIVERS LICENCE
+        for ($l=0; $l < sizeof($empsDlArray); $l++) {
+            
+            $empId = $empsDlArray[$l];
+            $paddedEmpId = str_pad($empId, 6, "0", STR_PAD_LEFT);
+
+            $dl = "dl_".$paddedEmpId.".png";
+
+            ${"attachmentFile".$d} = __DIR__.'/../../../../public/drivers_licences/'.$dl;
+            $attachment = PostmarkAttachment::fromFile
+            
+            (${"attachmentFile".$d}, $dl, 'image/png', 'image/png');
+            
+            array_push($attachmentArray, $attachment);
+        }
 
         $emailAddressee = $request['ws_cust_contact'];
         $rrMobiliser = $request['ws_mobiliser'];
@@ -87,7 +124,7 @@ final class EmailSend
             'rr_mobiliser' => $rrMobiliser
         );
         
-        $htmlBody = $this->twig->fetch('layout/email/email.test.twig', $fetchArray);
+        $htmlBody = $this->twig->fetch('layout/email/email.quote.twig', $fetchArray);
 
         $exceptionMsg = '';
 
@@ -95,14 +132,14 @@ final class EmailSend
             $client = new PostmarkClient("97d8e7c1-e30c-43d6-8d35-2e1593e2e506");
             $sendResult = $client->sendEmail(
                 "allan.hyde@tektools.com.au", //FROM
-                "allan.hyde@livepages.com.au", //TO
+                $emailTo, //TO
                 "READY RESOURCES MOBILISATION QUOTATION - ".$quoteRef,
                 $htmlBody,
                 NULL,
                 NULL,
                 false,
                 NULL,
-                NULL,
+                $emailCc, ///CC
                 NULL,
                 NULL,
                 $attachmentArray,
@@ -122,7 +159,13 @@ final class EmailSend
             // was unreachable or times out.
         }
 
-        dump($exceptionMsg);
+        //dump($exceptionMsg);
+
+        if(empty($exceptionMsg)){
+            $sendResult = 'OK';
+        } else {
+            $sendResult = $exceptionMsg;
+        }
 
         //dump($sendResult);
 

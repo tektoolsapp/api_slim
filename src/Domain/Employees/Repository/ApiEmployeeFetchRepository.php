@@ -38,7 +38,7 @@ class ApiEmployeeFetchRepository
 
         $empId = $decoded_array['jti'];
 
-        $sql = "SELECT emp_id, first_name, emp_email FROM employees WHERE emp_id = :emp_id;";
+        $sql = "SELECT emp_id, first_name, last_name, emp_email FROM employees WHERE emp_id = :emp_id;";
         $statement = $this->connection->prepare($sql);
         $statement->execute(['emp_id' => $empId]);
 
