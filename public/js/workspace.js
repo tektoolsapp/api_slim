@@ -1,10 +1,16 @@
-/* $(document).bind('touchmove',function(e) {
-    e.preventDefault();
-}); */
+function showSnackbar(snackbarDiv, location) {
+    // Get the snackbar DIV
+    var x = document.getElementById(snackbarDiv);
 
-window.addEventListener("touchstart", function(event) {
-    event.preventDefault();
-  }, {passive: false});
+    // Add the "show" class to DIV
+    x.className = "show";
+
+    // After 3 seconds, remove the show class from DIV
+    setTimeout(function(){
+        x.className = x.className.replace("show", ""); 
+        window.location.assign(location);
+    }, 3000);
+} 
 
 $("body").on('click','[id^=workspace_page_]', function (e) {
 
@@ -5419,9 +5425,14 @@ $("#sidebar-right").on('click', '#save-swing-template', function (e) {
 
                 var resetEmps = [];
                 localStorage.setItem('scheduler-templates-employees', JSON.stringify(resetEmps));
-                alert("Swings were Successfully Updated!")
+                
+                $("#ws-snackbar").html("Swings were Successfully Updated")
+                
+                showSnackbar("ws-snackbar", '/workspace');
+                
+                //alert("Swings were Successfully Updated")
 
-                window.location.assign('/workspace');
+                //window.location.assign('/workspace');
             }
         });
     }
@@ -8644,8 +8655,148 @@ function updateRequest(mode, param){
 
 function viewWorkspace(wsRequests, totalRecords, page){
 
-    var wsTable = '<div id="work-order-table-container" style="margin:0 0 20px 0;">';
-    wsTable += '<table id="workspace-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;width:100%;border-collapse:collapse;">';
+    var minwidth1 = '78px';
+    var minwidth2 = '78px';
+    var minwidth3 = '93px';
+    var minwidth4 = '124px';
+    var minwidth5 = '109px';
+    var minwidth6 = '124px';
+    var minwidth7 = '124px';
+    var minwidth8 = '140px';
+    var minwidth9 = '109px';
+    var minwidth10 = '109px';
+    var minwidth11 = '109px';
+    var minwidth12 = '78px';
+    var minwidth13 = '78px';
+    var minwidth14 = '155px';
+    var minwidth15 = '62px';
+    var minwidth16 = '47px';
+
+    var wsTable = '<div id="table-wrapper">'; 
+    wsTable += '<table id="request-view" class="w3-striped w3-bordered w3-hoverable">'; 
+    
+    /*
+    wsTable += '<table id="new-ws-table">'; 
+    wsTable += '<thead>'; 
+    wsTable += '<tr>';
+    wsTable += '<th style="min-width:200px;">Table Header 1</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 2</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 3</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 4</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 5</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 6</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 7</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 8</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 9</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 10</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 11</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 12</th>';
+    wsTable += '<th style="min-width:150px;">Table Header 13</th>';
+    wsTable += '</tr>';
+    wsTable += '</thead>';
+    wsTable += '<tbody>'; */
+
+    wsTable += '<thead>';
+    wsTable += '<tr class="w3-darkblue">';
+    wsTable += '<th style="min-width:' + minwidth1 + ';">Id #</th>';
+    wsTable += '<th style="min-width:' + minwidth2 + ';">Req #</th>';
+    wsTable += '<th style="min-width:' + minwidth3 + ';">Req. Date</th>';
+    wsTable += '<th style="min-width:' + minwidth4 + ';">Requester</th>';
+    wsTable += '<th style="min-width:' + minwidth5 + ';">Phone</th>';
+    wsTable += '<th style="min-width:' + minwidth6 + ';">Site</th>';
+    wsTable += '<th style="min-width:' + minwidth7 + ';">Mobiliser</th>';
+    wsTable += '<th style="min-width:' + minwidth8 + ';">Trades Req.</th>';
+    wsTable += '<th style="min-width:' + minwidth9 + ';">Start Date</th>';
+    wsTable += '<th style="min-width:' + minwidth10 + ';">End Date</th>';
+    wsTable += '<th style="min-width:' + minwidth11 + ';">Swings Scheduled</th>';
+    wsTable += '<th style="min-width:' + minwidth12 + ';">Emp(s) Notified</th>';
+    wsTable += '<th style="min-width:' + minwidth13 + ';">Emp(s) Conf.</th>';
+    wsTable += '<th style="min-width:' + minwidth14 + ';">Comments</th>';
+    wsTable += '<th style="min-width:' + minwidth15 + ';">Status</th>';
+    wsTable += '<th style="min-width:' + minwidth16 + ';">Action</th>';
+    wsTable += '</tr>';
+    wsTable += '</thead>';
+    wsTable += '<tbody>';
+
+    /* var wsTable = '<div id="table-wrapper">'; 
+    wsTable += '<table id="new-ws-table">'; 
+    wsTable += '<thead>'; 
+    wsTable += '<tr>';
+    wsTable += '<th>Table Header 1</th>';
+    wsTable += '<th>Table Header 2</th>';
+    wsTable += '<th>Table Header 3</th>';
+    wsTable += '<th>Table Header 4</th>';
+    wsTable += '<th>Table Header 5</th>';
+    wsTable += '<th>Table Header 6</th>';
+    wsTable += '<th>Table Header 7</th>';
+    wsTable += '<th>Table Header 8</th>';
+    wsTable += '<th>Table Header 9</th>';
+    wsTable += '<th>Table Header 10</th>';
+    wsTable += '<th>Table Header 11</th>';
+    wsTable += '<th>Table Header 12</th>';
+    wsTable += '<th>Table Header 13</th>';
+    wsTable += '</tr>';
+    wsTable += '</thead>';
+    wsTable += '<tbody>'; */
+    
+    //for (var w = 0; w < 13; w++) {
+
+        //' + minwidth + '
+        
+        /*
+        wsTable += '<tr>';
+        wsTable += '<td style="min-width:' + minwidth1 + ';">Data1111111111111111111111111 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth2 + ';">Data2 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth3 + ';">Data3 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth4 + ';">Data4 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth5 + ';">Data5 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth6 + ';">Data6 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth7 + ';">Data7 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth8 + ';">Data8 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth9 + ';">Data9 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth10 + ';">Data10 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth11 + ';">Data11 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth12 + ';">Data12 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth13 + ';">Data13 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth14 + ';">Data14 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth15 + ';">Data15 ' + w + '</td>';
+        wsTable += '<td style="min-width:' + minwidth16 + ';">Data16 ' + w + '</td>';
+        wsTable += '</tr>';
+        */
+
+        /*
+        wsTable += '<tr>';
+        wsTable += '<td>Data1111111111111111111111111</td>';
+        wsTable += '<td>Data2</td>';
+        wsTable += '<td>Data3</td>';
+        wsTable += '<td>Data4</td>';
+        wsTable += '<td>Data5</td>';
+        wsTable += '<td>Data6</td>';
+        wsTable += '<td>Data7</td>';
+        wsTable += '<td>Data8</td>';
+        wsTable += '<td>Data9</td>';
+        wsTable += '<td>Data10</td>';
+        wsTable += '<td>Data11</td>';
+        wsTable += '<td>Data12</td>';
+        wsTable += '<td>Data13</td>';
+        wsTable += '</tr>';
+
+        */
+
+    //}
+    
+    //wsTable += '</tbody>';
+    //wsTable += '</table>';
+
+   // wsTable += '</div>';
+    
+    /*
+    var wsTable = '<div id="work-order-table-container" style="width:900px;height:900px;margin:0 0 20px 0;border:2px solid brown;overflow-y:scroll;">';
+    //wsTable += '</div>';    
+    //wsTable += '<table id="workspace-table" class="w3-striped w3-bordered w3-hoverable" style="table-layout:auto;border-collapse:collapse;">';
+    
+    
+    wsTable += '<table id="workspace-table" class="w3-striped w3-bordered w3-hoverable" style="border-collapse:collapse;">';
     wsTable += '<thead>';
     wsTable += '<tr class="w3-darkblue">';
     wsTable += '<th>Id #</th>';
@@ -8668,6 +8819,8 @@ function viewWorkspace(wsRequests, totalRecords, page){
     wsTable += '</thead>';
     wsTable += '<tbody style="overflow-y: auto;">';
 
+    */
+    
     for (var w = 0; w < wsRequests.length; w++) {
 
         var wsId = wsRequests[w]['ws_id'];
@@ -8766,22 +8919,22 @@ function viewWorkspace(wsRequests, totalRecords, page){
         }
         
         wsTable += '<tr id="req_row_' + wsId + '" class="req-row ' + hl_class + '">';
-        wsTable += '<td>' + wsId + '</td>';
-        wsTable += '<td>RR' + wsRef + '</td>';
-        wsTable += '<td>' + wsDate + '</td>';
-        wsTable += '<td>' + wsRequester + '</td>';
-        wsTable += '<td>' + wsRequesterPhone + '</td>';
-        wsTable += '<td>' + wsSiteDept + '</td>';
-        wsTable += '<td>' + wsMobiliser + '</td>';
-        wsTable += '<td>' + wsTrades + '</td>';
-        wsTable += '<td>' + wsStartDate + '</td>';
-        wsTable += '<td>' + wsEndDate + '</td>';
-        wsTable += '<td class="' + scheduledBgClass + '" style="text-align:center;">' + wsNumSwings + '/' + wsNumScheduled + '</td>';
-        wsTable += '<td class="' + notifiedBgClass + '" style="text-align:center;">' + wsNumNotified + '/' + wsNumSwings + '</td>';
-        wsTable += '<td class="' + confirmedBgClass + '" style="text-align:center;">' + wsNumConfirmed + '/' + wsNumSwings + '</td>';
-        wsTable += '<td>' + wsComments + '</td>';
-        wsTable += '<td style="text-align:center;" class="' + wsBgCol +'">' + wsStatusText + '</td>';
-        wsTable += '<td style="text-align:center;" id="row_'+ wsId + '"><button class="w3-button w3-small w3-transparent w3-padding-small menu-button"><i class="fas fa-ellipsis-h"></i></button></td>';
+        wsTable += '<td style="min-width:' + minwidth1 + ';">' + wsId + '</td>';
+        wsTable += '<td style="min-width:' + minwidth2 + ';">RR' + wsRef + '</td>';
+        wsTable += '<td style="min-width:' + minwidth3 + ';">' + wsDate + '</td>';
+        wsTable += '<td style="min-width:' + minwidth4 + ';">' + wsRequester + '</td>';
+        wsTable += '<td style="min-width:' + minwidth5 + ';">' + wsRequesterPhone + '</td>';
+        wsTable += '<td style="min-width:' + minwidth6 + ';">' + wsSiteDept + '</td>';
+        wsTable += '<td style="min-width:' + minwidth7 + ';">' + wsMobiliser + '</td>';
+        wsTable += '<td style="min-width:' + minwidth8 + ';">' + wsTrades + '</td>';
+        wsTable += '<td style="min-width:' + minwidth9 + ';">' + wsStartDate + '</td>';
+        wsTable += '<td style="min-width:' + minwidth10 + ';">' + wsEndDate + '</td>';
+        wsTable += '<td class="' + scheduledBgClass + '" style="min-width:' + minwidth11 + ';text-align:center;">' + wsNumSwings + '/' + wsNumScheduled + '</td>';
+        wsTable += '<td class="' + notifiedBgClass + '" style="min-width:' + minwidth12 + ';text-align:center;">' + wsNumNotified + '/' + wsNumSwings + '</td>';
+        wsTable += '<td class="' + confirmedBgClass + '" style="min-width:' + minwidth13 + ';text-align:center;">' + wsNumConfirmed + '/' + wsNumSwings + '</td>';
+        wsTable += '<td style="min-width:' + minwidth14 + ';">' + wsComments + '</td>';
+        wsTable += '<td style="min-width:' + minwidth15 + ';text-align:center;" class="' + wsBgCol +'">' + wsStatusText + '</td>';
+        wsTable += '<td style="min-width:' + minwidth16 + ';text-align:center;" id="row_'+ wsId + '"><button class="w3-button w3-small w3-transparent w3-padding-small menu-button"><i class="fas fa-ellipsis-h"></i></button></td>';
         wsTable += '</tr>';
     }
 
@@ -8833,6 +8986,10 @@ function viewWorkspace(wsRequests, totalRecords, page){
         wsTable += output;
     }
 
+    
+    
+    
+    
     $("#workspace").html("");
 
     $("#workspace").append(wsTable);

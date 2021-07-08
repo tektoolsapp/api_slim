@@ -587,6 +587,46 @@ div.total-box-generate {
     background-color: #FFFFFF!important;
 }
 
+table#request-view {
+table-layout:fixed!important;
+max-width:1px;
+border-collapse: collapse;
+}
+
+#table-wrapper {
+    display:inline-block;
+    overflow-x:scroll;
+    max-width:100%;
+} 
+
+#request-view thead {
+display: table; /* to take the same width as tr */
+width: calc(100%); /* - 17px because of the scrollbar width */
+}
+  
+#request-view tbody {
+display: block; /* to enable vertical scrolling */
+max-height: 600px; /* e.g. */
+overflow-y: scroll; /* keeps the scrollbar even if it doesn't need it; display purpose */
+}
+
+#request-view th, td {
+padding: 5px;
+word-break: break-all; /* 4. */
+}
+
+#request-view tr {
+display: table; /* display purpose; th's border */
+width: 100%;
+box-sizing: border-box; /* because of the border (Chrome needs this line, but not FF) */
+}
+
+#request-view td, th {
+text-align: center;
+border-bottom: none;
+border-left: none;
+}
+
 #my-right-column {
     visibility: hidden;
     width:0px;
@@ -1107,4 +1147,49 @@ li span.message-body {
     border-radius: 50%;
     background: red;
     color: white;
+  }
+
+  #ws-snackbar {
+    visibility: hidden; /* Hidden by default. Visible on click */
+    min-width: 250px; /* Set a default minimum width */
+    margin-left: -125px; /* Divide value of min-width by 2 */
+    background-color: #333; /* Black background color */
+    color: #fff; /* White text color */
+    text-align: center; /* Centered text */
+    border-radius: 2px; /* Rounded borders */
+    padding: 16px; /* Padding */
+    position: fixed; /* Sit on top of the screen */
+    z-index: 1; /* Add a z-index if needed */
+    left: 50%; /* Center the snackbar */
+    bottom: 150px; /* 30px from the bottom */
+  }
+
+  /* Show the snackbar when clicking on a button (class added with JavaScript) */
+#ws-snackbar.show {
+    visibility: visible; /* Show the snackbar */
+    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+    However, delay the fade out process for 2.5 seconds */
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  }
+  
+  /* Animations to fade the snackbar in and out */
+  @-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 150px; opacity: 1;}
+  }
+  
+  @keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 150px; opacity: 1;}
+  }
+  
+  @-webkit-keyframes fadeout {
+    from {bottom: 150px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+  }
+  
+  @keyframes fadeout {
+    from {bottom: 150px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
   }

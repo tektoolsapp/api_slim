@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.3.0/css/all.min.css" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v535">
+    <link rel="stylesheet" href="{{ base_path() }}/css/layout-fixed.css?v544">
     <link rel="stylesheet" href="{{ base_path() }}/css/pdf-export.css?v3">
     <link rel="stylesheet" href="{{ base_path() }}/js/lou-multi-select-57fb8d3/css/multi-select.css?v9" media="screen" type="text/css">
     <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
@@ -259,15 +259,6 @@
                  });   
             }
             
-            //MsgElem = document.getElementById("msg");
-            //TokenElem = document.getElementById("token");
-            //NotisElem = document.getElementById("notis");
-            //ErrElem = document.getElementById("err");
-            
-            // Initialize Firebase
-            
-            // TODO: Replace with your project's customized code snippet
-            
             var firebaseConfig = {
                 apiKey: "AIzaSyB5fs7MSY8DlLyvRKP1ySdI392-nkfqp4Q",
                 authDomain: "ready-app-36c26.firebaseapp.com",
@@ -278,12 +269,8 @@
                 appId: "1:424983282266:web:00dafe30499e6e97290e63"
             };
 
-            //if (window.location.protocol == "https:") {
-                firebase.initializeApp(firebaseConfig);       
-            //}
+            firebase.initializeApp(firebaseConfig);       
             
-            //firebase.initializeApp(firebaseConfig);
-
             const messaging = firebase.messaging();
 
             if ("serviceWorker" in navigator) {
